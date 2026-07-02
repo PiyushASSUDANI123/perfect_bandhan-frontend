@@ -1101,13 +1101,18 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                               title: 'Dev: Change Gender',
                               subtitle: 'Switch between Male and Female',
                               value: data['gender'] == 'Female',
-                              onChanged: (v) {
+                              onChanged: (v) async {
                                 final newGender = v ? 'Female' : 'Male';
                                 setState(() {
                                   provider.myProfile?['gender'] = newGender;
                                 });
-                                Provider.of<AuthProvider>(context, listen: false)
+                                final success = await Provider.of<AuthProvider>(context, listen: false)
                                     .updateProfileSettings({'gender': newGender});
+                                if (success && mounted) {
+                                  // Refresh the home feed with the new gender context
+                                  Provider.of<AuthProvider>(context, listen: false)
+                                      .fetchDailyPicks(refresh: true);
+                                }
                               },
                             ),
                           ],
