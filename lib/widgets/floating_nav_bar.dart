@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import '../theme/app_theme.dart';
 
 class FloatingNavBar extends StatelessWidget {
@@ -76,8 +77,11 @@ class FloatingNavBar extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 24),
           const SizedBox(height: 4),
-          Text(
+          AutoSizeText(
             label,
+            maxLines: 1,
+            minFontSize: 6,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.montserrat(
               fontSize: 10,
               color: color,

@@ -7,6 +7,7 @@ import '../widgets/floating_nav_bar.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import '../theme/app_theme.dart';
 import '../models/profile.dart';
 import '../widgets/partner_preferences_sheet.dart';
@@ -584,12 +585,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     onTap: _showPartnerPreferencesSheet,
                     child: Row(
                       children: [
-                        Text(
-                          'as per partner preferences ',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 11,
-                            color: AppTheme.accentGold,
-                            fontWeight: FontWeight.w600,
+                        Flexible(
+                          child: AutoSizeText(
+                            'as per partner preferences ',
+                            maxLines: 1,
+                            minFontSize: 8,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11,
+                              color: AppTheme.accentGold,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         const Icon(Icons.edit_outlined, size: 12, color: AppTheme.accentGold),

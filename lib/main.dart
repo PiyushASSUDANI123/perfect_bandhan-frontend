@@ -100,8 +100,15 @@ class MyApp extends StatelessWidget {
               );
             }
 
-            return Stack(
-              children: [
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: MediaQuery.of(context).textScaler.clamp(
+                  minScaleFactor: 1.0, 
+                  maxScaleFactor: 1.15,
+                ),
+              ),
+              child: Stack(
+                children: [
                 mainContent,
                 if (bannerEnabled && !isMaintenance)
                   Positioned(
@@ -129,9 +136,10 @@ class MyApp extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
+                  ), // Closes Positioned
               ],
-            );
+            ), // Closes Stack
+          ); // Closes MediaQuery
           },
         );
       },
