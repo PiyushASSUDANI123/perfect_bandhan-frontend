@@ -888,6 +888,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
     final profile = widget.profile;
     final isLocked = profile.phone == 'LOCKED';
     final interestStatus = profile.interestStatus;
+    final isDeveloper = provider.phoneNumber == '9413879444' || provider.phoneNumber == '+919413879444';
 
     Widget actionButton;
     Widget? bannerWidget;
@@ -920,12 +921,12 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.forum_outlined, color: Colors.black, size: 18.0),
+                const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 18.0),
                 const SizedBox(width: 8.0),
                 Text(
-                  'IN-APP CHAT',
+                  'CHAT',
                   style: GoogleFonts.cinzel(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
                     letterSpacing: 0.5,
@@ -938,7 +939,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
       ),
     );
 
-    if (interestStatus == 'accepted') {
+    if (interestStatus == 'accepted' || isDeveloper) {
       actionButton = Row(
         children: [
           Expanded(

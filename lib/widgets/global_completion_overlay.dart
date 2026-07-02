@@ -113,8 +113,9 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
               child: AnimatedOpacity(
                 opacity: completion >= 100 ? 0.0 : 1.0,
                 duration: const Duration(seconds: 1),
-                child: Row(
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     if (isDeveloper)
                       GestureDetector(
@@ -124,7 +125,7 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
                           });
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(right: 8),
+                          margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: AppTheme.glassColor,

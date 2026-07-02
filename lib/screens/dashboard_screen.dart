@@ -633,6 +633,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 setState(() => _currentIndex = 1);
               },
             ),
+            const SizedBox(width: 70), // Reserve space for the GlobalCompletionOverlay
           ],
         ),
       ),
