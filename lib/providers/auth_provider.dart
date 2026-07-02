@@ -631,7 +631,7 @@ class AuthProvider extends ChangeNotifier {
       final response = await http.post(
         Uri.parse('$baseUrl/user/interest'),
         headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
-        body: jsonEncode({'targetPhone': targetPhone}),
+        body: jsonEncode({'toPhone': targetPhone}),
       );
       if (response.statusCode == 200 || response.statusCode == 201) return true;
       _updateProfileInterest(profileId, 'none'); // revert on fail

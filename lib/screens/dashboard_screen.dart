@@ -466,13 +466,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             backgroundColor: AppTheme.cardWhite,
             child: provider.dailyPicks.isEmpty && provider.isLoadingDailyPicks
                 ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
-                : provider.dailyPicks.isEmpty
-                    ? _buildEmptyState("No recommendations for today yet.", onRetry: () {
-                        provider.fetchDailyPicks(refresh: true);
-                      })
-                    : Center(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
+                : Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
                             maxWidth: _getResponsiveLayout()['maxContainerWidth'],
                           ),
                           child: CustomScrollView(
@@ -509,21 +505,31 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                     ),
                                   ),
                                 ),
-                              SliverPadding(
-                                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                                sliver: SliverMasonryGrid.count(
-                                  crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
-                                  mainAxisSpacing: 24.0,
-                                  crossAxisSpacing: 24.0,
-                                  childCount: provider.dailyPicks.length,
-                                  itemBuilder: (context, index) {
-                                    final profile = provider.dailyPicks[index];
-                                    return ProfileBentoCard(profile: profile);
-                                  },
+                                if (provider.dailyPicks.isNotEmpty)
+                                  SliverPadding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                                    sliver: SliverMasonryGrid.count(
+                                      crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
+                                      mainAxisSpacing: 24.0,
+                                      crossAxisSpacing: 24.0,
+                                      childCount: provider.dailyPicks.length,
+                                      itemBuilder: (context, index) {
+                                        final profile = provider.dailyPicks[index];
+                                        return ProfileBentoCard(profile: profile);
+                                      },
+                                    ),
+                                  ),
+                                SliverToBoxAdapter(
+                                  child: provider.isLoadingDailyPicks && provider.dailyPicks.isNotEmpty
+                                      ? const Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 24.0),
+                                          child: Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
+                                        )
+                                      : Padding(
+                                          padding: const EdgeInsets.only(bottom: 80.0),
+                                          child: _buildEmptyStateCards(),
+                                        ),
                                 ),
-                              ),
-                              SliverToBoxAdapter(
-                                child: provider.isLoadingDailyPicks
                                     ? const Padding(
                                         padding: EdgeInsets.symmetric(vertical: 24.0),
                                         child: Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
@@ -824,39 +830,43 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               backgroundColor: AppTheme.cardWhite,
               child: provider.searchResults.isEmpty && provider.isLoadingSearch
                   ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
-                  : provider.searchResults.isEmpty
-                      ? _buildEmptyState("No profiles match these filters.", onRetry: () {
-                          setState(() {
-                            _showSearchResults = false;
-                          });
-                        }, buttonText: "Modify Filters")
-                      : Center(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
+                  : Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
                               maxWidth: _getResponsiveLayout()['maxContainerWidth'],
                             ),
                             child: CustomScrollView(
                               controller: _searchResultsController,
                               physics: const AlwaysScrollableScrollPhysics(),
                               slivers: [
-                                SliverPadding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                                  sliver: SliverPadding(
-                                    padding: EdgeInsets.zero,
-                                    sliver: SliverMasonryGrid.count(
-                                      crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
-                                      mainAxisSpacing: 24.0,
-                                      crossAxisSpacing: 24.0,
-                                      childCount: provider.searchResults.length,
-                                      itemBuilder: (context, index) {
-                                        final profile = provider.searchResults[index];
-                                        return ProfileBentoCard(profile: profile);
-                                      },
+                                if (provider.searchResults.isNotEmpty)
+                                  SliverPadding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                                    sliver: SliverPadding(
+                                      padding: EdgeInsets.zero,
+                                      sliver: SliverMasonryGrid.count(
+                                        crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
+                                        mainAxisSpacing: 24.0,
+                                        crossAxisSpacing: 24.0,
+                                        childCount: provider.searchResults.length,
+                                        itemBuilder: (context, index) {
+                                          final profile = provider.searchResults[index];
+                                          return ProfileBentoCard(profile: profile);
+                                        },
+                                      ),
                                     ),
                                   ),
-                                ),
                                 SliverToBoxAdapter(
-                                  child: provider.isLoadingSearch
+                                  child: provider.isLoadingSearch && provider.searchResults.isNotEmpty
+                                      ? const Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 24.0),
+                                          child: Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
+                                        )
+                                      : Padding(
+                                          padding: const EdgeInsets.only(bottom: 80.0),
+                                          child: _buildEmptyStateCards(),
+                                        ),
+                                ),
                                       ? const Padding(
                                           padding: EdgeInsets.symmetric(vertical: 24.0),
                                           child: Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
@@ -1912,6 +1922,133 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               fontSize: 12,
               fontWeight: FontWeight.bold,
               color: AppTheme.accentGold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyStateCards() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      child: Column(
+        children: [
+          // Security / Vetting Card
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppTheme.glassColor,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.glassBorderColor, width: 1.5),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentGold.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.security_rounded, color: AppTheme.accentGold, size: 28),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "You've seen all matches for now!",
+                  style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.textCarbon),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Aapne sabhi matches dekh liye hain! Hum har profile ko manually verify karte hain taaki community safe rahe. Nayi profiles roz add ho rahi hain. Check back tomorrow.",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.textMuted, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+          
+          // Early Adopter / Founding Member Card
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: AppTheme.premiumGoldGradient,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.accentGold.withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 32),
+                const SizedBox(height: 12),
+                Text(
+                  "Founding Member",
+                  style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white, letterSpacing: 1),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "You are one of the first 15 members of Perfect Bandhan! As our exclusive community grows, you'll be the first to get notified about new matches in your Nukh and city.",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white, height: 1.4, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+
+          // WhatsApp Growth Card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppTheme.cardWhite,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3), width: 1.5),
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.groups_rounded, color: Color(0xFF10B981), size: 32),
+                const SizedBox(height: 12),
+                Text(
+                  "Want to see more profiles?",
+                  style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.textCarbon),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "The Sindhi Samaj is joining fast! Share Perfect Bandhan with your family and WhatsApp groups to grow our community and unlock more matches.",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.textMuted, height: 1.4),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final shareUrl = 'https://play.google.com/store/apps/details?id=com.piyush.assudani';
+                      final message = '🔱 *Jai Jhulelal!*\n\nI am using *Perfect Bandhan* - an exclusive matchmaking app for the Sindhi Samaj. Humari community safe and verify ho rahi hai.\n\n📲 *Download now to join the community:*\n$shareUrl';
+                      final whatsappUrl = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
+                      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+                    },
+                    icon: const Icon(Icons.share, color: Colors.white, size: 18),
+                    label: Text(
+                      "Invite via WhatsApp",
+                      style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
