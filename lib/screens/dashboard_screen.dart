@@ -19,7 +19,7 @@ import 'notifications_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/storage_helper.dart';
 import '../widgets/profile_completion_ring.dart';
-
+import '../widgets/global_completion_overlay.dart';
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -372,6 +372,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           body: Stack(
             children: [
               SafeArea(child: bodyContent),
+              const GlobalCompletionOverlay(),
               FloatingNavBar(
                 currentIndex: _currentIndex,
                 onTap: (int index) {
@@ -1829,89 +1830,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     ),
                   ],
                 ),
-              ),
-              Consumer<AuthProvider>(
-                builder: (context, auth, _) {
-                  final completion = calculateProfileCompletion(auth.myProfile);
-                  return ProfileCompletionRing(
-                    percentage: completion,
-                    size: 38,
-                    strokeWidth: 3.5,
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          backgroundColor: AppTheme.cardWhite,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          title: Row(
-                            children: [
-                              SizedBox(
-                                width: 44, height: 44,
-                                child: ProfileCompletionRing(percentage: completion, size: 44, strokeWidth: 4),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  completion >= 100 ? 'Profile Complete!' : 'Complete Your Profile',
-                                  style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, color: AppTheme.textCarbon, fontSize: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (completion < 100) ...[
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.amber.withOpacity(0.3)),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.trending_up_rounded, color: AppTheme.accentGold, size: 20),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'Profiles with 100% completion get 4x more interests!',
-                                          style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textCarbon),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                              ],
-                              _completionTip(auth.myProfile, 'uploadedPhotos', 'Add profile photos', Icons.camera_alt_rounded, 20),
-                              _completionTip(auth.myProfile, 'birthTime', 'Add birth time (Kundali)', Icons.access_time_rounded, 8),
-                              _completionTip(auth.myProfile, 'birthPlace', 'Add birth place', Icons.place_rounded, 7),
-                              _completionTip(auth.myProfile, 'bio', 'Write a bio', Icons.format_quote_rounded, 5),
-                              _completionTip(auth.myProfile, 'fathersOccupation', "Add father's occupation", Icons.person_rounded, 5),
-                              _completionTip(auth.myProfile, 'monthlyIncome', 'Add monthly income', Icons.monetization_on_rounded, 3),
-                              _completionTip(auth.myProfile, 'properAddress', 'Add proper address', Icons.location_on_rounded, 3),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => const MyProfileScreen()));
-                              },
-                              child: Text('Edit Profile', style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              child: Text('Close', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
               ),
               const SizedBox(width: 4),
               Consumer<LanguageProvider>(

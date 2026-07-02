@@ -146,7 +146,7 @@ class AuthProvider extends ChangeNotifier {
 
   String get latestVersion => _appConfig?['currentVersion'] ?? localAppVersion;
   String get updateMessage => _appConfig?['updateMessage'] ?? "A new version of the app is available. Please update to continue.";
-  String get updateDownloadUrl => _appConfig?['downloadUrl'] ?? "https://perfectbandhan.com";
+  String get updateDownloadUrl => _appConfig?['downloadUrl'] ?? "https://perfectbandhan.in";
 
   void _setErrorMessage(String msg) {
     _errorMessage = msg;

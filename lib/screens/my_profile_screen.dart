@@ -630,75 +630,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
           ),
         ),
 
-        // ══════════════════════════════════════════════════════
-        // PROFILE COMPLETION GAMIFICATION CARD
-        // ══════════════════════════════════════════════════════
-        SliverToBoxAdapter(
-          child: Builder(
-            builder: (context) {
-              final completion = calculateProfileCompletion(data);
-              if (completion >= 100) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 900),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppTheme.accentGold.withOpacity(0.08),
-                            AppTheme.accentGold.withOpacity(0.02),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppTheme.accentGold.withOpacity(0.2)),
-                      ),
-                      child: Row(
-                        children: [
-                          ProfileCompletionRing(percentage: completion, size: 56, strokeWidth: 5),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Complete Your Profile',
-                                  style: GoogleFonts.cinzel(
-                                    fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textCarbon,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Profiles with 100% completion get 4x more interests!',
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                builder: (context) => const EditProfileSheet(),
-                              );
-                            },
-                            icon: const Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.accentGold, size: 18),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+
 
         // ══════════════════════════════════════════════════════
         // SECTION 2 · BENTO GRID DATA RESUME
