@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:app_links/app_links.dart';
+import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:permission_handler/permission_handler.dart';
 import 'theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/language_provider.dart';
@@ -50,12 +54,62 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  late AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinks();
+  }
+
+  Future<void> _initDeepLinks() async {
+    _appLinks = AppLinks();
+
+    // Check initial link if app was in cold state (terminated)
+    try {
+      final initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        _handleDeepLink(initialUri);
+      }
+    } catch (e) {
+      print("Failed to get initial link: $e");
+    }
+
+    // Handle link when app is in warm state (foreground/background)
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      _handleDeepLink(uri);
+    }, onError: (err) {
+      print("Failed to listen to deep links: $err");
+    });
+  }
+
+  void _handleDeepLink(Uri uri) {
+    if (uri.path.startsWith('/profile/')) {
+      final profileId = uri.path.replaceFirst('/profile/', '');
+      _navigatorKey.currentState?.pushNamed('/profile/$profileId');
+    }
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'Perfect Bandhan',
       theme: AppTheme.themeData,
       debugShowCheckedModeBanner: false,

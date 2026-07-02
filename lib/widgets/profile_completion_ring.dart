@@ -62,6 +62,49 @@ int calculateProfileCompletion(Map<String, dynamic>? profile) {
   return score.clamp(0, 100);
 }
 
+List<String> getMissingProfileFields(Map<String, dynamic>? profile) {
+  if (profile == null) return [];
+  
+  final fields = <String, String>{
+    'uploadedPhotos': 'Profile Photo',
+    'firstName': 'Name',
+    'dob': 'Date of Birth',
+    'education': 'Education',
+    'profession': 'Profession',
+    'company': 'Company / Business',
+    'city': 'City',
+    'state': 'State',
+    'bio': 'About You (Bio)',
+    'fathersOccupation': 'Father\'s Occupation',
+    'mothersOccupation': 'Mother\'s Occupation',
+    'siblings': 'Siblings details',
+    'birthTime': 'Birth Time',
+    'birthPlace': 'Birth Place',
+    'monthlyIncome': 'Monthly Income',
+    'properAddress': 'Full Address',
+  };
+
+  List<String> missing = [];
+
+  for (final entry in fields.entries) {
+    final key = entry.key;
+    final displayName = entry.value;
+    final val = profile[key];
+
+    if (key == 'uploadedPhotos') {
+      if (!(val is List && val.isNotEmpty && val[0] != null && val[0].toString().isNotEmpty)) {
+        missing.add(displayName);
+      }
+    } else {
+      if (val == null || val.toString().trim().isEmpty) {
+        missing.add(displayName);
+      }
+    }
+  }
+
+  return missing;
+}
+
 /// A beautiful circular progress ring for profile completion.
 class ProfileCompletionRing extends StatelessWidget {
   final int percentage;

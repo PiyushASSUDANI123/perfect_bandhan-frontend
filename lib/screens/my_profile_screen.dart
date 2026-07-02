@@ -828,7 +828,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                             child: _bentoCard(
                           icon: Icons.calendar_today_rounded,
                           label: 'Date of Birth',
-                          value: _safeStr(data, 'dob', fallback: 'Not specified').length > 10 ? _safeStr(data, 'dob').substring(0, 10) : _safeStr(data, 'dob', fallback: 'Not specified'),
+                          value: _safeStr(data, 'dob') != '' && _safeStr(data, 'dob').length > 10 ? _safeStr(data, 'dob').substring(0, 10) : _safeStr(data, 'dob', fallback: 'Not specified'),
                         )),
                         const SizedBox(width: 12),
                         Expanded(
@@ -1711,14 +1711,21 @@ class _MyProfileScreenState extends State<MyProfileScreen>
   }
 
   Widget _sectionLabel(String label) {
-    return Text(
-      label,
-      style: GoogleFonts.montserrat(
-        fontSize: 9,
-        fontWeight: FontWeight.w800,
-        color: AppTheme.accentGold,
-        letterSpacing: 2.0,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(color: AppTheme.glassBorderColor, height: 1),
+        const SizedBox(height: 24),
+        Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 9,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.accentGold,
+            letterSpacing: 2.0,
+          ),
+        ),
+      ],
     );
   }
 

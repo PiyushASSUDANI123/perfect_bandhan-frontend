@@ -829,26 +829,52 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
   Widget _buildSaveAndContinueButton() {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0, bottom: 40.0),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.accentGold,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: 8,
-            shadowColor: AppTheme.accentGold.withOpacity(0.4),
-          ),
-          onPressed: _nextStep,
-          child: Text(
-            'Save & Continue',
-            style: GoogleFonts.montserrat(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentGold,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 8,
+                shadowColor: AppTheme.accentGold.withValues(alpha: 0.4),
+              ),
+              onPressed: _nextStep,
+              child: Text(
+                'Save & Continue',
+                style: GoogleFonts.montserrat(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
-        ),
+          if (_currentStep > 0 && _currentStep < 9)
+            Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    if (_currentStep < 9) {
+                      _currentStep++;
+                      _scrollToTop();
+                    }
+                  });
+                },
+                child: Text(
+                  'Skip for now',
+                  style: GoogleFonts.montserrat(
+                    color: AppTheme.textMuted,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

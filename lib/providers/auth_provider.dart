@@ -469,6 +469,9 @@ class AuthProvider extends ChangeNotifier {
         final List<dynamic> acc = data['acceptedInterests'] ?? [];
         _acceptedInterests.clear();
         _acceptedInterests.addAll(acc.map((e) => Profile.fromJson(e['sender'] ?? e)).toList());
+        
+        // Also fetch incoming interests so the Incoming tab is not empty
+        await fetchIncomingInterests();
       }
     } catch (e) {}
     _isLoadingActivity = false;

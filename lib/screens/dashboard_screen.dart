@@ -217,6 +217,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       provider.fetchDailyPicks(refresh: true, filters: _getHomeFilters());
       provider.fetchIncomingInterests();
       provider.fetchMyProfile();
+      provider.fetchConversations();
+      provider.fetchActivityData();
     }
   }
 
@@ -1776,6 +1778,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                     color: AppTheme.accentGold,
                                   ),
                                   onTap: () {
+                                    final isDev = provider.phoneNumber == '9413879444' || provider.phoneNumber == '+919413879444';
+                                    if (chatProfile.interestStatus != 'accepted' && !isDev) {
+                                      PremiumFeedback.showError(
+                                        context: context,
+                                        title: 'Chat Locked',
+                                        message: 'You must have an accepted mutual interest to open this chat.',
+                                      );
+                                      return;
+                                    }
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(

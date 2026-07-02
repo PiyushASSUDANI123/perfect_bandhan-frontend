@@ -108,67 +108,146 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
 
             // Global Ring and Developer Toggle at top right
             Positioned(
-              top: MediaQuery.of(context).padding.top + 16,
+              top: MediaQuery.of(context).padding.top + 55, // Pushed down to avoid AppBar overlap
               right: 16,
-              child: AnimatedOpacity(
-                opacity: completion >= 100 ? 0.0 : 1.0,
-                duration: const Duration(seconds: 1),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    if (isDeveloper)
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _forceComplete = !_forceComplete;
-                          });
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.glassColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppTheme.glassBorderColor),
+              child: SafeArea(
+                child: AnimatedOpacity(
+                  opacity: completion >= 100 ? 0.0 : 1.0,
+                  duration: const Duration(seconds: 1),
+                  child: Column(
+                    children: [
+                      if (isDeveloper)
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _forceComplete = !_forceComplete;
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.glassColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppTheme.glassBorderColor),
+                            ),
+                            child: const Text('💯', style: TextStyle(fontSize: 20)),
                           ),
-                          child: const Text('💯', style: TextStyle(fontSize: 20)),
                         ),
-                      ),
-                    ProfileCompletionRing(
-                      percentage: completion,
-                      size: 48,
-                      strokeWidth: 4.5,
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
+                      ProfileCompletionRing(
+                        percentage: completion,
+                        size: 48,
+                        strokeWidth: 4.5,
+                        onTap: () {
+                          final missingFields = getMissingProfileFields(profile);
+                          
+                          showModalBottomSheet(
+                            context: context,
                             backgroundColor: AppTheme.cardWhite,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            title: Row(
-                              children: [
-                                SizedBox(
-                                  width: 44, height: 44,
-                                  child: ProfileCompletionRing(percentage: completion, size: 44, strokeWidth: 4),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    completion >= 100 ? 'Profile Complete!' : 'Complete Your Profile',
-                                    style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, color: AppTheme.textCarbon, fontSize: 16),
-                                  ),
-                                ),
-                              ],
+                            isScrollControlled: true,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                             ),
-                            content: Text(
-                              'Complete your profile to increase your chances of finding the perfect match!',
-                              style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontSize: 14),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                            builder: (ctx) {
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+                                  top: 24, left: 20, right: 20
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 40, height: 4,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(2)
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Row(
+                                      children: [
+                                        ProfileCompletionRing(percentage: completion, size: 50, strokeWidth: 5),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Complete Your Profile',
+                                                style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.textCarbon),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                '${missingFields.length} items left to reach 100%',
+                                                style: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 12),
+                                              )
+                                            ]
+                                          )
+                                        )
+                                      ],
+                                    ),
+                                    const SizedBox(height: 24),
+                                    if (missingFields.isNotEmpty) ...[
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'MISSING ITEMS',
+                                          style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: AppTheme.accentGold),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.backgroundLight,
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(color: AppTheme.glassBorderColor)
+                                        ),
+                                        child: Column(
+                                          children: missingFields.map((f) => Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 6.0),
+                                            child: Row(
+                                              children: [
+                                                const Icon(Icons.circle_outlined, size: 14, color: Colors.grey),
+                                                const SizedBox(width: 12),
+                                                Text(f, style: GoogleFonts.montserrat(fontSize: 13, color: AppTheme.textCarbon, fontWeight: FontWeight.w500)),
+                                              ]
+                                            ),
+                                          )).toList(),
+                                        ),
+                                      )
+                                    ],
+                                    const SizedBox(height: 24),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 50,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pop(ctx);
+                                          // Note: In real app, we'd navigate to Edit Profile Sheet.
+                                          // Because this is inside Dashboard, we can use the provider to trigger it or route.
+                                          // For now, let's just close the sheet and let user go to My Profile manually.
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppTheme.accentGold,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        ),
+                                        child: Text(
+                                          'Go to My Profile',
+                                          style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.bold),
+                                        ),
+                                      )
+                                    )
+                                  ]
+                                )
+                              );
+                            }
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
