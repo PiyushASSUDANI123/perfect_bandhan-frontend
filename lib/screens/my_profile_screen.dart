@@ -819,6 +819,104 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     ),
 
                     const SizedBox(height: 28),
+                    _sectionLabel('ASTROLOGICAL INTEL'),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.calendar_today_rounded,
+                          label: 'Date of Birth',
+                          value: _safeStr(data, 'dob', fallback: 'Not specified').length > 10 ? _safeStr(data, 'dob').substring(0, 10) : _safeStr(data, 'dob', fallback: 'Not specified'),
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.access_time_rounded,
+                          label: 'Birth Time',
+                          value: _safeStr(data, 'birthTime', fallback: 'Not specified'),
+                        )),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.place_rounded,
+                          label: 'Birth Place',
+                          value: _safeStr(data, 'birthPlace', fallback: 'Not specified'),
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.star_border_rounded,
+                          label: 'Manglik Status',
+                          value: _safeStr(data, 'manglikStatus', fallback: 'Not specified'),
+                        )),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _bentoCard(
+                      icon: Icons.auto_awesome_rounded,
+                      label: 'Other Grah / Dosha',
+                      value: _safeStr(data, 'otherGrah', fallback: 'None'),
+                      fullWidth: true,
+                    ),
+
+                    const SizedBox(height: 28),
+                    _sectionLabel('FAMILY INTEL'),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.family_restroom_rounded,
+                          label: 'Family Type',
+                          value: _safeStr(data, 'familyType', fallback: 'Not specified'),
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.groups_rounded,
+                          label: 'Siblings',
+                          value: _safeStr(data, 'siblingsCount', fallback: '0'),
+                        )),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _bentoCard(
+                      icon: Icons.info_outline_rounded,
+                      label: 'Siblings Details',
+                      value: _safeStr(data, 'siblingsDetails', fallback: 'Not provided'),
+                      fullWidth: true,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.person_rounded,
+                          label: 'Father',
+                          value: _safeStr(data, 'fatherStatus', fallback: 'Alive'),
+                          subValue: _safeStr(data, 'fathersOccupation', fallback: 'Occupation not specified'),
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.pregnant_woman_rounded,
+                          label: 'Mother',
+                          value: _safeStr(data, 'motherStatus', fallback: 'Alive'),
+                          subValue: _safeStr(data, 'mothersOccupation', fallback: 'Occupation not specified'),
+                        )),
+                      ],
+                    ),
+
+                    const SizedBox(height: 28),
                     _sectionLabel('CAREER & WEALTH'),
                     const SizedBox(height: 12),
                     Row(

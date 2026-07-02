@@ -32,7 +32,14 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   late TextEditingController _jobPostController;
   late TextEditingController _ownHouseController;
   
+  late TextEditingController _nukhController;
+  late TextEditingController _fatherStatusController;
+  late TextEditingController _motherStatusController;
+  late TextEditingController _siblingsCountController;
+  
   String? _gender;
+  String? _manglikStatus;
+  DateTime? _dob;
   bool _isSubmitting = false;
 
   @override
@@ -57,6 +64,20 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     _properAddressController = TextEditingController(text: profile['properAddress']?.toString() ?? '');
     _jobPostController = TextEditingController(text: profile['jobPost']?.toString() ?? '');
     _ownHouseController = TextEditingController(text: profile['ownHouse']?.toString() ?? '');
+    
+    _nukhController = TextEditingController(text: profile['nukh']?.toString() ?? '');
+    _fatherStatusController = TextEditingController(text: profile['fatherStatus']?.toString() ?? 'Alive');
+    _motherStatusController = TextEditingController(text: profile['motherStatus']?.toString() ?? 'Alive');
+    _siblingsCountController = TextEditingController(text: profile['siblingsCount']?.toString() ?? '0');
+    
+    _manglikStatus = profile['manglikStatus']?.toString();
+    if (profile['dob'] != null && profile['dob'].toString().isNotEmpty) {
+      try {
+        _dob = DateTime.parse(profile['dob'].toString());
+      } catch (e) {
+        _dob = null;
+      }
+    }
   }
 
   @override
@@ -76,6 +97,10 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     _maritalStatusController.dispose();
     _birthTimeController.dispose();
     _birthPlaceController.dispose();
+    _nukhController.dispose();
+    _fatherStatusController.dispose();
+    _motherStatusController.dispose();
+    _siblingsCountController.dispose();
     super.dispose();
   }
 
@@ -102,7 +127,18 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
       'properAddress': _properAddressController.text.trim(),
       'jobPost': _jobPostController.text.trim(),
       'ownHouse': _ownHouseController.text.trim(),
+      'nukh': _nukhController.text.trim(),
+      'fatherStatus': _fatherStatusController.text.trim(),
+      'motherStatus': _motherStatusController.text.trim(),
+      'siblingsCount': _siblingsCountController.text.trim(),
     };
+    
+    if (_dob != null) {
+      payload['dob'] = _dob!.toIso8601String();
+    }
+    if (_manglikStatus != null) {
+      payload['manglikStatus'] = _manglikStatus;
+    }
     
     // Only pass gender if it's the developer account
     if (provider.phoneNumber == '9413879444' && _gender != null) {
@@ -242,15 +278,75 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
               ),
               const SizedBox(height: 16),
 
-              Text(
-                'Astrology & Kundali',
-                style: GoogleFonts.montserrat(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
-                  color: AppTheme.textCarbon,
+              // --- Astrological Intel ---
+              const SizedBox(height: 24),
+              Text('Astrological Intel', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 16),
+              
+              GestureDetector(
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: _dob ?? DateTime.now().subtract(const Duration(days: 365 * 25)),
+                    firstDate: DateTime(1950),
+                    lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: const ColorScheme.light(
+                            primary: AppTheme.accentGold,
+                            onPrimary: Colors.white,
+                            onSurface: AppTheme.textCarbon,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (date != null) {
+                    setState(() => _dob = date);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.glassBorderColor),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _dob != null ? "${_dob!.day}/${_dob!.month}/${_dob!.year}" : "Select Date of Birth",
+                        style: GoogleFonts.montserrat(
+                          color: _dob != null ? AppTheme.textCarbon : AppTheme.textMuted,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const Icon(Icons.calendar_today_rounded, color: AppTheme.accentGold, size: 20),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
+              
+              DropdownButtonFormField<String>(
+                value: _manglikStatus,
+                decoration: InputDecoration(
+                  labelText: 'Manglik Status',
+                  labelStyle: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 14),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.glassBorderColor)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.glassBorderColor)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.accentGold)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                ),
+                items: ['Not Manglik', 'Manglik', 'Anshik Manglik', 'Don\'t Know']
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
+                onChanged: (val) => setState(() => _manglikStatus = val),
+              ),
+              const SizedBox(height: 16),
 
               CustomTextField(
                 labelText: 'Birth Time',
@@ -266,6 +362,46 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 controller: _birthPlaceController,
                 prefixIcon: Icons.location_on_rounded,
               ),
+              
+              const SizedBox(height: 16),
+              CustomTextField(
+                labelText: 'Clan / Nukh',
+                hintText: 'e.g. Ahuja, Bajaj',
+                controller: _nukhController,
+                prefixIcon: Icons.family_restroom_rounded,
+              ),
+
+              // --- Family Intel ---
+              const SizedBox(height: 24),
+              Text('Family Intel', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 16),
+
+              CustomTextField(
+                labelText: 'Father Status/Occupation',
+                hintText: 'e.g. Alive - Business',
+                controller: _fatherStatusController,
+                prefixIcon: Icons.person_outline_rounded,
+              ),
+              const SizedBox(height: 16),
+
+              CustomTextField(
+                labelText: 'Mother Status/Occupation',
+                hintText: 'e.g. Alive - Housewife',
+                controller: _motherStatusController,
+                prefixIcon: Icons.person_outline_rounded,
+              ),
+              const SizedBox(height: 16),
+
+              CustomTextField(
+                labelText: 'Siblings Count',
+                hintText: 'e.g. 1 Brother, 1 Sister',
+                controller: _siblingsCountController,
+                prefixIcon: Icons.people_outline_rounded,
+              ),
+
+              // --- Professional Intel ---
+              const SizedBox(height: 24),
+              Text('Professional Intel', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 16),
 
               CustomTextField(

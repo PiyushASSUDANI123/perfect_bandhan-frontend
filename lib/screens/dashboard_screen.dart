@@ -1708,36 +1708,42 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             backgroundColor: AppTheme.cardWhite,
             child: provider.conversations.isEmpty && provider.isLoadingConversations
                 ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
-                : provider.conversations.isEmpty
-                    ? _buildEmptyState(
-                        "No active chats yet.\nConnect with matching profiles or send a message to start chatting.",
-                        icon: Icons.forum_outlined,
-                        onRetry: () => provider.fetchConversations(),
-                      )
-                    : Center(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: _getResponsiveLayout()['maxContainerWidth'],
-                          ),
-                          child: ListView.builder(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                            itemCount: provider.conversations.length,
-                            itemBuilder: (context, index) {
-                              final chatProfile = provider.conversations[index];
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 12.0),
-                                color: AppTheme.cardWhite,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16.0),
-                                  side: const BorderSide(color: AppTheme.glassBorderColor, width: 0.5),
-                                ),
-                                elevation: 0,
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                  leading: CircleAvatar(
-                                    radius: 24,
-                                    backgroundColor: AppTheme.accentGold.withValues(alpha: 0.1),
+                : Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: _getResponsiveLayout()['maxContainerWidth'],
+                      ),
+                      child: CustomScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [
+                          if (provider.conversations.isEmpty)
+                            SliverToBoxAdapter(
+                              child: _buildEmptyState(
+                                "No active chats yet.\nConnect with matching profiles or send a message to start chatting.",
+                                icon: Icons.forum_outlined,
+                                // Intentionally omitted onRetry to remove the retry button
+                              ),
+                            ),
+                          if (provider.conversations.isNotEmpty)
+                            SliverPadding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                              sliver: SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) {
+                                    final chatProfile = provider.conversations[index];
+                                    return Card(
+                                      margin: const EdgeInsets.only(bottom: 12.0),
+                                      color: AppTheme.cardWhite,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16.0),
+                                        side: const BorderSide(color: AppTheme.glassBorderColor, width: 0.5),
+                                      ),
+                                      elevation: 0,
+                                      child: ListTile(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                        leading: CircleAvatar(
+                                          radius: 24,
+                                          backgroundColor: AppTheme.accentGold.withValues(alpha: 0.1),
                                     child: Text(
                                       chatProfile.initials,
                                       style: GoogleFonts.cinzel(
@@ -1782,9 +1788,20 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                 ),
                               );
                             },
+                            childCount: provider.conversations.length,
                           ),
                         ),
                       ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 80.0),
+                        child: _buildEmptyStateCards(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ],
