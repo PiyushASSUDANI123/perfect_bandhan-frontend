@@ -1460,7 +1460,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                               itemCount: provider.incomingInterests.length,
                               itemBuilder: (context, index) {
                                 final p = provider.incomingInterests[index];
-                                return _ReceivedRequestCard(profile: p);
+                                return ReceivedRequestCard(profile: p);
                               },
                             ),
                 ),
@@ -2769,15 +2769,15 @@ _Shared via Perfect Bandhan — Sindhi Matrimony App_ 🤝
 }
 
 /// Compact scrollable card for the Received Requests tab
-class _ReceivedRequestCard extends StatefulWidget {
+class ReceivedRequestCard extends StatefulWidget {
   final Profile profile;
-  const _ReceivedRequestCard({required this.profile});
+  const ReceivedRequestCard({required this.profile});
 
   @override
-  State<_ReceivedRequestCard> createState() => _ReceivedRequestCardState();
+  State<ReceivedRequestCard> createState() => ReceivedRequestCardState();
 }
 
-class _ReceivedRequestCardState extends State<_ReceivedRequestCard> {
+class ReceivedRequestCardState extends State<ReceivedRequestCard> {
   bool _isAccepting = false;
   bool _isDeclining = false;
 
