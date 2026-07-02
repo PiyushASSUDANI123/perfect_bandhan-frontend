@@ -197,21 +197,23 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
         
         await fetchMyProfile();
-        // FCM token sync
-        try {
-          final fcmToken = await FirebaseMessaging.instance.getToken();
-          if (fcmToken != null && _token != null) {
-            await http.post(
-              Uri.parse('$baseUrl/user/fcm-token'),
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer $_token',
-              },
-              body: jsonEncode({'fcmToken': fcmToken}),
-            );
+        // FCM token sync (Mobile only)
+        if (!kIsWeb) {
+          try {
+            final fcmToken = await FirebaseMessaging.instance.getToken();
+            if (fcmToken != null && _token != null) {
+              await http.post(
+                Uri.parse('$baseUrl/user/fcm-token'),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer $_token',
+                },
+                body: jsonEncode({'fcmToken': fcmToken}),
+              );
+            }
+          } catch (e) {
+            consoleLog('Failed to update FCM token: $e');
           }
-        } catch (e) {
-          consoleLog('Failed to update FCM token: $e');
         }
       }
     } catch (e) {
