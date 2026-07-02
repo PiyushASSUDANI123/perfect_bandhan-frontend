@@ -642,6 +642,36 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // ── Update Profile Button ──
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => const EditProfileSheet(),
+                          );
+                        },
+                        icon: const Icon(Icons.edit_rounded, size: 20),
+                        label: const Text('Update Profile'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.accentGold,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          textStyle: GoogleFonts.montserrat(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     _sectionLabel('PERSONAL INTEL'),
                     const SizedBox(height: 12),
                     Row(
@@ -1631,6 +1661,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
+    bool localValue = value;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(
@@ -1668,10 +1699,19 @@ class _MyProfileScreenState extends State<MyProfileScreen>
               ],
             ),
           ),
-          Switch.adaptive(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppTheme.accentGold,
+          StatefulBuilder(
+            builder: (context, setInnerState) {
+              return Switch.adaptive(
+                value: localValue,
+                onChanged: (val) {
+                  setInnerState(() {
+                    localValue = val;
+                  });
+                  onChanged(val);
+                },
+                activeThumbColor: AppTheme.accentGold,
+              );
+            },
           ),
         ],
       ),
