@@ -11,6 +11,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import '../theme/app_theme.dart';
 import '../models/profile.dart';
 import '../widgets/partner_preferences_sheet.dart';
+import '../widgets/premium_feedback.dart';
+import '../widgets/global_completion_overlay.dart';
 import '../providers/auth_provider.dart';
 import '../providers/language_provider.dart';
 import '../widgets/profile_details_sheet.dart';
@@ -635,7 +637,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 setState(() => _currentIndex = 1);
               },
             ),
-            const SizedBox(width: 70), // Reserve space for the GlobalCompletionOverlay
+            const ProfileCompletionAppBarAction(), // Ring directly in AppBar
           ],
         ),
       ),
