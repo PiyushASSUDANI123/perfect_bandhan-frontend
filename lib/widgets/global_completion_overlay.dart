@@ -121,7 +121,9 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
               top: MediaQuery.of(context).padding.top + 4, // Perfectly centered vertically in the 56px AppBar
               right: 16,
               child: SafeArea(
-                child: Column(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     if (isDeveloper)
                       GestureDetector(
@@ -131,14 +133,14 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
                           });
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(8),
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
                             color: AppTheme.glassColor,
                             shape: BoxShape.circle,
                             border: Border.all(color: AppTheme.glassBorderColor),
                           ),
-                          child: const Text('💯', style: TextStyle(fontSize: 20)),
+                          child: const Text('💯', style: TextStyle(fontSize: 16)),
                         ),
                       ),
                     ProfileCompletionRing(
