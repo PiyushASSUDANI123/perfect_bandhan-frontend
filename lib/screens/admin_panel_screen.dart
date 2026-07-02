@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/custom_textfield.dart';
@@ -746,6 +748,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         ),
                       ),
                       const SizedBox(width: 8.0),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showBoostDialog(user);
+                        },
+                        icon: const Icon(Icons.rocket_launch_rounded, size: 16, color: Colors.white),
+                        label: Text('BOOST', style: GoogleFonts.cinzel(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.deepPurple,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        ),
+                      ),
+                      const SizedBox(width: 8.0),
                       IconButton(
                         icon: const Icon(Icons.close_rounded, color: AppTheme.textMuted),
                         onPressed: () => Navigator.pop(context),
@@ -1341,6 +1357,57 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       );
     }
   }
+  void _showBoostDialog(Map<String, dynamic> user) {
+    final TextEditingController _scoreController = TextEditingController(text: (user['adminRankScore'] ?? 0).toString());
+    
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: AppTheme.cardGray,
+          title: Text('Boost Profile', style: GoogleFonts.cinzel(color: AppTheme.accentGold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Enter a boost score (higher score appears higher in search).', style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white70)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _scoreController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Rank Score',
+                  labelStyle: TextStyle(color: AppTheme.accentGold),
+                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.glassBorderColor)),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.accentGold)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL', style: TextStyle(color: Colors.white54))),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final auth = Provider.of<AuthProvider>(context, listen: false);
+                try {
+                  final newScore = int.tryParse(_scoreController.text.trim()) ?? 0;
+                  final payload = {'adminRankScore': newScore};
+                  await auth.adminUpdateUser(user['phone'], payload);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile boosted successfully!'), backgroundColor: Colors.green));
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to boost profile: $e'), backgroundColor: Colors.red));
+                }
+              },
+              child: const Text('BOOST', style: TextStyle(color: Colors.black)),
+            ),
+          ],
+        );
+      }
+    );
+  }
+
 
   void _showEditUserForm(Map<String, dynamic> user) {
     final editFirstName = TextEditingController(text: user['firstName'] ?? '');

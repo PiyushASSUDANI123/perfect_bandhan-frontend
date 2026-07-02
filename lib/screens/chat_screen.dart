@@ -24,6 +24,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   bool _isLoading = true;
   Timer? _timer;
   bool _isSending = false;
+  List<String> _icebreakers = [];
+  bool _isLoadingIcebreakers = false;
 
   @override
   void initState() {
@@ -31,6 +33,19 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _loadChatHistory();
     _startTimer();
+  }
+
+  Future<void> _fetchIcebreakers(AuthProvider provider) async {
+    if (!mounted) return;
+    setState(() => _isLoadingIcebreakers = true);
+    
+    final fetched = await provider.fetchIcebreakers(widget.profile.phone);
+    
+    if (!mounted) return;
+    setState(() {
+      _icebreakers = fetched;
+      _isLoadingIcebreakers = false;
+    });
   }
 
   void _startTimer() {
@@ -78,6 +93,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       _messages = history;
       _isLoading = false;
     });
+
+    if (_messages.isEmpty && _icebreakers.isEmpty && !_isLoadingIcebreakers) {
+      _fetchIcebreakers(authProvider);
+    }
 
     if (!silent) {
       _scrollToBottom();
@@ -345,6 +364,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           },
                         ),
             ),
+            if (_messages.isEmpty && _icebreakers.isNotEmpty)
+              _buildIcebreakerChips(),
             _buildInputArea(),
           ],
         ),
@@ -446,6 +467,60 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   : const Icon(Icons.send_rounded, color: Colors.black, size: 20),
               onPressed: _sendMessage,
             ),
+          ),
+        ],
+      ),
+      ),
+    );
+  }
+
+  Widget _buildIcebreakerChips() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      color: AppTheme.backgroundLight,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.auto_awesome_rounded, color: AppTheme.accentGold, size: 14),
+              const SizedBox(width: 4),
+              Text(
+                "AI CONVERSATION STARTERS",
+                style: GoogleFonts.cinzel(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.textMuted),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8.0),
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children: _icebreakers.map((text) {
+              return GestureDetector(
+                onTap: () {
+                  _messageController.text = text;
+                  _sendMessage();
+                  setState(() {
+                    _icebreakers.clear();
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardWhite,
+                    borderRadius: BorderRadius.circular(16.0),
+                    border: Border.all(color: AppTheme.glassBorderGold.withValues(alpha: 0.5), width: 0.5),
+                    boxShadow: [
+                      BoxShadow(color: AppTheme.accentGold.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))
+                    ],
+                  ),
+                  child: Text(
+                    text,
+                    style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.textCarbon),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),

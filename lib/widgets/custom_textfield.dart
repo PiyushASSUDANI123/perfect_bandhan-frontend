@@ -17,6 +17,7 @@ class CustomTextField extends StatefulWidget {
   final AutovalidateMode autovalidateMode;
   final String? helperText;
   final double bottomMargin;
+  final bool readOnly;
 
   const CustomTextField({
     super.key,
@@ -33,6 +34,7 @@ class CustomTextField extends StatefulWidget {
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
     this.helperText,
     this.bottomMargin = 16.0,
+    this.readOnly = false,
   });
 
   @override
@@ -144,6 +146,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             onChanged: widget.onChanged,
             autovalidateMode: widget.autovalidateMode,
             inputFormatters: widget.inputFormatters,
+            readOnly: widget.readOnly,
             style: GoogleFonts.montserrat(
               color: AppTheme.textCarbon,
               fontSize: 14,

@@ -9,13 +9,24 @@ class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   static const String _playStoreUrl =
-      'https://play.google.com/store/apps/details?id=com.piyush.assudani';
+      'https://play.google.com/store/apps/details?id=com.piyush.assudani'; // Using current production app ID
   static const String _developerUrl = 'https://piyushassudani.in';
 
   Future<void> _launch(String url) async {
     final uri = Uri.tryParse(url);
-    if (uri != null && await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (uri != null) {
+      if (url.contains('play.google.com')) {
+        // Try native market schema first for Android
+        final marketUri = Uri.parse('market://details?id=com.piyush.assudani');
+        if (await canLaunchUrl(marketUri)) {
+          await launchUrl(marketUri, mode: LaunchMode.externalNonBrowserApplication);
+          return;
+        }
+      }
+      
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
     }
   }
 

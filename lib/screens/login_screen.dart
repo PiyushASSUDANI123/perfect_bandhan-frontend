@@ -285,6 +285,85 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               ),
                             ),
 
+                            const SizedBox(height: 24.0),
+                            
+                            // Divider
+                            Row(
+                              children: [
+                                Expanded(child: Divider(color: AppTheme.glassBorderColor)),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                  child: Text(
+                                    'OR',
+                                    style: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 12),
+                                  ),
+                                ),
+                                Expanded(child: Divider(color: AppTheme.glassBorderColor)),
+                              ],
+                            ),
+                            
+                            const SizedBox(height: 24.0),
+                            
+                            // Google Login Button
+                            Container(
+                              width: double.infinity,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: isLoading ? null : () async {
+                                  final success = await authProvider.loginWithGoogle();
+                                  if (success && mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Google Sign-In successful!'),
+                                        backgroundColor: AppTheme.accentGold,
+                                      ),
+                                    );
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const HomeScreenWrapper()),
+                                      (route) => false,
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16.0),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.network(
+                                      'https://cdn-icons-png.flaticon.com/512/2991/2991148.png',
+                                      height: 24,
+                                      width: 24,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'Continue with Google',
+                                      style: GoogleFonts.montserrat(
+                                        color: Colors.black87,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                             const SizedBox(height: 12.0),
 
                             // Footer (Minimal text)
@@ -529,18 +608,32 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
    Widget _buildOtpInput() {
     final lang = Provider.of<LanguageProvider>(context);
-    return CustomTextField(
-      labelText: lang.translate('mobile_number'),
-      hintText: lang.translate('enter_mobile'),
-      prefixIcon: Icons.phone_android_rounded,
-      controller: _phoneController,
-      keyboardType: TextInputType.phone,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      validator: (value) {
-        if (value == null || value.isEmpty) return 'Mobile number is required';
-        if (value.length != 10) return 'Must be exactly 10 digits';
-        return null;
-      },
+    return Column(
+      children: [
+        CustomTextField(
+          labelText: lang.translate('mobile_number'),
+          hintText: lang.translate('enter_mobile'),
+          prefixIcon: Icons.phone_android_rounded,
+          controller: _phoneController,
+          keyboardType: TextInputType.phone,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          validator: (value) {
+            if (value == null || value.isEmpty) return 'Mobile number is required';
+            if (value.length != 10) return 'Must be exactly 10 digits';
+            return null;
+          },
+        ),
+        const SizedBox(height: 8.0),
+        Text(
+          'Type your WhatsApp number to get an OTP on WP',
+          style: GoogleFonts.montserrat(
+            color: AppTheme.accentGold,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 

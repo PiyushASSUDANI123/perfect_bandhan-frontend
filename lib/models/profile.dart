@@ -41,6 +41,12 @@ class Profile {
   final String whatWeProvide;
   final String physicalDisability;
   final String complexion;
+  final String birthTime;
+  final String birthPlace;
+  final int? kundaliScore;
+  final String? kundaliMessage;
+  final bool isFallback;
+  final bool isSeriousSeeker;
 
   Profile({
     required this.id,
@@ -79,10 +85,16 @@ class Profile {
     this.housePhoto = '',
     this.surname = '',
     this.nukh = '',
-    this.requirements = '',
+    required this.requirements,
     this.whatWeProvide = '',
     this.physicalDisability = '',
     this.complexion = '',
+    this.birthTime = '',
+    this.birthPlace = '',
+    this.kundaliScore,
+    this.kundaliMessage,
+    this.isFallback = false,
+    this.isSeriousSeeker = false,
   });
 
   factory Profile.fromJson(Map<String, dynamic> json) {
@@ -152,17 +164,25 @@ class Profile {
       jobPost: s('jobPost'),
       ownHouse: s('ownHouse'),
       housePhoto: s('housePhoto'),
-      surname: s('surname'),
-      nukh: s('nukh'),
-      requirements: s('requirements'),
+      surname: json['surname'] ?? '',
+      nukh: json['nukh'] ?? json['caste'] ?? '',
+      requirements: json['requirements'] ?? '',
       whatWeProvide: s('whatWeProvide'),
       physicalDisability: s('physicalDisability'),
       complexion: s('complexion'),
+      birthTime: s('birthTime'),
+      birthPlace: s('birthPlace'),
+      kundaliScore: json['kundaliScore'] as int?,
+      kundaliMessage: json['kundaliMessage'] as String?,
+      isFallback: json['isFallback'] ?? false,
+      isSeriousSeeker: json['isSeriousSeeker'] ?? false,
     );
   }
 
   static List<Profile> get mockProfiles => [
         Profile(
+          requirements: "Looking for a well-settled family.",
+          isSeriousSeeker: true,
           id: '1',
           phone: '9876543210',
           name: 'Priyanjali Chawla',
@@ -183,6 +203,8 @@ class Profile {
           photos: ['https://randomuser.me/api/portraits/women/5.jpg', 'https://randomuser.me/api/portraits/women/9.jpg'],
         ),
         Profile(
+          requirements: "Looking for a well-settled family.",
+          isSeriousSeeker: true,
           id: '2',
           phone: '9876543211',
           name: 'Ritik Lalwani',
@@ -203,6 +225,8 @@ class Profile {
           photos: ['https://randomuser.me/api/portraits/men/11.jpg'],
         ),
         Profile(
+          requirements: "Looking for a well-settled family.",
+          isSeriousSeeker: true,
           id: '3',
           phone: '9876543212',
           name: 'Hiteshi Sadhwani',
@@ -223,6 +247,8 @@ class Profile {
           photos: ['https://randomuser.me/api/portraits/women/16.jpg'],
         ),
         Profile(
+          requirements: "Looking for a well-settled family.",
+          isSeriousSeeker: true,
           id: '4',
           phone: '9876543213',
           name: 'Karan Gidwani',
@@ -243,6 +269,8 @@ class Profile {
           photos: ['https://randomuser.me/api/portraits/men/12.jpg', 'https://randomuser.me/api/portraits/men/15.jpg'],
         ),
         Profile(
+          requirements: "Looking for a well-settled family.",
+          isSeriousSeeker: true,
           id: '5',
           phone: '9876543214',
           name: 'Mehak Vaswani',
@@ -263,6 +291,8 @@ class Profile {
           photos: ['https://randomuser.me/api/portraits/women/19.jpg'],
         ),
         Profile(
+          requirements: "Looking for a well-settled family.",
+          isSeriousSeeker: true,
           id: '6',
           phone: '9876543215',
           name: 'Varun Mulchandani',

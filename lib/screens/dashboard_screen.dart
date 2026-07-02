@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' show ImageFilter;
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import '../widgets/floating_nav_bar.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +18,7 @@ import 'chat_screen.dart';
 import 'notifications_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/storage_helper.dart';
+import '../widgets/profile_completion_ring.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -366,8 +369,26 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
         return Scaffold(
           backgroundColor: AppTheme.backgroundLight,
-          bottomNavigationBar: _buildBottomNavigationBar(),
-          body: SafeArea(child: bodyContent),
+          body: Stack(
+            children: [
+              SafeArea(child: bodyContent),
+              FloatingNavBar(
+                currentIndex: _currentIndex,
+                onTap: (int index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                  if (index == 4) {
+                    Provider.of<AuthProvider>(context, listen: false).fetchMyProfile();
+                  } else if (index == 2) {
+                    Provider.of<AuthProvider>(context, listen: false).fetchActivityData();
+                  } else if (index == 3) {
+                    Provider.of<AuthProvider>(context, listen: false).fetchConversations();
+                  }
+                },
+              ),
+            ],
+          ),
         );
       },
     );
@@ -427,88 +448,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   // Premium Custom Bottom Navigation Bar
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.cardWhite,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
-        border: const Border(
-          top: BorderSide(color: AppTheme.glassBorderColor, width: 0.5),
-        ),
-      ),
-      child: SafeArea(
-        child: Center(
-          heightFactor: 1.0,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Expanded(child: _buildNavItem(0, Icons.favorite_border_rounded, Icons.favorite_rounded, 'Matches')),
-                  Expanded(child: _buildNavItem(1, Icons.search_rounded, Icons.search_rounded, 'Search')),
-                  Expanded(child: _buildNavItem(2, Icons.access_time_rounded, Icons.access_time_filled_rounded, 'Activity')),
-                  Expanded(child: _buildNavItem(3, Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded, 'Messenger')),
-                  Expanded(child: _buildNavItem(4, Icons.person_outline_rounded, Icons.person_rounded, 'Profile')),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(int index, IconData outlineIcon, IconData filledIcon, String label) {
-    final bool isSelected = _currentIndex == index;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-        // Fetch respective data when switching tabs
-        if (index == 4) {
-          Provider.of<AuthProvider>(context, listen: false).fetchMyProfile();
-        } else if (index == 2) {
-          Provider.of<AuthProvider>(context, listen: false).fetchActivityData();
-        } else if (index == 3) {
-          Provider.of<AuthProvider>(context, listen: false).fetchConversations();
-        }
-      },
-      child: Container(
-        color: Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? filledIcon : outlineIcon,
-              color: isSelected ? AppTheme.accentGold : AppTheme.textMuted,
-              size: 24,
-            ),
-            const SizedBox(height: 4.0),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.montserrat(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? AppTheme.accentGold : AppTheme.textMuted,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // --- TAB 1: DAILY PICKS ---
   Widget _buildDailyPicksTab() {
@@ -538,6 +477,36 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                             controller: _dailyPicksController,
                             physics: const AlwaysScrollableScrollPhysics(),
                             slivers: [
+                              if (provider.dailyPicks.any((p) => p.isFallback))
+                                SliverToBoxAdapter(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.accentGold.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: AppTheme.accentGold.withOpacity(0.3)),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.info_outline, color: AppTheme.accentGold, size: 20),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              'Showing profiles outside your strict preferences as we found fewer matches.',
+                                              style: GoogleFonts.montserrat(
+                                                fontSize: 12,
+                                                color: AppTheme.textCarbon,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               SliverPadding(
                                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                                 sliver: SliverMasonryGrid.count(
@@ -1861,6 +1830,90 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   ],
                 ),
               ),
+              Consumer<AuthProvider>(
+                builder: (context, auth, _) {
+                  final completion = calculateProfileCompletion(auth.myProfile);
+                  return ProfileCompletionRing(
+                    percentage: completion,
+                    size: 38,
+                    strokeWidth: 3.5,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: AppTheme.cardWhite,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          title: Row(
+                            children: [
+                              SizedBox(
+                                width: 44, height: 44,
+                                child: ProfileCompletionRing(percentage: completion, size: 44, strokeWidth: 4),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  completion >= 100 ? 'Profile Complete!' : 'Complete Your Profile',
+                                  style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, color: AppTheme.textCarbon, fontSize: 16),
+                                ),
+                              ),
+                            ],
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (completion < 100) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.trending_up_rounded, color: AppTheme.accentGold, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Profiles with 100% completion get 4x more interests!',
+                                          style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textCarbon),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              _completionTip(auth.myProfile, 'uploadedPhotos', 'Add profile photos', Icons.camera_alt_rounded, 20),
+                              _completionTip(auth.myProfile, 'birthTime', 'Add birth time (Kundali)', Icons.access_time_rounded, 8),
+                              _completionTip(auth.myProfile, 'birthPlace', 'Add birth place', Icons.place_rounded, 7),
+                              _completionTip(auth.myProfile, 'bio', 'Write a bio', Icons.format_quote_rounded, 5),
+                              _completionTip(auth.myProfile, 'fathersOccupation', "Add father's occupation", Icons.person_rounded, 5),
+                              _completionTip(auth.myProfile, 'monthlyIncome', 'Add monthly income', Icons.monetization_on_rounded, 3),
+                              _completionTip(auth.myProfile, 'properAddress', 'Add proper address', Icons.location_on_rounded, 3),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const MyProfileScreen()));
+                              },
+                              child: Text('Edit Profile', style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: Text('Close', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+              const SizedBox(width: 4),
               Consumer<LanguageProvider>(
                 builder: (context, langProvider, _) {
                   return Container(
@@ -2288,9 +2341,37 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Active Today',
-                              style: TextStyle(color: Colors.white70, fontSize: 12),
+                            Row(
+                              children: [
+                                const Text(
+                                  'Active Today',
+                                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                                ),
+                                if (profile.isSeriousSeeker) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.amber.withOpacity(0.9),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.star_rounded, color: Colors.white, size: 10),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          'SERIOUS SEEKER',
+                                          style: GoogleFonts.montserrat(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -2418,12 +2499,17 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                             ),
                             _buildActionButton(
                               icon: Icons.close_rounded,
-                              label: 'Ignore',
+                              label: profile.interestStatus == 'incoming' ? 'Decline' : 'Ignore',
                               color: Colors.white,
                               onTap: () async {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile hidden.')));
-                                provider.removeProfileLocally(profile.id);
-                                await provider.blockUser(profile.phone, 'Ignored', 'Hidden from dashboard');
+                                if (profile.interestStatus == 'incoming') {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request declined.')));
+                                  await provider.rejectInterest(profile.phone, profile.id);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile hidden.')));
+                                  provider.removeProfileLocally(profile.id);
+                                  await provider.blockUser(profile.phone, 'Ignored', 'Hidden from dashboard');
+                                }
                               },
                             ),
                             _buildActionButton(
@@ -2437,6 +2523,12 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat requires an accepted request.')));
                                 }
                               },
+                            ),
+                            _buildActionButton(
+                              icon: Icons.family_restroom_rounded,
+                              label: 'Family',
+                              color: Colors.white,
+                              onTap: () => _shareToFamily(context, profile),
                             ),
                           ],
                         ),
@@ -2489,5 +2581,77 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
         ],
       ),
     );
+  }
+
+  Widget _completionTip(Map<String, dynamic>? profile, String key, String label, IconData icon, int weight) {
+    bool filled = false;
+    if (profile != null) {
+      final val = profile[key];
+      if (key == 'uploadedPhotos') {
+        filled = val is List && val.isNotEmpty && val[0] != null && val[0].toString().isNotEmpty;
+      } else {
+        filled = val != null && val.toString().trim().isNotEmpty;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(
+            filled ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            color: filled ? Colors.green : Colors.grey.shade400,
+            size: 18,
+          ),
+          const SizedBox(width: 10),
+          Icon(icon, size: 16, color: filled ? AppTheme.textMuted : AppTheme.textCarbon),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                color: filled ? AppTheme.textMuted : AppTheme.textCarbon,
+                fontWeight: filled ? FontWeight.normal : FontWeight.w600,
+                decoration: filled ? TextDecoration.lineThrough : null,
+              ),
+            ),
+          ),
+          Text(
+            '+$weight%',
+            style: GoogleFonts.montserrat(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: filled ? Colors.green : AppTheme.accentGold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _shareToFamily(BuildContext context, Profile profile) {
+    final shareUrl = 'https://play.google.com/store/apps/details?id=com.piyush.assudani';
+    final message = '''
+🔱 *Jai Jhulelal!*
+
+📋 *Profile Details — Perfect Bandhan*
+━━━━━━━━━━━━━━━━
+👤 *Name:* ${profile.name}
+🎂 *Age:* ${profile.age} years
+🏢 *Profession:* ${profile.profession}
+🎓 *Education:* ${profile.education}
+📍 *Location:* ${profile.location}
+🧬 *Nukh:* ${profile.nukh.isNotEmpty ? profile.nukh : profile.caste}
+━━━━━━━━━━━━━━━━
+
+📲 *Download Perfect Bandhan app to view full profile, photos & connect:*
+$shareUrl
+
+_Shared via Perfect Bandhan — Sindhi Matrimony App_ 🤝
+''';
+
+    final whatsappUrl = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
+    launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
   }
 }

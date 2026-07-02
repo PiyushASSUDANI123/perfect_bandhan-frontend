@@ -6,6 +6,7 @@ import '../models/profile.dart';
 import '../utils/storage_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 enum AuthStatus {
   idle,
@@ -32,6 +33,8 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
   bool _isProfileComplete = false; 
   String? _token;
+  String? _authProvider; // 'google' or 'mobile'
+  String? _googleEmail;
 
   final List<Profile> _dailyPicks = [];
   bool _isLoadingDailyPicks = false;
@@ -84,6 +87,9 @@ class AuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isProfileComplete => _isProfileComplete;
   String? get token => _token;
+  bool get isAuth => _token != null;
+  String? get currentAuthProvider => _authProvider;
+  String? get googleEmail => _googleEmail;
   bool get isAdmin => _isAdmin;
   List<dynamic> get adminUsers => _adminUsers;
   bool get isLoadingAdminUsers => _isLoadingAdminUsers;
@@ -156,7 +162,10 @@ class AuthProvider extends ChangeNotifier {
     _status = AuthStatus.idle;
     _phoneNumber = null;
     _errorMessage = null;
+    _isProfileComplete = false;
     _token = null;
+    _authProvider = null;
+    _googleEmail = null;
     _isAdmin = false;
     _isProfileComplete = false;
     _myProfile = null;
@@ -178,6 +187,9 @@ class AuthProvider extends ChangeNotifier {
     await AppStorage.delete('isAdmin');
     await AppStorage.delete('isProfileComplete');
     await AppStorage.delete('onboarding_progress');
+    await AppStorage.delete('authProvider');
+    await AppStorage.delete('googleEmail');
+    await GoogleSignIn().signOut();
   }
 
   Future<void> tryAutoLogin() async {
@@ -186,9 +198,13 @@ class AuthProvider extends ChangeNotifier {
       final savedPhone = await AppStorage.get('phoneNumber');
       final savedIsAdmin = await AppStorage.get('isAdmin');
       final savedIsProfileComplete = await AppStorage.get('isProfileComplete');
+      final savedAuthProvider = await AppStorage.get('authProvider');
+      final savedGoogleEmail = await AppStorage.get('googleEmail');
 
       if (savedToken != null && savedToken.isNotEmpty) {
         _token = savedToken;
+        _authProvider = savedAuthProvider;
+        _googleEmail = savedGoogleEmail;
         _phoneNumber = savedPhone;
         _isAdmin = savedIsAdmin == 'true';
         _isProfileComplete = savedIsProfileComplete == 'true';
@@ -308,8 +324,10 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         _token = responseData['token'];
         _isProfileComplete = responseData['isProfileComplete'] ?? false;
+        _authProvider = 'mobile';
         
         await AppStorage.save('token', _token!);
+        await AppStorage.save('authProvider', 'mobile');
         await AppStorage.save('phoneNumber', _phoneNumber!);
         await AppStorage.save('isProfileComplete', _isProfileComplete ? 'true' : 'false');
         
@@ -325,6 +343,70 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _setErrorMessage("Network error.");
+      _status = AuthStatus.error;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> loginWithGoogle() async {
+    _status = AuthStatus.sendingOtp; // Reusing state for loader
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        _status = AuthStatus.idle;
+        notifyListeners();
+        return false;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        _errorMessage = 'Failed to retrieve Google token.';
+        _status = AuthStatus.error;
+        notifyListeners();
+        return false;
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/google-login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'idToken': idToken}),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        _token = responseData['token'];
+        _isProfileComplete = responseData['isProfileComplete'] ?? false;
+        _authProvider = 'google';
+        _googleEmail = googleUser.email;
+
+        await AppStorage.save('token', _token!);
+        await AppStorage.save('authProvider', 'google');
+        await AppStorage.save('googleEmail', googleUser.email);
+        await AppStorage.save('isProfileComplete', _isProfileComplete ? 'true' : 'false');
+        
+        _status = AuthStatus.authenticated;
+        notifyListeners();
+        
+        if (_isProfileComplete) {
+          fetchMyProfile();
+        }
+        return true;
+      } else {
+        _errorMessage = responseData['message'] ?? 'Google login failed';
+        _status = AuthStatus.error;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      consoleLog('Google login exception: $e');
+      _errorMessage = 'An error occurred during Google Login';
       _status = AuthStatus.error;
       notifyListeners();
       return false;
@@ -414,6 +496,25 @@ class AuthProvider extends ChangeNotifier {
     _isLoadingMyProfile = false;
     notifyListeners();
   }
+  Future<Profile?> fetchProfileById(String id) async {
+    if (_token == null) return null;
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/user/profile/$id'),
+        headers: {'Authorization': 'Bearer $_token'},
+      );
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded['status'] == 'success' && decoded['data'] != null) {
+          return Profile.fromJson(decoded['data']);
+        }
+      }
+    } catch (e) {
+      print('Error fetching profile by ID: $e');
+    }
+    return null;
+  }
+
 
   Future<void> fetchDailyPicks({bool refresh = false, Map<String, String>? filters, int offset = 0}) async {
     if (_token == null) return;
@@ -557,6 +658,52 @@ class AuthProvider extends ChangeNotifier {
       _updateProfileInterest(profileId, 'pending'); // revert on fail
       return false;
     }
+  }
+
+  Future<bool> rejectInterest(String targetPhone, String profileId) async {
+    try {
+      if (_token == null) return false;
+
+      final url = Uri.parse('$baseUrl/user/interest/reject');
+      final response = await http.post(
+        url,
+        headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
+        body: jsonEncode({'fromPhone': targetPhone}),
+      );
+
+      if (response.statusCode == 200) {
+        // Remove from pending lists
+        _dailyPicks.removeWhere((p) => p.id == profileId);
+        _incomingInterests.removeWhere((p) => p.id == profileId);
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      print('Reject Interest Error: $e');
+    }
+    return false;
+  }
+
+  Future<List<String>> fetchIcebreakers(String targetPhone) async {
+    try {
+      if (_token == null) return [];
+
+      final url = Uri.parse('$baseUrl/user/chat/icebreakers/$targetPhone');
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $_token'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['icebreakers'] != null) {
+          return List<String>.from(data['icebreakers']);
+        }
+      }
+    } catch (e) {
+      print('Fetch Icebreakers Error: $e');
+    }
+    return [];
   }
 
   Future<bool> acceptInterest(String targetPhone, String profileId) async {

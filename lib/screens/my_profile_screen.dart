@@ -18,6 +18,7 @@ import '../utils/image_picker_helper.dart';
 import 'partner_preferences_screen.dart';
 import 'terms_and_conditions_screen.dart';
 import 'about_screen.dart';
+import '../widgets/profile_completion_ring.dart';
 import 'login_screen.dart';
 import 'admin_panel_screen.dart';
 class MyProfileScreen extends StatefulWidget {
@@ -630,6 +631,76 @@ class _MyProfileScreenState extends State<MyProfileScreen>
         ),
 
         // ══════════════════════════════════════════════════════
+        // PROFILE COMPLETION GAMIFICATION CARD
+        // ══════════════════════════════════════════════════════
+        SliverToBoxAdapter(
+          child: Builder(
+            builder: (context) {
+              final completion = calculateProfileCompletion(data);
+              if (completion >= 100) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 900),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.accentGold.withOpacity(0.08),
+                            AppTheme.accentGold.withOpacity(0.02),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppTheme.accentGold.withOpacity(0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          ProfileCompletionRing(percentage: completion, size: 56, strokeWidth: 5),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Complete Your Profile',
+                                  style: GoogleFonts.cinzel(
+                                    fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textCarbon,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Profiles with 100% completion get 4x more interests!',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 11, color: AppTheme.textMuted, fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) => const EditProfileSheet(),
+                              );
+                            },
+                            icon: const Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.accentGold, size: 18),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+
+        // ══════════════════════════════════════════════════════
         // SECTION 2 · BENTO GRID DATA RESUME
         // ══════════════════════════════════════════════════════
         SliverToBoxAdapter(
@@ -738,6 +809,51 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                       icon: Icons.format_quote_rounded,
                       label: 'Bio',
                       value: _safeStr(data, 'bio', fallback: 'No bio added yet.'),
+                      fullWidth: true,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.monetization_on_rounded,
+                          label: 'Monthly Income',
+                          value: _safeStr(data, 'monthlyIncome', fallback: 'Not specified'),
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.work_outline_rounded,
+                          label: 'Job Post',
+                          value: _safeStr(data, 'jobPost', fallback: 'Not specified'),
+                        )),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.home_work_outlined,
+                          label: 'Own House',
+                          value: _safeStr(data, 'ownHouse', fallback: 'Not specified'),
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(
+                            child: _bentoCard(
+                          icon: Icons.map_outlined,
+                          label: 'District',
+                          value: _safeStr(data, 'district', fallback: 'Not specified'),
+                        )),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _bentoCard(
+                      icon: Icons.location_on_outlined,
+                      label: 'Proper Address',
+                      value: _safeStr(data, 'properAddress', fallback: 'Not specified'),
                       fullWidth: true,
                     ),
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/language_provider.dart';
@@ -17,9 +18,12 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'screens/splash_screen.dart';
 
 import 'package:flutter/foundation.dart'; // added for kIsWeb
+import 'package:flutter_web_plugins/url_strategy.dart'; // for path URL strategy
+import 'screens/profile_detail_wrapper.dart'; // deep linking wrapper
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy(); // removes the '#' from flutter web URLs
   try {
     if (!kIsWeb) {
       await Firebase.initializeApp();
@@ -55,6 +59,15 @@ class MyApp extends StatelessWidget {
       title: 'Perfect Bandhan',
       theme: AppTheme.themeData,
       debugShowCheckedModeBanner: false,
+      onGenerateRoute: (settings) {
+        if (settings.name != null && settings.name!.startsWith('/profile/')) {
+          final profileId = settings.name!.replaceFirst('/profile/', '');
+          return MaterialPageRoute(
+            builder: (context) => ProfileDetailWrapper(profileId: profileId),
+          );
+        }
+        return null;
+      },
       builder: (context, child) {
         return Consumer<AuthProvider>(
           builder: (context, auth, _) {
@@ -136,6 +149,7 @@ class HomeScreenWrapper extends StatefulWidget {
 
 class _HomeScreenWrapperState extends State<HomeScreenWrapper> {
   bool _showWelcome = false;
+  bool _updatePopupShown = false;
 
   @override
   void initState() {
@@ -293,6 +307,14 @@ class _HomeScreenWrapperState extends State<HomeScreenWrapper> {
     }
 
     final authProvider = Provider.of<AuthProvider>(context);
+    
+    if (!_updatePopupShown && authProvider.appConfig != null && authProvider.appConfig!['forceUpdate'] == true) {
+      _updatePopupShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showUpdateDialog(authProvider.appConfig!['updateMessage'] ?? 'A new version of Perfect Bandhan is available. Please update for the best experience.', authProvider.appConfig!['downloadUrl']);
+      });
+    }
+
     if (authProvider.status == AuthStatus.authenticated) {
       if (authProvider.isProfileComplete || authProvider.isAdmin) {
         return const DashboardScreen();
@@ -301,5 +323,34 @@ class _HomeScreenWrapperState extends State<HomeScreenWrapper> {
       }
     }
     return const LoginScreen();
+  }
+
+  void _showUpdateDialog(String message, String? url) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardGray,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Update Available', style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+        content: Text(message, style: GoogleFonts.montserrat(color: AppTheme.textWhite)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Later', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              if (url != null && await canLaunchUrl(Uri.parse(url))) {
+                await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+              }
+            },
+            child: Text('Update Now', style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 }

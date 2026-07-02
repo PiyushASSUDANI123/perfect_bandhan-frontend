@@ -51,9 +51,16 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
   void initState() {
     super.initState();
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    _mobileNumberController.text = auth.phoneNumber ?? '';
+    if (auth.currentAuthProvider == 'google') {
+      _emailController.text = auth.googleEmail ?? '';
+    } else {
+      _mobileNumberController.text = auth.phoneNumber ?? '';
+    }
+    
     _loadOnboardingProgress().then((_) {
-      if (_mobileNumberController.text.isEmpty) {
+      if (auth.currentAuthProvider == 'google' && _emailController.text.isEmpty) {
+        _emailController.text = auth.googleEmail ?? '';
+      } else if (auth.currentAuthProvider != 'google' && _mobileNumberController.text.isEmpty) {
         _mobileNumberController.text = auth.phoneNumber ?? '';
       }
       _attachFieldListeners();
@@ -936,9 +943,12 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
           const SizedBox(height: 24),
           CustomTextField(
             controller: _emailController,
-          helperText: 'We will send important matches and updates here.',
+            readOnly: Provider.of<AuthProvider>(context).currentAuthProvider == 'google',
+            helperText: Provider.of<AuthProvider>(context).currentAuthProvider == 'google' 
+                ? 'Linked securely via Google.' 
+                : 'We will send important matches and updates here.',
             labelText: 'Email Address',
-              hintText: 'Email Address',
+            hintText: 'Email Address',
             prefixIcon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             onChanged: (_) => setState(() {}),
@@ -947,14 +957,20 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
             isVisible: _emailController.text.trim().isNotEmpty,
             child: CustomTextField(
               controller: _mobileNumberController,
-          helperText: 'Used for secure verification and login.',
+              readOnly: Provider.of<AuthProvider>(context).currentAuthProvider == 'mobile' || Provider.of<AuthProvider>(context).currentAuthProvider == null,
+              helperText: Provider.of<AuthProvider>(context).currentAuthProvider == 'google'
+                  ? 'A valid Indian mobile number is strictly required.'
+                  : 'Linked securely from login verification.',
               labelText: 'Phone Number',
               hintText: 'Phone Number',
               prefixIcon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
               onChanged: (_) => setState(() {}),
               validator: (value) {
-                if (value != null && value.isNotEmpty && value.length < 10) return 'Must be exactly 10 digits';
+                if (value == null || value.isEmpty) return 'Mobile number is required';
+                if (value.length != 10) return 'Must be exactly 10 digits';
+                if (!RegExp(r'^[6-9]\d{9}$').hasMatch(value)) return 'Enter a valid Indian mobile number (starts with 6-9)';
+                if (RegExp(r'^(\d)\1{9}$').hasMatch(value)) return 'Invalid mobile number format';
                 return null;
               },
             ),
@@ -2261,7 +2277,14 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
         if (_gender == null || _firstNameController.text.trim().isEmpty || _surnameController.text.trim().isEmpty) return false;
         break;
       case 1:
-        if (_emailController.text.trim().isEmpty || _mobileNumberController.text.trim().isEmpty || _whatsappNumberController.text.trim().length < 10) return false;
+        if (_emailController.text.trim().isEmpty || 
+            _mobileNumberController.text.trim().isEmpty || 
+            _mobileNumberController.text.trim().length != 10 ||
+            !RegExp(r'^[6-9]\d{9}$').hasMatch(_mobileNumberController.text.trim()) ||
+            RegExp(r'^(\d)\1{9}$').hasMatch(_mobileNumberController.text.trim()) ||
+            _whatsappNumberController.text.trim().length < 10) {
+          return false;
+        }
         break;
       case 2:
         if (_selectedState == null || _cityController.text.trim().isEmpty || _selectedDistrict == null || _properAddressController.text.trim().isEmpty) return false;

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/profile.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
@@ -468,18 +469,90 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
                     color: Colors.green,
                   ),
                 ),
+                const SizedBox(width: 12.0),
+                GestureDetector(
+                  onTap: () {
+                    final shareUrl = 'https://app.perfectbandhan.in/profile/${widget.profile.id}';
+                    Share.share('Check out ${widget.profile.name}\'s profile on Perfect Bandhan!\n$shareUrl');
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.backgroundLight,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.glassBorderGold),
+                    ),
+                    child: const Icon(Icons.share_rounded, color: AppTheme.accentGold, size: 16),
+                  ),
+                ),
               ],
             ),
           ],
         ),
         const SizedBox(height: 6.0),
-        Text(
-          widget.profile.name,
-          style: GoogleFonts.cinzel(
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textCarbon,
-          ),
+        Row(
+          children: [
+            Text(
+              widget.profile.name,
+              style: GoogleFonts.cinzel(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textCarbon,
+              ),
+            ),
+            if (widget.profile.isSeriousSeeker) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [Colors.amber.shade300, Colors.amber.shade600]),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(color: Colors.amber.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2))
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star_rounded, size: 14, color: Colors.white),
+                    const SizedBox(width: 4),
+                    Text('Serious Seeker', style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ],
+                ),
+              ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.info_outline_rounded, size: 16, color: AppTheme.textMuted),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: AppTheme.cardWhite,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      title: Row(
+                        children: [
+                          const Icon(Icons.star_rounded, color: AppTheme.accentGold),
+                          const SizedBox(width: 8),
+                          Text('Serious Seeker Badge', style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, color: AppTheme.textCarbon, fontSize: 18)),
+                        ],
+                      ),
+                      content: Text(
+                        'This badge is awarded to highly active users who reply to interests (Accept or Decline) within 24 hours. Serious Seekers get 3x more visibility on Perfect Bandhan!',
+                        style: GoogleFonts.montserrat(color: AppTheme.textCarbon, height: 1.5, fontSize: 14),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text('Got it', style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+                        )
+                      ],
+                    ),
+                  );
+                },
+              )
+            ]
+          ],
         ),
         const SizedBox(height: 6.0),
         Text(
@@ -528,6 +601,8 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
             ],
           ),
           const SizedBox(height: 16.0),
+          _buildBentoBlockKundali(),
+          const SizedBox(height: 16.0),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -546,6 +621,8 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
       children: [
         _buildBentoBlockContact(),
         const SizedBox(height: 16.0),
+        _buildBentoBlockKundali(),
+        const SizedBox(height: 16.0),
         _buildBentoBlock1(),
         const SizedBox(height: 16.0),
         _buildBentoBlock2(),
@@ -554,6 +631,44 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
         const SizedBox(height: 16.0),
         _buildBentoBlockAdvanced(),
       ],
+    );
+  }
+
+  Widget _buildBentoBlockKundali() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(20.0),
+        border: Border.all(color: AppTheme.accentGold, width: 1.0),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildBlockTitle('Astrology & Kundali'),
+          const SizedBox(height: 14.0),
+          _buildInfoRow(Icons.access_time_outlined, 'Birth Time', widget.profile.birthTime.isEmpty ? 'Not Provided' : widget.profile.birthTime),
+          _buildInfoRow(Icons.location_on_outlined, 'Birth Place', widget.profile.birthPlace.isEmpty ? 'Not Provided' : widget.profile.birthPlace),
+          const Divider(height: 24),
+          Row(
+            children: [
+              const Icon(Icons.stars_rounded, color: AppTheme.accentGold, size: 24),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  widget.profile.kundaliMessage ?? 'Kundali data unavailable',
+                  style: GoogleFonts.cinzel(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textCarbon,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -1169,6 +1284,33 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
                 const SizedBox(width: 12.0),
                 Expanded(child: actionButton),
               ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  final shareUrl = 'https://play.google.com/store/apps/details?id=com.piyush.assudani';
+                  final message = '🔱 *Jai Jhulelal!*\n\n📋 *Profile — Perfect Bandhan*\n━━━━━━━━━━━━━━━━\n👤 *Name:* ${widget.profile.name}\n🎂 *Age:* ${widget.profile.age} yrs\n🏢 *Profession:* ${widget.profile.profession}\n🎓 *Education:* ${widget.profile.education}\n📍 *Location:* ${widget.profile.location}\n🧬 *Nukh:* ${widget.profile.nukh.isNotEmpty ? widget.profile.nukh : widget.profile.caste}\n━━━━━━━━━━━━━━━━\n\n📲 *Download app to view full profile & connect:*\n$shareUrl\n\n_Shared via Perfect Bandhan_ 🤝';
+                  final whatsappUrl = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
+                  launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+                },
+                icon: const Icon(Icons.family_restroom_rounded, size: 18, color: Color(0xFF25D366)),
+                label: Text(
+                  'SHARE TO FAMILY (WHATSAPP)',
+                  style: GoogleFonts.cinzel(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF25D366),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: const Color(0xFF25D366).withOpacity(0.4)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
             ),
           ],
         ),

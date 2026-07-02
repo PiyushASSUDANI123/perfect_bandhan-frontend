@@ -24,6 +24,13 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   late TextEditingController _educationController;
   late TextEditingController _companyController;
   late TextEditingController _maritalStatusController;
+  late TextEditingController _birthTimeController;
+  late TextEditingController _birthPlaceController;
+  late TextEditingController _monthlyIncomeController;
+  late TextEditingController _districtController;
+  late TextEditingController _properAddressController;
+  late TextEditingController _jobPostController;
+  late TextEditingController _ownHouseController;
   
   String? _gender;
   bool _isSubmitting = false;
@@ -42,7 +49,14 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     _educationController = TextEditingController(text: profile['education']?.toString() ?? '');
     _companyController = TextEditingController(text: profile['company']?.toString() ?? '');
     _maritalStatusController = TextEditingController(text: profile['maritalStatus']?.toString() ?? '');
+    _birthTimeController = TextEditingController(text: profile['birthTime']?.toString() ?? '');
+    _birthPlaceController = TextEditingController(text: profile['birthPlace']?.toString() ?? '');
     _gender = profile['gender']?.toString();
+    _monthlyIncomeController = TextEditingController(text: profile['monthlyIncome']?.toString() ?? '');
+    _districtController = TextEditingController(text: profile['district']?.toString() ?? '');
+    _properAddressController = TextEditingController(text: profile['properAddress']?.toString() ?? '');
+    _jobPostController = TextEditingController(text: profile['jobPost']?.toString() ?? '');
+    _ownHouseController = TextEditingController(text: profile['ownHouse']?.toString() ?? '');
   }
 
   @override
@@ -54,7 +68,14 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     _professionController.dispose();
     _educationController.dispose();
     _companyController.dispose();
+    _monthlyIncomeController.dispose();
+    _districtController.dispose();
+    _properAddressController.dispose();
+    _jobPostController.dispose();
+    _ownHouseController.dispose();
     _maritalStatusController.dispose();
+    _birthTimeController.dispose();
+    _birthPlaceController.dispose();
     super.dispose();
   }
 
@@ -74,6 +95,13 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
       'education': _educationController.text.trim(),
       'company': _companyController.text.trim(),
       'maritalStatus': _maritalStatusController.text.trim(),
+      'birthTime': _birthTimeController.text.trim(),
+      'birthPlace': _birthPlaceController.text.trim(),
+      'monthlyIncome': _monthlyIncomeController.text.trim(),
+      'district': _districtController.text.trim(),
+      'properAddress': _properAddressController.text.trim(),
+      'jobPost': _jobPostController.text.trim(),
+      'ownHouse': _ownHouseController.text.trim(),
     };
     
     // Only pass gender if it's the developer account
@@ -214,6 +242,32 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
               ),
               const SizedBox(height: 16),
 
+              Text(
+                'Astrology & Kundali',
+                style: GoogleFonts.montserrat(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  color: AppTheme.textCarbon,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              CustomTextField(
+                labelText: 'Birth Time',
+                hintText: 'e.g. 14:30 or 2:30 PM',
+                controller: _birthTimeController,
+                prefixIcon: Icons.access_time_rounded,
+              ),
+              const SizedBox(height: 16),
+              
+              CustomTextField(
+                labelText: 'Birth Place',
+                hintText: 'e.g. Mumbai',
+                controller: _birthPlaceController,
+                prefixIcon: Icons.location_on_rounded,
+              ),
+              const SizedBox(height: 16),
+
               CustomTextField(
                 labelText: 'Profession',
                 hintText: 'Your job or profession',
@@ -243,6 +297,47 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 hintText: 'e.g. Never Married',
                 controller: _maritalStatusController,
                 prefixIcon: Icons.favorite_rounded,
+              ),
+              const SizedBox(height: 16),
+
+              CustomTextField(
+                labelText: 'Monthly Income',
+                hintText: 'e.g. 50000',
+                controller: _monthlyIncomeController,
+                prefixIcon: Icons.monetization_on_rounded,
+              ),
+              const SizedBox(height: 16),
+
+              CustomTextField(
+                labelText: 'Job Post',
+                hintText: 'e.g. Software Engineer',
+                controller: _jobPostController,
+                prefixIcon: Icons.work_outline_rounded,
+              ),
+              const SizedBox(height: 16),
+
+              CustomTextField(
+                labelText: 'Own House (Yes/No)',
+                hintText: 'Yes or No',
+                controller: _ownHouseController,
+                prefixIcon: Icons.home_work_outlined,
+              ),
+              const SizedBox(height: 16),
+
+              CustomTextField(
+                labelText: 'District',
+                hintText: 'e.g. Jodhpur',
+                controller: _districtController,
+                prefixIcon: Icons.map_outlined,
+              ),
+              const SizedBox(height: 16),
+
+              CustomTextField(
+                labelText: 'Proper Address',
+                hintText: 'Full address',
+                controller: _properAddressController,
+                prefixIcon: Icons.location_on_outlined,
+                maxLines: 2,
               ),
               const SizedBox(height: 32),
               
