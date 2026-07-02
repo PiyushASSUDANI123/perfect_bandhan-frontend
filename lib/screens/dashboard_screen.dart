@@ -530,12 +530,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                           child: _buildEmptyStateCards(),
                                         ),
                                 ),
-                                    ? const Padding(
-                                        padding: EdgeInsets.symmetric(vertical: 24.0),
-                                        child: Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
-                                      )
-                                    : const SizedBox(height: 80),
-                              ),
                             ],
                           ),
                         ),
@@ -866,12 +860,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                           padding: const EdgeInsets.only(bottom: 80.0),
                                           child: _buildEmptyStateCards(),
                                         ),
-                                ),
-                                      ? const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 24.0),
-                                          child: Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
-                                        )
-                                      : const SizedBox(height: 80),
                                 ),
                               ],
                             ),
