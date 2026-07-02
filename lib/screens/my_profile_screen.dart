@@ -933,7 +933,10 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                                 'Your profile will not appear in search results',
                             value: profileHidden,
                             onChanged: (v) {
-                              setState(() => profileHidden = v);
+                              setState(() {
+                                provider.myProfile?['profileHidden'] = v;
+                                profileHidden = v;
+                              });
                               Provider.of<AuthProvider>(context,
                                       listen: false)
                                   .updateProfileSettings(
@@ -948,7 +951,10 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                                 'Income will show as "Private" to others',
                             value: incomeHidden,
                             onChanged: (v) {
-                              setState(() => incomeHidden = v);
+                              setState(() {
+                                provider.myProfile?['incomeHidden'] = v;
+                                incomeHidden = v;
+                              });
                               Provider.of<AuthProvider>(context,
                                       listen: false)
                                   .updateProfileSettings(
@@ -1088,6 +1094,23 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                               ],
                             ),
                           ),
+                          if (provider.phoneNumber == '9413879444') ...[
+                            const Divider(height: 0.5, indent: 20),
+                            _buildToggleTile(
+                              icon: Icons.transgender_rounded,
+                              title: 'Dev: Change Gender',
+                              subtitle: 'Switch between Male and Female',
+                              value: data['gender'] == 'Female',
+                              onChanged: (v) {
+                                final newGender = v ? 'Female' : 'Male';
+                                setState(() {
+                                  provider.myProfile?['gender'] = newGender;
+                                });
+                                Provider.of<AuthProvider>(context, listen: false)
+                                    .updateProfileSettings({'gender': newGender});
+                              },
+                            ),
+                          ],
                         ],
                       ),
                     ),

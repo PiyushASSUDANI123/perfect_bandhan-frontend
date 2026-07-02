@@ -77,7 +77,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     };
     
     // Only pass gender if it's the developer account
-    if ((provider.phoneNumber == '9413879444' || provider.phoneNumber == '9999999999') && _gender != null) {
+    if (provider.phoneNumber == '9413879444' && _gender != null) {
       payload['gender'] = _gender;
     }
 
@@ -107,7 +107,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    final isDeveloper = provider.phoneNumber == '9413879444' || provider.phoneNumber == '9999999999';
+    final isDeveloper = provider.phoneNumber == '9413879444';
 
     return Container(
       decoration: const BoxDecoration(
