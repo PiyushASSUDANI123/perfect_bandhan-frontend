@@ -22,7 +22,7 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 4));
+    _confettiController = ConfettiController(duration: const Duration(milliseconds: 1500));
   }
 
   @override
@@ -108,7 +108,7 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
 
             // Global Ring and Developer Toggle at top right
             Positioned(
-              top: MediaQuery.of(context).padding.top + 55, // Pushed down to avoid AppBar overlap
+              top: MediaQuery.of(context).padding.top + 6, // Placed accurately in the AppBar's reserved space
               right: 16,
               child: SafeArea(
                 child: AnimatedOpacity(
