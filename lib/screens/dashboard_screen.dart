@@ -1446,7 +1446,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           Expanded(
             child: TabBarView(
               children: [
-                // Received Tab
+                // Received Tab - scrollable list
                 RefreshIndicator(
                   onRefresh: () => provider.fetchIncomingInterests(),
                   color: AppTheme.accentGold,
@@ -1455,28 +1455,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                       ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
                       : provider.incomingInterests.isEmpty
                           ? _buildActivityEmptyState()
-                          : Center(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: _getResponsiveLayout()['maxContainerWidth'],
-                                ),
-                                child: PageView.builder(
-                              scrollDirection: Axis.vertical,
-                              itemCount: provider.incomingInterests.length + (false ? 1 : 0),
-                              onPageChanged: (index) {
-                                if (index == provider.incomingInterests.length - 1) {
-                                  // Trigger load more here if needed
-                                }
-                              },
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              itemCount: provider.incomingInterests.length,
                               itemBuilder: (context, index) {
-                                if (index == provider.incomingInterests.length) {
-                                  return const Center(child: CircularProgressIndicator(color: AppTheme.accentGold));
-                                }
-                                final profile = provider.incomingInterests[index];
-                                return ProfileBentoCard(profile: profile);
+                                final p = provider.incomingInterests[index];
+                                return _ReceivedRequestCard(profile: p);
                               },
-                            ),
-                              ),
                             ),
                 ),
                 // Accepted Tab
@@ -2780,5 +2765,168 @@ _Shared via Perfect Bandhan — Sindhi Matrimony App_ 🤝
 
     final whatsappUrl = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
     launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+  }
+}
+
+/// Compact scrollable card for the Received Requests tab
+class _ReceivedRequestCard extends StatefulWidget {
+  final Profile profile;
+  const _ReceivedRequestCard({required this.profile});
+
+  @override
+  State<_ReceivedRequestCard> createState() => _ReceivedRequestCardState();
+}
+
+class _ReceivedRequestCardState extends State<_ReceivedRequestCard> {
+  bool _isAccepting = false;
+  bool _isDeclining = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = widget.profile;
+    final provider = Provider.of<AuthProvider>(context, listen: false);
+    final bool hasPhoto = profile.photos.isNotEmpty && profile.photos.first.startsWith('http');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.07),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            onTap: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (ctx) => ProfileDetailsSheet(profile: profile),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: hasPhoto
+                        ? Image.network(profile.photos.first, width: 72, height: 72, fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildInitialsAvatar(profile))
+                        : _buildInitialsAvatar(profile),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${profile.name}${profile.age != null ? ", ${profile.age}" : ""}',
+                          style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textCarbon),
+                        ),
+                        const SizedBox(height: 4),
+                        Text('${profile.height} • ${profile.location.split(",").first}',
+                            style: GoogleFonts.montserrat(fontSize: 13, color: AppTheme.textMuted)),
+                        const SizedBox(height: 2),
+                        Text(profile.profession, style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.textMuted)),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted),
+                ],
+              ),
+            ),
+          ),
+          Divider(height: 1, color: Colors.grey.withValues(alpha: 0.15)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _isDeclining ? null : () async {
+                      setState(() => _isDeclining = true);
+                      await provider.rejectInterest(profile.phone, profile.id);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request from ${profile.name} declined.')));
+                      }
+                    },
+                    icon: _isDeclining
+                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.close_rounded, size: 16),
+                    label: Text(_isDeclining ? '...' : 'Decline',
+                        style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: _isAccepting ? null : () async {
+                      setState(() => _isAccepting = true);
+                      final success = await provider.acceptInterest(profile.phone, profile.id);
+                      if (mounted) {
+                        if (success) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text('Connected with ${profile.name}! You can now chat.'),
+                            backgroundColor: Colors.green,
+                          ));
+                        } else {
+                          setState(() => _isAccepting = false);
+                        }
+                      }
+                    },
+                    icon: _isAccepting
+                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.favorite_rounded, size: 16),
+                    label: Text(_isAccepting ? 'Connecting...' : 'Accept',
+                        style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.accentGold,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInitialsAvatar(Profile profile) {
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: profile.gradientColors.length >= 2
+              ? [profile.gradientColors[0], profile.gradientColors[1]]
+              : [AppTheme.primaryRed, AppTheme.accentGold],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      alignment: Alignment.center,
+      child: Text(profile.initials,
+          style: GoogleFonts.montserrat(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+    );
   }
 }
