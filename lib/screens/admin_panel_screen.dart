@@ -1394,7 +1394,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 try {
                   final newScore = int.tryParse(_scoreController.text.trim()) ?? 0;
                   final payload = {'adminRankScore': newScore};
-                  await auth.adminUpdateUser(user['phone'], payload);
+                  await auth.adminEditUser(user['phone'], payload);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile boosted successfully!'), backgroundColor: Colors.green));
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to boost profile: $e'), backgroundColor: Colors.red));

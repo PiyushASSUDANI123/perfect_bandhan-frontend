@@ -470,7 +470,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           ),
         ],
       ),
-      ),
     );
   }
 

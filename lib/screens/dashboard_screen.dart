@@ -2035,6 +2035,53 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       ),
     );
   }
+
+  Widget _completionTip(Map<String, dynamic>? profile, String key, String label, IconData icon, int weight) {
+    bool filled = false;
+    if (profile != null) {
+      final val = profile[key];
+      if (key == 'uploadedPhotos') {
+        filled = val is List && val.isNotEmpty && val[0] != null && val[0].toString().isNotEmpty;
+      } else {
+        filled = val != null && val.toString().trim().isNotEmpty;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(
+            filled ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            color: filled ? Colors.green : Colors.grey.shade400,
+            size: 18,
+          ),
+          const SizedBox(width: 10),
+          Icon(icon, size: 16, color: filled ? AppTheme.textMuted : AppTheme.textCarbon),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                color: filled ? AppTheme.textMuted : AppTheme.textCarbon,
+                fontWeight: filled ? FontWeight.normal : FontWeight.w600,
+                decoration: filled ? TextDecoration.lineThrough : null,
+              ),
+            ),
+          ),
+          Text(
+            "+$weight%",
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: filled ? Colors.transparent : Colors.green,
+            ),
+          )
+        ],
+      ),
+    );
+  }
 }
 
 // Curated Bento Profile Card
