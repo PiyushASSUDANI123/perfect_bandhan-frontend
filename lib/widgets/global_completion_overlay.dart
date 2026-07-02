@@ -17,6 +17,7 @@ class GlobalCompletionOverlay extends StatefulWidget {
 class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
   late ConfettiController _confettiController;
   bool _hasCelebrated = false;
+  bool _isCelebrating = false;
   bool _forceComplete = false; // Developer toggle state
 
   @override
@@ -51,8 +52,17 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
             if (mounted) {
               setState(() {
                 _hasCelebrated = true;
+                _isCelebrating = true;
               });
               _confettiController.play();
+              
+              Future.delayed(const Duration(milliseconds: 1500), () {
+                if (mounted) {
+                  setState(() {
+                    _isCelebrating = false;
+                  });
+                }
+              });
             }
           });
         } else if (completion < 100 && _hasCelebrated) {
@@ -80,7 +90,7 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
             ),
             
             // Celebration Typography Overlay
-            if (_hasCelebrated && _confettiController.state == ConfettiControllerState.playing)
+            if (_isCelebrating)
               Positioned.fill(
                 child: IgnorePointer(
                   child: Container(
