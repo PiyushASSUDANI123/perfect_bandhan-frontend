@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Perfect Bandhan — An exclusive Sindhi matrimony platform for meaningful connections. Find your life partner from the Sindhi Samaj. Jai Jhulelal!">
+  <meta name="keywords" content="Sindhi matrimony, Sindhi shaadi, Perfect Bandhan, Sindhi samaj, Sindhi bride, Sindhi groom, matrimony app">
+  <meta name="author" content="Piyush Assudani — Assudani Group">
+  <meta property="og:title" content="Perfect Bandhan — Sindhi Matrimony">
+  <meta property="og:description" content="An exclusive Sindhi matrimony platform. Find your life partner from the Sindhi Samaj. Jai Jhulelal!">
+  <meta property="og:image" content="favicon.png">
+  <meta property="og:type" content="website">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Perfect Bandhan">
+  <link rel="apple-touch-icon" href="favicon.png">
+
+  <!-- Favicon — Perfect Bandhan Logo -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="shortcut icon" type="image/png" href="favicon.png"/>
+
+  <title>Perfect Bandhan — Sindhi Matrimony</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
+
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Fetch Firebase configuration dynamically from the backend environment
+    async function loadFirebase() {
+      try {
+        const backendBase = 'https://humsafar.piyushassudani.in';
+        
+        console.log('[Firebase] Fetching configuration dynamically from backend...');
+        const response = await fetch(`${backendBase}/api/v1/auth/firebase-config`);
+        if (!response.ok) {
+          throw new Error('Config endpoint response status: ' + response.status);
+        }
+        
+        const firebaseConfig = await response.json();
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        window.firebaseApp = app;
+        console.log('[Firebase] Dynamic initialization completed successfully.');
+      } catch (err) {
+        console.error('[Firebase Init Error] Dynamic load failed:', err);
+      }
+    }
+
+    loadFirebase();
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

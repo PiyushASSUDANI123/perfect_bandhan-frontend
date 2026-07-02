@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "901626431984",
+    "project_id": "shadi-244a1",
+    "storage_bucket": "shadi-244a1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:901626431984:android:1395c38e3530b4fa327535",
+        "android_client_info": {
+          "package_name": "com.piyush.assudani"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGFKcf5gwJgKjskGyUDAtScMrlHeBzs9g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
