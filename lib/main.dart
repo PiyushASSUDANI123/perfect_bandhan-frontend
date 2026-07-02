@@ -87,46 +87,37 @@ class MyApp extends StatelessWidget {
               );
             }
 
-            return Container(
-              color: const Color(0xFF121212),
-              alignment: Alignment.center,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: ClipRect(
-                  child: Stack(
-                    children: [
-                      mainContent,
-                      if (bannerEnabled && !isMaintenance)
-                        Positioned(
-                          top: 0, left: 0, right: 0,
-                          child: SafeArea(
-                            bottom: false,
-                            child: Material(
-                              elevation: 4,
-                              color: AppTheme.accentGold,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                width: double.infinity,
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.info_outline, color: Colors.black, size: 20),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        bannerMsg,
-                                        style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
-                                      ),
-                                    ),
-                                  ],
+            return Stack(
+              children: [
+                mainContent,
+                if (bannerEnabled && !isMaintenance)
+                  Positioned(
+                    top: 0, left: 0, right: 0,
+                    child: SafeArea(
+                      bottom: false,
+                      child: Material(
+                        elevation: 4,
+                        color: AppTheme.accentGold,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          width: double.infinity,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline, color: Colors.black, size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  bannerMsg,
+                                  style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
-                    ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
+              ],
             );
           },
         );
