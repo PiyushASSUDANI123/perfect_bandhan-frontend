@@ -11,6 +11,7 @@ import '../providers/auth_provider.dart';
 import '../providers/language_provider.dart';
 import '../widgets/premium_feedback.dart';
 import '../widgets/manage_photos_sheet.dart';
+import '../widgets/edit_profile_sheet.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/partner_preferences_sheet.dart';
 import '../utils/image_picker_helper.dart';
@@ -357,6 +358,20 @@ class _MyProfileScreenState extends State<MyProfileScreen>
           systemOverlayStyle: SystemUiOverlayStyle.dark,
           elevation: 0,
           scrolledUnderElevation: 0.5,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 28),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => const EditProfileSheet(),
+                );
+              },
+              tooltip: 'Edit Profile',
+            ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.parallax,
             background: Stack(
