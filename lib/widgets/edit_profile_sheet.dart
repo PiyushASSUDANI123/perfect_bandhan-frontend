@@ -21,6 +21,9 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   late TextEditingController _cityController;
   late TextEditingController _stateController;
   late TextEditingController _professionController;
+  late TextEditingController _educationController;
+  late TextEditingController _companyController;
+  late TextEditingController _maritalStatusController;
   
   String? _gender;
   bool _isSubmitting = false;
@@ -36,6 +39,9 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     _cityController = TextEditingController(text: profile['city']?.toString() ?? '');
     _stateController = TextEditingController(text: profile['state']?.toString() ?? '');
     _professionController = TextEditingController(text: profile['profession']?.toString() ?? '');
+    _educationController = TextEditingController(text: profile['education']?.toString() ?? '');
+    _companyController = TextEditingController(text: profile['company']?.toString() ?? '');
+    _maritalStatusController = TextEditingController(text: profile['maritalStatus']?.toString() ?? '');
     _gender = profile['gender']?.toString();
   }
 
@@ -46,6 +52,9 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     _cityController.dispose();
     _stateController.dispose();
     _professionController.dispose();
+    _educationController.dispose();
+    _companyController.dispose();
+    _maritalStatusController.dispose();
     super.dispose();
   }
 
@@ -62,10 +71,13 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
       'city': _cityController.text.trim(),
       'state': _stateController.text.trim(),
       'profession': _professionController.text.trim(),
+      'education': _educationController.text.trim(),
+      'company': _companyController.text.trim(),
+      'maritalStatus': _maritalStatusController.text.trim(),
     };
     
     // Only pass gender if it's the developer account
-    if (provider.phoneNumber == '9413879444' && _gender != null) {
+    if ((provider.phoneNumber == '9413879444' || provider.phoneNumber == '9999999999') && _gender != null) {
       payload['gender'] = _gender;
     }
 
@@ -95,7 +107,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    final isDeveloper = provider.phoneNumber == '9413879444';
+    final isDeveloper = provider.phoneNumber == '9413879444' || provider.phoneNumber == '9999999999';
 
     return Container(
       decoration: const BoxDecoration(
@@ -207,6 +219,30 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 hintText: 'Your job or profession',
                 controller: _professionController,
                 prefixIcon: Icons.work_rounded,
+              ),
+              const SizedBox(height: 16),
+              
+              CustomTextField(
+                labelText: 'Company',
+                hintText: 'Company name',
+                controller: _companyController,
+                prefixIcon: Icons.business_rounded,
+              ),
+              const SizedBox(height: 16),
+              
+              CustomTextField(
+                labelText: 'Education',
+                hintText: 'Highest degree',
+                controller: _educationController,
+                prefixIcon: Icons.school_rounded,
+              ),
+              const SizedBox(height: 16),
+              
+              CustomTextField(
+                labelText: 'Marital Status',
+                hintText: 'e.g. Never Married',
+                controller: _maritalStatusController,
+                prefixIcon: Icons.favorite_rounded,
               ),
               const SizedBox(height: 32),
               
