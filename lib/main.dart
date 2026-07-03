@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +29,10 @@ import 'screens/profile_detail_wrapper.dart'; // deep linking wrapper
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy(); // removes the '#' from flutter web URLs
+  
+  await Hive.initFlutter();
+  await Hive.openBox('offlineMessages');
+
   try {
     if (!kIsWeb) {
       await Firebase.initializeApp();

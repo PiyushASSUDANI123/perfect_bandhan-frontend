@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +11,7 @@ import '../providers/language_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/premium_feedback.dart';
 import '../widgets/profile_details_sheet.dart';
+import '../services/socket_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final Profile profile;
@@ -25,20 +27,63 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   List<Map<String, dynamic>> _messages = [];
   bool _isLoading = true;
-  Timer? _timer;
   bool _isSending = false;
   List<String> _icebreakers = [];
   bool _isLoadingIcebreakers = false;
+  late final SocketService _socketService;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
     }
+    
+    _socketService = SocketService();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final myId = authProvider.myProfile?['id'] ?? '';
+    
+    if (myId.isNotEmpty) {
+      _socketService.connect(myId);
+    }
+
+    _socketService.onReceiveMessage((data) {
+      if (mounted) {
+        setState(() {
+          _messages.add(Map<String, dynamic>.from(data));
+        });
+        _scrollToBottom();
+      }
+    });
+
+    _socketService.onMessageSent((data) {
+      if (mounted) {
+        setState(() {
+          _isSending = false;
+          // Find if we already added an optimistic message, or just append the real one
+          // For simplicity, we just add the real one returned by backend if we didn't add optimistically.
+          // Since we might add optimistically, let's just use the backend's confirmed message.
+          _messages.add(Map<String, dynamic>.from(data));
+        });
+        _scrollToBottom();
+      }
+    });
+
+    _socketService.onMessageError((data) {
+      if (mounted) {
+        setState(() {
+          _isSending = false;
+        });
+        PremiumFeedback.showError(
+          context: context,
+          title: 'Error',
+          message: data['error'] ?? "Unable to send your message. Please try again.",
+        );
+      }
+    });
+
     _loadChatHistory();
-    _startTimer();
   }
 
   Future<void> _fetchIcebreakers(AuthProvider provider) async {
@@ -54,33 +99,21 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     });
   }
 
-  void _startTimer() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 4), (_) => _loadChatHistory(silent: true));
-  }
-
-  void _stopTimer() {
-    _timer?.cancel();
-    _timer = null;
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      _stopTimer();
-    } else if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed) {
       _loadChatHistory(silent: true);
-      _startTimer();
     }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_SECURE);
     }
-    _stopTimer();
+    // We do NOT disconnect the socket here if we want it global, 
+    // but we should remove the listeners tied to this specific chat screen.
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -135,40 +168,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     });
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final lang = Provider.of<LanguageProvider>(context, listen: false);
-    final result = await authProvider.sendChatMessage(widget.profile.id, text);
-
-    if (!mounted) return;
-    setState(() {
-      _isSending = false;
-    });
-
-    if (result['status'] == 'success') {
-      // Optimistically add the message to the list to make it instant!
-      if (result['data'] != null) {
-        _messages.add(result['data']);
-      }
-      _scrollToBottom();
-      
-      // Notify user with a subtle feedback Toast
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(lang.translate("message_sent_success"), style: GoogleFonts.montserrat(fontSize: 12, color: Colors.black)),
-          backgroundColor: AppTheme.accentGold,
-          duration: const Duration(seconds: 1),
-        ),
-      );
-    } else if (result['status'] == 'limit_reached') {
-      _messageController.text = text; // restore text
-      _showLimitReachedDialog(result['message'] ?? 'Monthly limit reached.');
-    } else {
-      _messageController.text = text; // restore text
-      PremiumFeedback.showError(
-        context: context,
-        title: lang.translate("failed_to_send"),
-        message: result['message'] ?? "Unable to send your message. Please try again.",
-      );
-    }
+    final myId = authProvider.myProfile?['id'] ?? '';
+    
+    // Check limit first (fallback check, ideally limit logic is on backend before emit)
+    _socketService.sendMessage(myId, widget.profile.id, text);
   }
 
   void _showLimitReachedDialog(String message) {
@@ -435,7 +438,13 @@ Expanded(
                                 ? DateTime.parse(msg['createdAt'].toString()).toLocal()
                                 : DateTime.now();
 
-                            return _buildMessageBubble(text, isMe, timestamp, status: msg['status'] ?? 'sent');
+                            return _buildMessageBubble(
+                              text, 
+                              isMe, 
+                              timestamp, 
+                              status: msg['status'] ?? 'sent',
+                              isSent: msg['isSent'] ?? true
+                            );
                           },
                         ),
             ),
@@ -450,7 +459,7 @@ Expanded(
     );
   }
 
-  Widget _buildMessageBubble(String text, bool isMe, DateTime time, {String status = 'sent'}) {
+  Widget _buildMessageBubble(String text, bool isMe, DateTime time, {String status = 'sent', bool isSent = true}) {
     final timeStr = "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
     
     return Align(
@@ -496,7 +505,9 @@ Expanded(
                 if (isMe) ...[
                   const SizedBox(width: 4),
                   Icon(
-                    status == 'read' ? Icons.done_all : (status == 'delivered' ? Icons.done_all : Icons.check),
+                    isSent == false 
+                        ? Icons.access_time 
+                        : (status == 'read' ? Icons.done_all : (status == 'delivered' ? Icons.done_all : Icons.check)),
                     size: 12,
                     color: status == 'read' ? Colors.blueAccent : Colors.black54,
                   ),

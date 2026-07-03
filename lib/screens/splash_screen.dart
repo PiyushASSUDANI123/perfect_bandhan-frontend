@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
+import '../providers/auth_provider.dart';
 import '../main.dart'; // To access HomeScreenWrapper
 
 class SplashScreen extends StatefulWidget {
@@ -33,20 +36,84 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
 
-    // Navigate to next screen after 2.5 seconds
-    Future.delayed(const Duration(milliseconds: 2500), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const HomeScreenWrapper(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 800),
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    final provider = Provider.of<AuthProvider>(context, listen: false);
+
+    // Wait for BOTH the 2.5s minimum splash animation AND the config API check
+    await Future.wait([
+      Future.delayed(const Duration(milliseconds: 2500)),
+      provider.fetchAppConfig(),
+    ]);
+
+    if (!mounted) return;
+
+    if (provider.forceUpdateRequired) {
+      // KILL SWITCH TRIPPED: Block the app entirely on the splash screen
+      _showForceUpdateDialog(provider);
+      return; 
+    }
+
+    // Pass through if safe
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const HomeScreenWrapper(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 800),
+      ),
+    );
+  }
+
+  void _showForceUpdateDialog(AuthProvider provider) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Cannot dismiss
+      barrierColor: Colors.black.withValues(alpha: 0.95),
+      builder: (ctx) => PopScope(
+        canPop: false, // Cannot back-swipe
+        child: AlertDialog(
+          backgroundColor: AppTheme.cardGray,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(Icons.system_update, color: AppTheme.accentGold, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                "Update Required",
+                style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, color: AppTheme.textCarbon, fontSize: 18),
+              ),
+            ],
           ),
-        );
-      }
-    });
+          content: Text(
+            provider.updateMessage,
+            style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontSize: 14),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                final url = Uri.parse(provider.updateDownloadUrl);
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentGold,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: Text(
+                "Update Now",
+                style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
