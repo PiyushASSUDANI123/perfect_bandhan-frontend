@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
 import '../providers/auth_provider.dart';
 import '../widgets/profile_completion_ring.dart';
+import '../widgets/edit_profile_sheet.dart';
 import '../theme/app_theme.dart';
 
 class GlobalCompletionOverlay extends StatefulWidget {
@@ -142,7 +143,15 @@ class _ProfileCompletionAppBarActionState extends State<ProfileCompletionAppBarA
                           width: double.infinity,
                           height: 48,
                           child: ElevatedButton(
-                            onPressed: () => Navigator.pop(ctx),
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) => const EditProfileSheet(),
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: completion >= 100 ? Colors.green : AppTheme.accentGold,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
