@@ -133,8 +133,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       _isSending = false;
     });
 
-    if (result['success'] == true) {
-      _loadChatHistory(silent: true);
+    if (result['status'] == 'success') {
+      // Optimistically add the message to the list to make it instant!
+      if (result['data'] != null) {
+        _messages.add(result['data']);
+      }
       _scrollToBottom();
       
       // Notify user with a subtle feedback Toast
@@ -145,9 +148,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           duration: const Duration(seconds: 1),
         ),
       );
-    } else if (result['limit_reached'] == true) {
+    } else if (result['status'] == 'limit_reached') {
       _messageController.text = text; // restore text
-      _showLimitReachedDialog(result['message']);
+      _showLimitReachedDialog(result['message'] ?? 'Monthly limit reached.');
     } else {
       _messageController.text = text; // restore text
       PremiumFeedback.showError(
