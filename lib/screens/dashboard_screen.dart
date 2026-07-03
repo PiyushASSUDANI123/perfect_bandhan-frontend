@@ -2901,14 +2901,49 @@ class ReceivedRequestCardState extends State<ReceivedRequestCard> {
   }
 }
 
-class AcceptedRequestCard extends StatelessWidget {
+class AcceptedRequestCard extends StatefulWidget {
   final Profile profile;
   const AcceptedRequestCard({super.key, required this.profile});
 
   @override
+  State<AcceptedRequestCard> createState() => _AcceptedRequestCardState();
+}
+
+class _AcceptedRequestCardState extends State<AcceptedRequestCard> {
+  bool _isRemoving = false;
+
+  void _showBlockDialog(BuildContext context, AuthProvider provider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Block User'),
+        content: Text('Are you sure you want to block ${widget.profile.name}? They will not be able to contact you.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final success = await provider.blockUser(widget.profile.phone, 'User blocked', '');
+              if (mounted && success) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User blocked.')));
+                provider.removeProfileLocally(widget.profile.id);
+                // Also remove from accepted list
+                setState(() {});
+              }
+            },
+            child: const Text('Block', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final profile = widget.profile;
     final hasPhoto = profile.photos.isNotEmpty && profile.photos.first.startsWith('http');
-    
+    final provider = Provider.of<AuthProvider>(context, listen: false);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -2966,7 +3001,39 @@ class AcceptedRequestCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
+                // Block button (Icon only to save space)
+                IconButton(
+                  onPressed: () => _showBlockDialog(context, provider),
+                  icon: const Icon(Icons.block, color: Colors.redAccent, size: 20),
+                  tooltip: 'Block User',
+                ),
+                // Remove button
                 Expanded(
+                  child: OutlinedButton(
+                    onPressed: _isRemoving ? null : () async {
+                      setState(() => _isRemoving = true);
+                      // Treat remove as reject
+                      await provider.rejectInterest(profile.phone, profile.id);
+                      if (mounted) {
+                        provider.fetchActivityData(); // Refresh UI
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removed connection.')));
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.redAccent,
+                      side: const BorderSide(color: Colors.redAccent),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    child: _isRemoving 
+                      ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                      : Text('Remove', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Chat Now button
+                Expanded(
+                  flex: 2,
                   child: ElevatedButton.icon(
                     onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(profile: profile))),
                     icon: const Icon(Icons.chat_bubble_rounded, size: 16),

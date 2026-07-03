@@ -636,7 +636,10 @@ class AuthProvider extends ChangeNotifier {
         headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
         body: jsonEncode({'toPhone': targetPhone}),
       );
-      if (response.statusCode == 200 || response.statusCode == 201) return true;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await fetchActivityData();
+        return true;
+      }
       _updateProfileInterest(profileId, 'none'); // revert on fail
       return false;
     } catch (e) {
@@ -654,7 +657,11 @@ class AuthProvider extends ChangeNotifier {
         headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
         body: jsonEncode({'targetPhone': targetPhone}),
       );
-      if (response.statusCode == 200) return true;
+      if (response.statusCode == 200) {
+        _sentInterests.removeWhere((p) => p.id == profileId);
+        notifyListeners();
+        return true;
+      }
       _updateProfileInterest(profileId, 'pending'); // revert on fail
       return false;
     } catch (e) {
@@ -716,9 +723,19 @@ class AuthProvider extends ChangeNotifier {
       final response = await http.post(
         Uri.parse('$baseUrl/user/interest/accept'),
         headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
-        body: jsonEncode({'targetPhone': targetPhone}),
+        body: jsonEncode({'fromPhone': targetPhone}),
       );
-      if (response.statusCode == 200) return true;
+      if (response.statusCode == 200) {
+        // Move from incoming to accepted
+        final index = _incomingInterests.indexWhere((p) => p.id == profileId);
+        if (index != -1) {
+          final profile = _incomingInterests.removeAt(index);
+          profile.interestStatus = 'accepted';
+          _acceptedInterests.insert(0, profile);
+          notifyListeners();
+        }
+        return true;
+      }
       _updateProfileInterest(profileId, 'incoming'); // revert on fail
       return false;
     } catch (e) {
