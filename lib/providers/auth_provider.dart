@@ -921,7 +921,7 @@ class AuthProvider extends ChangeNotifier {
         headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
         body: jsonEncode({'targetUserId': targetUserId, 'text': text}),
       );
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.body.isNotEmpty) {
         return jsonDecode(response.body);
       }
       return {};
