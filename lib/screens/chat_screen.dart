@@ -119,6 +119,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     final text = _messageController.text.trim();
     if (text.isEmpty || _isSending) return;
 
+    _messageController.clear(); // Clear immediately for snappy UI
+
     setState(() {
       _isSending = true;
     });
@@ -132,7 +134,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     });
 
     if (result['success'] == true) {
-      _messageController.clear();
       _loadChatHistory(silent: true);
       _scrollToBottom();
       
@@ -145,9 +146,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         ),
       );
     } else if (result['limit_reached'] == true) {
-      // Show monthly limit warning popup
+      _messageController.text = text; // restore text
       _showLimitReachedDialog(result['message']);
     } else {
+      _messageController.text = text; // restore text
       PremiumFeedback.showError(
         context: context,
         title: "Failed to Send",
@@ -435,8 +437,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           Expanded(
             child: TextField(
               controller: _messageController,
-              keyboardType: TextInputType.multiline,
-              maxLines: null,
+              keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => _sendMessage(),
               style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontSize: 13),
               decoration: InputDecoration(
                 hintText: "Type a message...",
