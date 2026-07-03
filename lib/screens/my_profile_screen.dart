@@ -87,7 +87,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
         backgroundColor: AppTheme.cardWhite,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
-          'Delete Account',
+          Provider.of<LanguageProvider>(ctx, listen: false).translate('delete_account'),
           style: GoogleFonts.cinzel(
             fontWeight: FontWeight.bold,
             color: const Color(0xFFFF3B30),
@@ -95,7 +95,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
           ),
         ),
         content: Text(
-          'This action is permanent and cannot be undone.\n\nAll your data, photos and connections will be permanently deleted.',
+          Provider.of<LanguageProvider>(ctx, listen: false).translate('delete_account_desc'),
           style: GoogleFonts.montserrat(
             color: AppTheme.textCarbon,
             fontSize: 13,
@@ -105,13 +105,13 @@ class _MyProfileScreenState extends State<MyProfileScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx, false),
-            child: Text('Cancel',
+            child: Text(Provider.of<LanguageProvider>(ctx, listen: false).translate('cancel_btn'),
                 style: GoogleFonts.montserrat(
                     color: AppTheme.textMuted, fontWeight: FontWeight.w600)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx, true),
-            child: Text('Delete My Account',
+            child: Text(Provider.of<LanguageProvider>(ctx, listen: false).translate('delete_account'),
                 style: GoogleFonts.montserrat(
                     color: const Color(0xFFFF3B30),
                     fontWeight: FontWeight.bold)),
@@ -128,7 +128,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
         if (success) {
           PremiumFeedback.showSuccess(
             context: ctx,
-            title: 'Account Deleted',
+            title: Provider.of<LanguageProvider>(ctx, listen: false).translate('account_deleted'),
             message: 'Your account and all associated data have been permanently deleted.',
           );
           Navigator.pushAndRemoveUntil(
@@ -139,7 +139,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
         } else {
           PremiumFeedback.showError(
             context: ctx,
-            title: 'Deletion Failed',
+            title: Provider.of<LanguageProvider>(ctx, listen: false).translate('deletion_failed'),
             message: 'We could not delete your account right now. Please try again.',
           );
         }
@@ -240,7 +240,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     if (ctx.mounted) {
                       PremiumFeedback.showSuccess(
                         context: ctx,
-                        title: "Password Updated",
+                        title: Provider.of<LanguageProvider>(ctx, listen: false).translate("password_updated"),
                         message: "Your login password has been changed successfully.",
                       );
                     }
@@ -658,7 +658,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                           );
                         },
                         icon: const Icon(Icons.edit_rounded, size: 20),
-                        label: const Text('Update Profile'),
+                        label: Text(Provider.of<LanguageProvider>(context).translate('update_profile')),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.accentGold,
                           foregroundColor: Colors.white,
@@ -683,14 +683,14 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.cake_rounded,
-                          label: 'Age & Height',
+                          label: Provider.of<LanguageProvider>(context).translate('age_height'),
                           value: '${age > 0 ? age : '—'} yrs  ·  ${_safeStr(data, 'height')}',
                         )),
                         const SizedBox(width: 12),
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.location_on_rounded,
-                          label: 'Lives In',
+                          label: Provider.of<LanguageProvider>(context).translate('lives_in'),
                           value: _safeStr(data, 'city'),
                           subValue: _safeStr(data, 'state'),
                         )),
@@ -703,14 +703,14 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.favorite_rounded,
-                          label: 'Marital Status',
+                          label: Provider.of<LanguageProvider>(context).translate('marital_status'),
                           value: _safeStr(data, 'maritalStatus'),
                         )),
                         const SizedBox(width: 12),
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.people_alt_rounded,
-                          label: 'Clan / Nukh',
+                          label: Provider.of<LanguageProvider>(context).translate('clan_nukh'),
                           value: _safeStr(data, 'caste'),
                           accent: true,
                         )),
@@ -723,7 +723,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.accessibility_new_rounded,
-                          label: 'Complexion & Weight',
+                          label: Provider.of<LanguageProvider>(context).translate('complexion_weight'),
                           value: _safeStr(data, 'complexion'),
                           subValue: _safeStr(data, 'weight', fallback: 'Not specified'),
                         )),
@@ -731,7 +731,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.wheelchair_pickup_rounded,
-                          label: 'Physical Disability',
+                          label: Provider.of<LanguageProvider>(context).translate('disability'),
                           value: _safeStr(data, 'physicalDisability', fallback: 'None'),
                         )),
                       ],
@@ -739,7 +739,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.format_quote_rounded,
-                      label: 'Bio',
+                      label: Provider.of<LanguageProvider>(context).translate('bio'),
                       value: _safeStr(data, 'bio', fallback: 'No bio added yet.'),
                       fullWidth: true,
                     ),
@@ -750,14 +750,14 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.monetization_on_rounded,
-                          label: 'Monthly Income',
+                          label: Provider.of<LanguageProvider>(context).translate('monthly_income'),
                           value: _safeStr(data, 'monthlyIncome', fallback: 'Not specified'),
                         )),
                         const SizedBox(width: 12),
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.work_outline_rounded,
-                          label: 'Job Post',
+                          label: Provider.of<LanguageProvider>(context).translate('job_title'),
                           value: _safeStr(data, 'jobPost', fallback: 'Not specified'),
                         )),
                       ],
@@ -769,14 +769,14 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.home_work_outlined,
-                          label: 'Own House',
+                          label: Provider.of<LanguageProvider>(context).translate('own_house'),
                           value: _safeStr(data, 'ownHouse', fallback: 'Not specified'),
                         )),
                         const SizedBox(width: 12),
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.map_outlined,
-                          label: 'District',
+                          label: Provider.of<LanguageProvider>(context).translate('district'),
                           value: _safeStr(data, 'district', fallback: 'Not specified'),
                         )),
                       ],
@@ -784,7 +784,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.location_on_outlined,
-                      label: 'Proper Address',
+                      label: Provider.of<LanguageProvider>(context).translate('proper_address'),
                       value: _safeStr(data, 'properAddress', fallback: 'Not specified'),
                       fullWidth: true,
                     ),
@@ -798,14 +798,14 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.phone_android_rounded,
-                          label: 'WhatsApp',
+                          label: Provider.of<LanguageProvider>(context).translate('whatsapp'),
                           value: _safeStr(data, 'whatsappNumber', fallback: 'Not provided'),
                         )),
                         const SizedBox(width: 12),
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.map_rounded,
-                          label: 'District',
+                          label: Provider.of<LanguageProvider>(context).translate('district'),
                           value: _safeStr(data, 'district', fallback: 'Not provided'),
                         )),
                       ],
@@ -813,7 +813,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.home_rounded,
-                      label: 'Full Address',
+                      label: Provider.of<LanguageProvider>(context).translate('full_address'),
                       value: _safeStr(data, 'properAddress', fallback: 'Not provided'),
                       fullWidth: true,
                     ),
@@ -827,14 +827,14 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.calendar_today_rounded,
-                          label: 'Date of Birth',
+                          label: Provider.of<LanguageProvider>(context).translate('date_of_birth'),
                           value: _safeStr(data, 'dob') != '' && _safeStr(data, 'dob').length > 10 ? _safeStr(data, 'dob').substring(0, 10) : _safeStr(data, 'dob', fallback: 'Not specified'),
                         )),
                         const SizedBox(width: 12),
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.access_time_rounded,
-                          label: 'Birth Time',
+                          label: Provider.of<LanguageProvider>(context).translate('birth_time'),
                           value: _safeStr(data, 'birthTime', fallback: 'Not specified'),
                         )),
                       ],
@@ -846,14 +846,14 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.place_rounded,
-                          label: 'Birth Place',
+                          label: Provider.of<LanguageProvider>(context).translate('birth_place'),
                           value: _safeStr(data, 'birthPlace', fallback: 'Not specified'),
                         )),
                         const SizedBox(width: 12),
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.star_border_rounded,
-                          label: 'Manglik Status',
+                          label: Provider.of<LanguageProvider>(context).translate('manglik_status'),
                           value: _safeStr(data, 'manglikStatus', fallback: 'Not specified'),
                         )),
                       ],
@@ -861,7 +861,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.auto_awesome_rounded,
-                      label: 'Other Grah / Dosha',
+                      label: Provider.of<LanguageProvider>(context).translate('other_grah'),
                       value: _safeStr(data, 'otherGrah', fallback: 'None'),
                       fullWidth: true,
                     ),
@@ -875,14 +875,14 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.family_restroom_rounded,
-                          label: 'Family Type',
+                          label: Provider.of<LanguageProvider>(context).translate('family_type'),
                           value: _safeStr(data, 'familyType', fallback: 'Not specified'),
                         )),
                         const SizedBox(width: 12),
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.groups_rounded,
-                          label: 'Siblings',
+                          label: Provider.of<LanguageProvider>(context).translate('siblings'),
                           value: _safeStr(data, 'siblingsCount', fallback: '0'),
                         )),
                       ],
@@ -890,7 +890,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.info_outline_rounded,
-                      label: 'Siblings Details',
+                      label: Provider.of<LanguageProvider>(context).translate('siblings_details'),
                       value: _safeStr(data, 'siblingsDetails', fallback: 'Not provided'),
                       fullWidth: true,
                     ),
@@ -901,7 +901,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.person_rounded,
-                          label: 'Father',
+                          label: Provider.of<LanguageProvider>(context).translate('father'),
                           value: _safeStr(data, 'fatherStatus', fallback: 'Alive'),
                           subValue: _safeStr(data, 'fathersOccupation', fallback: 'Occupation not specified'),
                         )),
@@ -909,7 +909,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.pregnant_woman_rounded,
-                          label: 'Mother',
+                          label: Provider.of<LanguageProvider>(context).translate('mother'),
                           value: _safeStr(data, 'motherStatus', fallback: 'Alive'),
                           subValue: _safeStr(data, 'mothersOccupation', fallback: 'Occupation not specified'),
                         )),
@@ -925,7 +925,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.work_rounded,
-                          label: 'Profession',
+                          label: Provider.of<LanguageProvider>(context).translate('profession'),
                           value: _safeStr(data, 'profession'),
                           subValue: _safeStr(data, 'company'),
                         )),
@@ -933,7 +933,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.school_rounded,
-                          label: 'Education',
+                          label: Provider.of<LanguageProvider>(context).translate('education'),
                           value: _safeStr(data, 'education'),
                         )),
                       ],
@@ -945,7 +945,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.account_balance_wallet_rounded,
-                          label: 'Monthly Income',
+                          label: Provider.of<LanguageProvider>(context).translate('monthly_income'),
                           value: incomeHidden ? 'Private' : _safeStr(data, 'monthlyIncome'),
                           accent: !incomeHidden,
                         )),
@@ -953,7 +953,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.badge_rounded,
-                          label: 'Job Post',
+                          label: Provider.of<LanguageProvider>(context).translate('job_title'),
                           value: _safeStr(data, 'jobPost', fallback: 'Not working/Self'),
                         )),
                       ],
@@ -961,7 +961,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.account_balance_rounded,
-                      label: 'Annual Income',
+                      label: Provider.of<LanguageProvider>(context).translate('annual_income'),
                       value: incomeHidden ? 'Private' : _safeStr(data, 'incomeBracket'),
                       fullWidth: true,
                       accent: !incomeHidden,
@@ -976,7 +976,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.family_restroom_rounded,
-                          label: 'Family Type',
+                          label: Provider.of<LanguageProvider>(context).translate('family_type'),
                           value: _safeStr(data, 'familyType', fallback: 'Nuclear'),
                         )),
                         const SizedBox(width: 12),
@@ -1016,14 +1016,14 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.people_rounded,
-                          label: 'Siblings',
+                          label: Provider.of<LanguageProvider>(context).translate('siblings'),
                           value: _safeStr(data, 'siblingsCount', fallback: '0'),
                         )),
                         const SizedBox(width: 12),
                         Expanded(
                             child: _bentoCard(
                           icon: Icons.house_rounded,
-                          label: 'Own House',
+                          label: Provider.of<LanguageProvider>(context).translate('own_house'),
                           value: _safeStr(data, 'ownHouse', fallback: 'No'),
                         )),
                       ],
@@ -1032,7 +1032,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                       const SizedBox(height: 12),
                       _bentoCard(
                         icon: Icons.info_outline_rounded,
-                        label: 'Siblings Details',
+                        label: Provider.of<LanguageProvider>(context).translate('siblings_details'),
                         value: _safeStr(data, 'siblingsDetails', fallback: 'Not provided'),
                         fullWidth: true,
                       ),
@@ -1135,6 +1135,20 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                                       listen: false)
                                   .updateProfileSettings(
                                       {'incomeHidden': v});
+                            },
+                          ),
+                          const Divider(height: 0.5, indent: 20),
+                          _buildToggleTile(
+                            icon: Icons.lock_outline_rounded,
+                            title: 'Private WhatsApp Number',
+                            subtitle: 'Only show number when you approve a request',
+                            value: data['whatsappPrivacy'] == 'private',
+                            onChanged: (v) {
+                              setState(() {
+                                provider.myProfile?['whatsappPrivacy'] = v ? 'private' : 'public';
+                              });
+                              Provider.of<AuthProvider>(context, listen: false)
+                                  .updateProfileSettings({'whatsappPrivacy': v ? 'private' : 'public'});
                             },
                           ),
                           const Divider(height: 0.5, indent: 20),

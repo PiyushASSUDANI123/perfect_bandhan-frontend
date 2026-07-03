@@ -645,6 +645,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   Widget _buildPremiumFiltersRow() {
+    final lang = Provider.of<LanguageProvider>(context);
     return Container(
       width: double.infinity,
       color: AppTheme.backgroundLight,
@@ -682,6 +683,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   void _showFiltersBottomSheet(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -713,7 +715,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text('Maximum Age: ${_homeMaxAge.round()}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text('${lang.translate('maximum_age')}: ${_homeMaxAge.round()}', style: const TextStyle(fontWeight: FontWeight.w600)),
                   Slider(
                     value: _homeMaxAge,
                     min: 18.0,
@@ -731,16 +733,16 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     onChangeEnd: (_) => _triggerHomeFilterChange(),
                   ),
                   const SizedBox(height: 16),
-                  const Text('City', style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text(lang.translate('city_filter'), style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     value: _homeSelectedState,
                     decoration: const InputDecoration(border: OutlineInputBorder()),
-                    hint: const Text('All Locations'),
+                    hint: Text(lang.translate('all_locations')),
                     items: [
-                      const DropdownMenuItem<String>(
+                      DropdownMenuItem<String>(
                         value: null,
-                        child: Text('All Locations'),
+                        child: Text(lang.translate('all_locations')),
                       ),
                       ..._cities.map((city) {
                         return DropdownMenuItem<String>(
@@ -769,7 +771,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Apply Filters', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                      child: Text(lang.translate('apply_filters'), style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -804,14 +806,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   Widget _buildSearchTab() {
+    final lang = Provider.of<LanguageProvider>(context);
     final provider = Provider.of<AuthProvider>(context);
 
     if (_showSearchResults) {
       return Column(
         children: [
           _buildHeader(
-            title: "SEARCH RESULTS",
-            subtitle: "FOUND ${provider.searchCount} ELITE PROFILES",
+            title: lang.translate("search_results"),
+            subtitle: lang.translate("found_elite").replaceAll("{count}", provider.searchCount.toString()),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textCarbon, size: 18),
               onPressed: () {
@@ -877,7 +880,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
     return Column(
       children: [
-        _buildHeader(title: "SEARCH ENGINE", subtitle: "DEFINE YOUR IDEAL MATCH"),
+        _buildHeader(title: lang.translate("search_engine"), subtitle: lang.translate("define_ideal_match")),
         Expanded(
           child: Center(
             child: ConstrainedBox(
@@ -1003,7 +1006,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                               decoration: InputDecoration(
                                 labelText: "Specify Other Location",
                                 labelStyle: GoogleFonts.montserrat(color: AppTheme.accentGold, fontSize: 13, fontWeight: FontWeight.w500),
-                                hintText: "e.g., London, New York, Kolkata",
+                                hintText: lang.translate("eg_city"),
                                 hintStyle: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 13),
                                 filled: true,
                                 fillColor: AppTheme.backgroundLight,
@@ -1116,7 +1119,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                               // Search trigger removed to wait for CTA button press
                             },
                             decoration: InputDecoration(
-                              hintText: "Enter surname/nukh to exclude",
+                              hintText: lang.translate("exclude_nukh"),
                               hintStyle: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 13),
                               filled: true,
                               fillColor: AppTheme.backgroundLight,
@@ -1315,6 +1318,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   // --- TAB 3: SHORTLIST ---
   Widget _buildActivityTab() {
+    final lang = Provider.of<LanguageProvider>(context);
     final provider = Provider.of<AuthProvider>(context);
     return DefaultTabController(
       length: 3,
@@ -1382,21 +1386,21 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               children: [
                 _buildActivityStatCard(
                   count: provider.profileVisitsList.length > 0 ? provider.profileVisitsList.length.toString() : provider.profileVisits.toString(),
-                  label: 'Profile\nVisits',
+                  label: lang.translate('profile_visits'),
                   color: Colors.green,
                   onTap: () => _showProfileListDialog(context, 'Profile Visits', provider.profileVisitsList),
                 ),
                 const SizedBox(width: 10),
                 _buildActivityStatCard(
                   count: provider.shortlistedProfiles.length.toString(),
-                  label: 'Shortlisted\nProfiles',
+                  label: lang.translate('shortlisted_profiles'),
                   color: Colors.red,
                   onTap: () => _showProfileListDialog(context, 'Shortlisted Profiles', provider.shortlistedProfiles),
                 ),
                 const SizedBox(width: 10),
                 _buildActivityStatCard(
                   count: provider.contactViewsList.length > 0 ? provider.contactViewsList.length.toString() : provider.contactViews.toString(),
-                  label: 'Contact\nViews',
+                  label: lang.translate('contact_views'),
                   color: Colors.blue,
                   onTap: () => _showProfileListDialog(context, 'Contact Views', provider.contactViewsList),
                 ),
@@ -1419,7 +1423,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   onPressed: () {
                     provider.fetchIncomingInterests();
                   },
-                  child: Text('View all', style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.w600, fontSize: 13)),
+                  child: Text(lang.translate('view_all'), style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.w600, fontSize: 13)),
                 ),
               ],
             ),
@@ -1495,8 +1499,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   }
 
   void _showProfileListDialog(BuildContext context, String title, List<Profile> profiles) {
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
     if (profiles.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No $title yet.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(lang.translate('no_title_yet').replaceAll('{title}', title))));
       return;
     }
     showDialog(
@@ -1655,11 +1660,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   // --- TAB 4: CHATS ---
   Widget _buildChatsTab() {
+    final lang = Provider.of<LanguageProvider>(context);
     final provider = Provider.of<AuthProvider>(context);
 
     return Column(
       children: [
-        _buildHeader(title: "CHATS", subtitle: "YOUR ACTIVE CONVERSATIONS"),
+        _buildHeader(title: lang.translate("chats"), subtitle: lang.translate("active_conversations")),
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => provider.fetchConversations(),
@@ -1739,7 +1745,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                     if (chatProfile.interestStatus != 'accepted' && !isDev) {
                                       PremiumFeedback.showError(
                                         context: context,
-                                        title: 'Chat Locked',
+                                        title: lang.translate('chat_locked'),
                                         message: 'You must have an accepted mutual interest to open this chat.',
                                       );
                                       return;

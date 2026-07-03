@@ -75,6 +75,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
         'gender': _gender,
         'mobileNumber': _mobileNumberController.text,
         'whatsappNumber': _whatsappNumberController.text,
+        'whatsappPrivacy': _isWhatsappPrivate ? 'private' : 'public',
         'firstName': _firstNameController.text,
         'lastName': _lastNameController.text,
         'surname': _surnameController.text,
@@ -139,6 +140,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
         _gender = data['gender'];
         _mobileNumberController.text = data['mobileNumber'] ?? '';
         _whatsappNumberController.text = data['whatsappNumber'] ?? '';
+        _isWhatsappPrivate = (data['whatsappPrivacy'] ?? 'private') == 'private';
         _firstNameController.text = data['firstName'] ?? '';
         _lastNameController.text = data['lastName'] ?? '';
         _surnameController.text = data['surname'] ?? '';
@@ -267,6 +269,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
   String? _gender;      // Male, Female
   final _mobileNumberController = TextEditingController();
   final _whatsappNumberController = TextEditingController();
+  bool _isWhatsappPrivate = true;
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController(); // Also acts as surname
   final _surnameController = TextEditingController();  // Explicit Surname field
@@ -953,7 +956,31 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-            _buildSaveAndContinueButton()
+            
+          AnimatedFieldReveal(
+            isVisible: _whatsappNumberController.text.trim().length >= 10,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: AppTheme.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.glassBorderColor),
+              ),
+              child: SwitchListTile(
+                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
+                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
+                activeColor: AppTheme.accentGold,
+                value: _isWhatsappPrivate,
+                onChanged: (val) {
+                  setState(() {
+                    _isWhatsappPrivate = val;
+                  });
+                  _saveOnboardingProgress();
+                },
+              ),
+            ),
+          ),
+          _buildSaveAndContinueButton()
         ],
       ),
     );
@@ -1017,7 +1044,31 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               },
             ),
           ),
-            _buildSaveAndContinueButton()
+            
+          AnimatedFieldReveal(
+            isVisible: _whatsappNumberController.text.trim().length >= 10,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: AppTheme.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.glassBorderColor),
+              ),
+              child: SwitchListTile(
+                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
+                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
+                activeColor: AppTheme.accentGold,
+                value: _isWhatsappPrivate,
+                onChanged: (val) {
+                  setState(() {
+                    _isWhatsappPrivate = val;
+                  });
+                  _saveOnboardingProgress();
+                },
+              ),
+            ),
+          ),
+          _buildSaveAndContinueButton()
         ],
       ),
     );
@@ -1128,6 +1179,30 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
             ),
           ),
           
+          
+          AnimatedFieldReveal(
+            isVisible: _whatsappNumberController.text.trim().length >= 10,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: AppTheme.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.glassBorderColor),
+              ),
+              child: SwitchListTile(
+                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
+                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
+                activeColor: AppTheme.accentGold,
+                value: _isWhatsappPrivate,
+                onChanged: (val) {
+                  setState(() {
+                    _isWhatsappPrivate = val;
+                  });
+                  _saveOnboardingProgress();
+                },
+              ),
+            ),
+          ),
           _buildSaveAndContinueButton(),
         ],
       ),
@@ -1241,7 +1316,31 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-            _buildSaveAndContinueButton()
+            
+          AnimatedFieldReveal(
+            isVisible: _whatsappNumberController.text.trim().length >= 10,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: AppTheme.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.glassBorderColor),
+              ),
+              child: SwitchListTile(
+                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
+                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
+                activeColor: AppTheme.accentGold,
+                value: _isWhatsappPrivate,
+                onChanged: (val) {
+                  setState(() {
+                    _isWhatsappPrivate = val;
+                  });
+                  _saveOnboardingProgress();
+                },
+              ),
+            ),
+          ),
+          _buildSaveAndContinueButton()
         ],
       ),
     );
@@ -1337,7 +1436,31 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-            _buildSaveAndContinueButton()
+            
+          AnimatedFieldReveal(
+            isVisible: _whatsappNumberController.text.trim().length >= 10,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: AppTheme.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.glassBorderColor),
+              ),
+              child: SwitchListTile(
+                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
+                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
+                activeColor: AppTheme.accentGold,
+                value: _isWhatsappPrivate,
+                onChanged: (val) {
+                  setState(() {
+                    _isWhatsappPrivate = val;
+                  });
+                  _saveOnboardingProgress();
+                },
+              ),
+            ),
+          ),
+          _buildSaveAndContinueButton()
         ],
       ),
     );
@@ -1452,7 +1575,31 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-            _buildSaveAndContinueButton()
+            
+          AnimatedFieldReveal(
+            isVisible: _whatsappNumberController.text.trim().length >= 10,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: AppTheme.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.glassBorderColor),
+              ),
+              child: SwitchListTile(
+                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
+                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
+                activeColor: AppTheme.accentGold,
+                value: _isWhatsappPrivate,
+                onChanged: (val) {
+                  setState(() {
+                    _isWhatsappPrivate = val;
+                  });
+                  _saveOnboardingProgress();
+                },
+              ),
+            ),
+          ),
+          _buildSaveAndContinueButton()
         ],
       ),
     );
@@ -1580,7 +1727,31 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-            _buildSaveAndContinueButton()
+            
+          AnimatedFieldReveal(
+            isVisible: _whatsappNumberController.text.trim().length >= 10,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: AppTheme.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.glassBorderColor),
+              ),
+              child: SwitchListTile(
+                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
+                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
+                activeColor: AppTheme.accentGold,
+                value: _isWhatsappPrivate,
+                onChanged: (val) {
+                  setState(() {
+                    _isWhatsappPrivate = val;
+                  });
+                  _saveOnboardingProgress();
+                },
+              ),
+            ),
+          ),
+          _buildSaveAndContinueButton()
         ],
       ),
     );
@@ -1779,7 +1950,31 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-            _buildSaveAndContinueButton()
+            
+          AnimatedFieldReveal(
+            isVisible: _whatsappNumberController.text.trim().length >= 10,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: AppTheme.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.glassBorderColor),
+              ),
+              child: SwitchListTile(
+                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
+                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
+                activeColor: AppTheme.accentGold,
+                value: _isWhatsappPrivate,
+                onChanged: (val) {
+                  setState(() {
+                    _isWhatsappPrivate = val;
+                  });
+                  _saveOnboardingProgress();
+                },
+              ),
+            ),
+          ),
+          _buildSaveAndContinueButton()
         ],
       ),
     );
@@ -2206,6 +2401,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
       'gender': _gender,
       'phone': _mobileNumberController.text.trim(),
       'whatsappNumber': _whatsappNumberController.text.trim(),
+      'whatsappPrivacy': _isWhatsappPrivate ? 'private' : 'public',
       'firstName': _firstNameController.text.trim(),
       'lastName': _surnameController.text.trim(),
       'email': _emailController.text.trim(),

@@ -1281,4 +1281,73 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {}
   }
 
+  // --- WhatsApp & Safety Features ---
+
+  Future<void> requestWhatsappUnlock(String targetUserId) async {
+    try {
+      if (_token == null) return;
+      final res = await http.post(
+        Uri.parse('$baseUrl/user/whatsapp/request'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: jsonEncode({'targetUserId': targetUserId}),
+      );
+      if (res.statusCode != 200) {
+        throw Exception('Failed to request WhatsApp unlock');
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      throw e;
+    }
+  }
+
+  Future<void> approveWhatsappUnlock(String requesterUserId) async {
+    try {
+      if (_token == null) return;
+      final res = await http.post(
+        Uri.parse('$baseUrl/user/whatsapp/approve'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: jsonEncode({'requesterUserId': requesterUserId}),
+      );
+      if (res.statusCode != 200) {
+        throw Exception('Failed to approve WhatsApp unlock');
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      throw e;
+    }
+  }
+
+  Future<void> reportUserWithDump(String reportedPhone, String reason, List<Map<String, dynamic>> chatDump) async {
+    try {
+      if (_token == null) return;
+      final res = await http.post(
+        Uri.parse('$baseUrl/user/report'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: jsonEncode({
+          'targetPhone': reportedPhone,
+          'reason': reason,
+          'chatDump': chatDump
+        }),
+      );
+      if (res.statusCode != 200) {
+        throw Exception('Failed to report user');
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      throw e;
+    }
+  }
+
+  Future<void> updateMessageStatus(String messageId, String status) async {
+    // If backend implements it, otherwise a no-op placeholder for read receipts
+  }
 }

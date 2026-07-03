@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
+import '../providers/language_provider.dart';
 import 'custom_textfield.dart';
 import 'premium_feedback.dart';
 
@@ -155,14 +156,14 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
         Navigator.pop(context);
         PremiumFeedback.showSuccess(
           context: context,
-          title: 'Profile Updated',
+          title: Provider.of<LanguageProvider>(context, listen: false).translate('profile_updated'),
           message: 'Your profile details have been successfully updated.',
         );
       }
     } else if (mounted) {
       PremiumFeedback.showError(
         context: context,
-        title: 'Update Failed',
+        title: Provider.of<LanguageProvider>(context, listen: false).translate('update_failed'),
         message: provider.errorMessage ?? 'Could not update profile at this time.',
       );
     }
@@ -170,6 +171,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context);
     final provider = Provider.of<AuthProvider>(context, listen: false);
     final isDeveloper = provider.phoneNumber == '9413879444';
 
@@ -280,7 +282,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
 
               // --- Astrological Intel ---
               const SizedBox(height: 24),
-              Text('Astrological Intel', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(Provider.of<LanguageProvider>(context, listen: false).translate('astrological_intel'), style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 16),
               
               GestureDetector(
@@ -373,7 +375,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
 
               // --- Family Intel ---
               const SizedBox(height: 24),
-              Text('Family Intel', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(Provider.of<LanguageProvider>(context, listen: false).translate('family_intel'), style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 16),
 
               CustomTextField(
@@ -401,7 +403,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
 
               // --- Professional Intel ---
               const SizedBox(height: 24),
-              Text('Professional Intel', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(Provider.of<LanguageProvider>(context, listen: false).translate('professional_intel'), style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 16),
 
               CustomTextField(

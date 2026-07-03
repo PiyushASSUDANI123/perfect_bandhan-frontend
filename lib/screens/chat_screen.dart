@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:io' show Platform;
+import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/profile.dart';
 import '../providers/auth_provider.dart';
+import '../providers/language_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/premium_feedback.dart';
 import '../widgets/profile_details_sheet.dart';
@@ -31,6 +34,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (Platform.isAndroid) {
+      FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+    }
     _loadChatHistory();
     _startTimer();
   }
@@ -71,6 +77,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    if (Platform.isAndroid) {
+      FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_SECURE);
+    }
     _stopTimer();
     _messageController.dispose();
     _scrollController.dispose();
@@ -126,6 +135,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     });
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
     final result = await authProvider.sendChatMessage(widget.profile.id, text);
 
     if (!mounted) return;
@@ -143,7 +153,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       // Notify user with a subtle feedback Toast
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Message sent successfully", style: GoogleFonts.montserrat(fontSize: 12, color: Colors.black)),
+          content: Text(lang.translate("message_sent_success"), style: GoogleFonts.montserrat(fontSize: 12, color: Colors.black)),
           backgroundColor: AppTheme.accentGold,
           duration: const Duration(seconds: 1),
         ),
@@ -155,7 +165,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       _messageController.text = text; // restore text
       PremiumFeedback.showError(
         context: context,
-        title: "Failed to Send",
+        title: lang.translate("failed_to_send"),
         message: result['message'] ?? "Unable to send your message. Please try again.",
       );
     }
@@ -249,6 +259,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final selfUserId = Provider.of<AuthProvider>(context).myProfile?['id'] ?? '';
+    
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -316,6 +327,27 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             icon: const Icon(Icons.refresh_rounded, color: AppTheme.textMuted),
             onPressed: () => _loadChatHistory(),
           ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: AppTheme.textMuted),
+            color: AppTheme.cardGray,
+            onSelected: (value) async {
+              if (value == 'report') {
+                _reportUser();
+              } else if (value == 'block') {
+                _blockUser();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'report',
+                child: Text('Report User', style: GoogleFonts.montserrat(color: AppTheme.textCarbon)),
+              ),
+              PopupMenuItem(
+                value: 'block',
+                child: Text('Block', style: GoogleFonts.montserrat(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
         ],
       ),
       body: SafeArea(
@@ -324,7 +356,45 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             constraints: const BoxConstraints(maxWidth: 1200),
             child: Column(
           children: [
-            Expanded(
+                        if (widget.profile.whatsappNumber != null && widget.profile.whatsappNumber!.contains('*'))
+              Container(
+                margin: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardGray,
+                  borderRadius: BorderRadius.circular(12.0),
+                  border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.lock_outline, color: AppTheme.accentGold, size: 20),
+                    const SizedBox(width: 8.0),
+                    Expanded(
+                      child: Text(
+                        "Satisfied with the conversation?",
+                        style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontSize: 12),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        final auth = Provider.of<AuthProvider>(context, listen: false);
+                        try {
+                          await auth.requestWhatsappUnlock(widget.profile.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Request sent!'), backgroundColor: AppTheme.accentGold)
+                          );
+                        } catch (e) {}
+                      },
+                      style: TextButton.styleFrom(
+                        backgroundColor: AppTheme.accentGold.withValues(alpha: 0.1),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      child: Text("Request Unlock", style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontSize: 11, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ),
+Expanded(
               child: _isLoading && _messages.isEmpty
                   ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
                   : _messages.isEmpty
@@ -365,12 +435,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                 ? DateTime.parse(msg['createdAt'].toString()).toLocal()
                                 : DateTime.now();
 
-                            return _buildMessageBubble(text, isMe, timestamp);
+                            return _buildMessageBubble(text, isMe, timestamp, status: msg['status'] ?? 'sent');
                           },
                         ),
             ),
-            if (_messages.isEmpty && _icebreakers.isNotEmpty)
-              _buildIcebreakerChips(),
+            if (!_hasBothMessaged() && _icebreakers.isNotEmpty)
+              _buildIcebreakerSheet(),
             _buildInputArea(),
           ],
         ),
@@ -380,7 +450,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildMessageBubble(String text, bool isMe, DateTime time) {
+  Widget _buildMessageBubble(String text, bool isMe, DateTime time, {String status = 'sent'}) {
     final timeStr = "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
     
     return Align(
@@ -413,12 +483,25 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               ),
             ),
             const SizedBox(height: 4.0),
-            Text(
-              timeStr,
-              style: GoogleFonts.montserrat(
-                color: isMe ? Colors.black54 : AppTheme.textMuted,
-                fontSize: 9,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  timeStr,
+                  style: GoogleFonts.montserrat(
+                    color: isMe ? Colors.black54 : AppTheme.textMuted,
+                    fontSize: 9,
+                  ),
+                ),
+                if (isMe) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    status == 'read' ? Icons.done_all : (status == 'delivered' ? Icons.done_all : Icons.check),
+                    size: 12,
+                    color: status == 'read' ? Colors.blueAccent : Colors.black54,
+                  ),
+                ]
+              ],
             ),
           ],
         ),
@@ -427,6 +510,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildInputArea() {
+    final lang = Provider.of<LanguageProvider>(context);
     return Container(
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
@@ -445,7 +529,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               onSubmitted: (_) => _sendMessage(),
               style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontSize: 13),
               decoration: InputDecoration(
-                hintText: "Type a message...",
+                hintText: lang.translate("type_message"),
                 hintStyle: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 13),
                 filled: true,
                 fillColor: AppTheme.backgroundLight,
@@ -479,56 +563,141 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildIcebreakerChips() {
+  Widget _buildIcebreakerSheet() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      color: AppTheme.backgroundLight,
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: AppTheme.cardGray.withValues(alpha: 0.9),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        border: Border(top: BorderSide(color: AppTheme.glassBorderGold.withValues(alpha: 0.5), width: 1)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, -5))],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_awesome_rounded, color: AppTheme.accentGold, size: 14),
-              const SizedBox(width: 4),
+              const Icon(Icons.auto_awesome_rounded, color: AppTheme.accentGold, size: 16),
+              const SizedBox(width: 8),
               Text(
-                "AI CONVERSATION STARTERS",
-                style: GoogleFonts.cinzel(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.textMuted),
+                "AI ICEBREAKERS",
+                style: GoogleFonts.cinzel(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.accentGold),
               ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.close, color: AppTheme.textMuted, size: 16),
+                onPressed: () => setState(() => _icebreakers.clear()),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              )
             ],
           ),
-          const SizedBox(height: 8.0),
-          Wrap(
-            spacing: 8.0,
-            runSpacing: 8.0,
-            children: _icebreakers.map((text) {
-              return GestureDetector(
-                onTap: () {
-                  _messageController.text = text;
-                  _sendMessage();
-                  setState(() {
-                    _icebreakers.clear();
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                  decoration: BoxDecoration(
-                    color: AppTheme.cardWhite,
-                    borderRadius: BorderRadius.circular(16.0),
-                    border: Border.all(color: AppTheme.glassBorderGold.withValues(alpha: 0.5), width: 0.5),
-                    boxShadow: [
-                      BoxShadow(color: AppTheme.accentGold.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 2))
-                    ],
+          const SizedBox(height: 12.0),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _icebreakers.map((text) {
+                return GestureDetector(
+                  onTap: () {
+                    _messageController.text = text;
+                    _sendMessage();
+                    setState(() {
+                      _icebreakers.clear();
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardWhite.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(20.0),
+                      border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3), width: 1),
+                    ),
+                    child: Text(
+                      text,
+                      style: GoogleFonts.montserrat(fontSize: 13, color: AppTheme.textCarbon),
+                    ),
                   ),
-                  child: Text(
-                    text,
-                    style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.textCarbon),
-                  ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  bool _hasBothMessaged() {
+    bool hasMe = false;
+    bool hasThem = false;
+    final selfUserId = Provider.of<AuthProvider>(context, listen: false).myProfile?["id"] ?? "";
+    for (var m in _messages) {
+      if (m["sender"] == selfUserId) hasMe = true;
+      else hasThem = true;
+      if (hasMe && hasThem) return true;
+    }
+    return false;
+  }
+
+  Future<void> _reportUser() async {
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
+    bool confirm = await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardGray,
+        title: Text('Report User', style: GoogleFonts.cinzel(color: AppTheme.accentGold)),
+        content: Text('Are you sure you want to report this user? Your recent messages will be securely submitted to admin for review.', style: GoogleFonts.montserrat(color: AppTheme.textCarbon)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Report', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    ) ?? false;
+
+    if (confirm && mounted) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      try {
+        final dump = _messages.reversed.take(20).toList();
+        await authProvider.reportUserWithDump(widget.profile.phone, 'Inappropriate behavior in chat', dump);
+        PremiumFeedback.showSuccess(context: context, title: 'Reported', message: 'User has been reported to the administration.');
+      } catch (e) {
+        PremiumFeedback.showError(context: context, title: 'Error', message: 'Failed to report user.');
+      }
+    }
+  }
+
+  Future<void> _blockUser() async {
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
+    bool confirm = await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.cardGray,
+        title: Text('Block User', style: GoogleFonts.cinzel(color: Colors.redAccent)),
+        content: Text('Are you sure you want to block this user? The conversation will be deleted.', style: GoogleFonts.montserrat(color: AppTheme.textCarbon)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Block', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    ) ?? false;
+
+    if (confirm && mounted) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      try {
+        await authProvider.blockUser(widget.profile.phone, 'Blocked from chat', '');
+        if (mounted) {
+          Navigator.pop(context); // Pop chat screen
+        }
+      } catch (e) {
+        PremiumFeedback.showError(context: context, title: 'Error', message: 'Failed to block user.');
+      }
+    }
   }
 }
