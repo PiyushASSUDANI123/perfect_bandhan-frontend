@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
@@ -378,33 +379,10 @@ class _MyProfileScreenState extends State<MyProfileScreen>
         final resData = jsonDecode(response.body);
         final insight = resData['data'];
         
+        provider.myProfile?['astrologyInsight'] = insight;
+        
         if (context.mounted) {
-          showModalBottomSheet(
-            context: context,
-            backgroundColor: AppTheme.backgroundBlack,
-            isScrollControlled: true,
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-            builder: (ctx) {
-              return Container(
-                padding: const EdgeInsets.all(24),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('✨ Know About Yourself', style: GoogleFonts.cinzel(fontSize: 22, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 24),
-                      Text(insight['english'] ?? '', style: GoogleFonts.montserrat(color: Colors.white, fontSize: 14)),
-                      const SizedBox(height: 16),
-                      const Divider(color: AppTheme.glassBorderColor),
-                      const SizedBox(height: 16),
-                      Text(insight['hindi'] ?? '', style: GoogleFonts.montserrat(color: Colors.white, fontSize: 14)),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
+          _showAstrologyInsightBottomSheet(context, provider, insight);
         }
       } else {
         if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load insight')));
@@ -413,6 +391,48 @@ class _MyProfileScreenState extends State<MyProfileScreen>
       if (context.mounted) Navigator.pop(context);
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('An error occurred')));
     }
+  }
+
+  void _showAstrologyInsightBottomSheet(BuildContext context, AuthProvider provider, dynamic insight) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.backgroundBlack,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('✨ Know About Yourself', style: GoogleFonts.cinzel(fontSize: 22, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+                    IconButton(
+                      icon: const Icon(Icons.share, color: AppTheme.accentGold),
+                      onPressed: () {
+                        final name = provider.myProfile?['name'] ?? 'Someone';
+                        final text = "✨ AI Personality Insight for $name ✨\n\n${insight['english']}\n\nShared via Perfect Bandhan App ❤️";
+                        Share.share(text);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text(insight['english'] ?? '', style: GoogleFonts.montserrat(color: Colors.white, fontSize: 14)),
+                const SizedBox(height: 16),
+                const Divider(color: AppTheme.glassBorderColor),
+                const SizedBox(height: 16),
+                Text(insight['hindi'] ?? '', style: GoogleFonts.montserrat(color: Colors.white, fontSize: 14)),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // ─── Build ─────────────────────────────────────────────────────────────────
@@ -1211,29 +1231,70 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     ),
 
                     const SizedBox(height: 32),
-                    // ✨ Know About Yourself Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.auto_awesome, color: Colors.white),
-                        label: Text(
-                          'Know about yourself (AI Insight)',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                    // ✨ Know About Yourself Button / Card
+                    if (data['astrologyInsight'] != null)
+                      GestureDetector(
+                        onTap: () => _showAstrologyInsightBottomSheet(context, provider, data['astrologyInsight']),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppTheme.cardGray,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
+                            boxShadow: [
+                              BoxShadow(color: AppTheme.accentGold.withValues(alpha: 0.1), blurRadius: 10)
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.auto_awesome, color: AppTheme.accentGold, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text('✨ AI Personality Insight', style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold, fontSize: 16)),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                (data['astrologyInsight']['english'] as String?)?.split('.').first ?? 'Discover your astrological personality...',
+                                style: GoogleFonts.montserrat(color: Colors.white70, fontSize: 14, fontStyle: FontStyle.italic),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Text('Read More →', style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontSize: 12, fontWeight: FontWeight.bold)),
+                              )
+                            ],
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accentGold,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 8,
-                          shadowColor: AppTheme.accentGold.withValues(alpha: 0.4),
+                      )
+                    else
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.auto_awesome, color: Colors.white),
+                          label: Text(
+                            'Know about yourself (AI Insight)',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accentGold,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 8,
+                            shadowColor: AppTheme.accentGold.withValues(alpha: 0.4),
+                          ),
+                          onPressed: () => _handleAstrologyInsight(context, provider),
                         ),
-                        onPressed: () => _handleAstrologyInsight(context, provider),
                       ),
-                    ),
                     const SizedBox(height: 32),
                   ],
                 ),
