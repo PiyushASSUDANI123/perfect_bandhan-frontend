@@ -2062,6 +2062,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Widget _buildSystemConfigPanel(AuthProvider auth) {
     bool isMaintenance = auth.appConfig?['isMaintenanceMode'] == true;
     bool isBanner = auth.appConfig?['globalBannerEnabled'] == true;
+    bool isChatComingSoon = auth.appConfig?['chatComingSoon'] == true;
     String maintMsg = auth.appConfig?['maintenanceMessage'] ?? '';
     String bannerMsg = auth.appConfig?['globalBannerMessage'] ?? '';
 
@@ -2108,6 +2109,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 },
               ),
             ),
+          const Divider(),
+          SwitchListTile(
+            title: Text('Chat - Coming Soon Mode', style: GoogleFonts.cinzel(color: AppTheme.textCarbon, fontWeight: FontWeight.bold)),
+            subtitle: Text('Disables chat API and shows "coming soon".', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
+            value: isChatComingSoon,
+            activeColor: AppTheme.accentGold,
+            onChanged: (val) async {
+              await auth.adminUpdateAppConfig({'chatComingSoon': val});
+              auth.fetchAppConfig();
+            },
+          ),
           const Divider(),
           SwitchListTile(
             title: Text('Global Banner', style: GoogleFonts.cinzel(color: AppTheme.textCarbon, fontWeight: FontWeight.bold)),

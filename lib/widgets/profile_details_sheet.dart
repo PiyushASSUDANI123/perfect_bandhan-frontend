@@ -33,6 +33,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
 
   int _currentPhotoIndex = 0;
   final PageController _pageController = PageController();
+  final ScrollController _scrollController = ScrollController();
 
   void _openFullScreenPhoto(String photoUrl) {
     showDialog(
@@ -162,6 +163,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
   @override
   void dispose() {
     _pageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -199,6 +201,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
                 // Scrollable Content
                 Expanded(
                   child: SingleChildScrollView(
+                    controller: _scrollController,
                     physics: const BouncingScrollPhysics(),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),

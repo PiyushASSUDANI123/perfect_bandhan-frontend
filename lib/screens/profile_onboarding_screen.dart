@@ -38,7 +38,7 @@ class ProfileOnboardingScreen extends StatefulWidget {
 
 class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
   int _currentStep = 0;
-  final int _totalSteps = 10;
+  final int _totalSteps = 11;
   final PageController _pageController = PageController();
   final ScrollController _scrollController = ScrollController();
   
@@ -266,7 +266,10 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
   final _step4Key = GlobalKey<FormState>();
   final _step5Key = GlobalKey<FormState>();
   // --- Phase 1: Core Identity Fields ---
-  String? _gender;      // Male, Female
+  String? _gender;
+  DateTime? _dob;
+  TimeOfDay? _birthTime;
+  final TextEditingController _birthPlaceController = TextEditingController();   // Male, Female
   final _mobileNumberController = TextEditingController();
   final _whatsappNumberController = TextEditingController();
   bool _isWhatsappPrivate = true;
@@ -277,7 +280,6 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
   String? _complexion; // Fair, Very Fair, Wheatish, Dark
 
   // --- Phase 2: Dealbreakers Fields ---
-  DateTime? _dob;
   int? _calculatedAge;
   String? _height; // feet/inches
   final _cityController = TextEditingController();
@@ -370,6 +372,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
     _siblingsDetailsController.dispose();
     _otherSindhiTypeController.dispose();
     _otherDisabilityController.dispose();
+    _birthPlaceController.dispose();
     _bioController.dispose();
     _requirementsController.dispose();
     _whatWeProvideController.dispose();
@@ -802,6 +805,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
                       _buildPage8(),
                       _buildPage9(),
                       _buildPage10(),
+                      _buildPage11(),
                     ],
                   ),
                 ),
@@ -855,13 +859,13 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               ),
             ),
           ),
-          if (_currentStep > 0 && _currentStep < 9)
+          if (_currentStep > 0 && _currentStep < 10)
             Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: TextButton(
                 onPressed: () {
                   setState(() {
-                    if (_currentStep < 9) {
+                    if (_currentStep < 10) {
                       _currentStep++;
                       _scrollToTop();
                     }
@@ -2313,6 +2317,110 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
     );
   }
 
+  Widget _buildPage11() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Astrology', style: GoogleFonts.cinzel(fontSize: 24, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text(
+            'Fill this all to know about yourself\nअपने बारे में जानने के लिए यह सब भरें',
+            style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontStyle: FontStyle.italic, fontSize: 13),
+          ),
+          const SizedBox(height: 24),
+          GestureDetector(
+            onTap: () async {
+              final TimeOfDay? picked = await showTimePicker(
+                context: context,
+                initialTime: _birthTime ?? TimeOfDay.now(),
+              );
+              if (picked != null) {
+                setState(() => _birthTime = picked);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                color: AppTheme.glassColor,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppTheme.glassBorderColor, width: 0.5),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.access_time_outlined, color: AppTheme.textMuted, size: 20),
+                  const SizedBox(width: 12),
+                  Text(
+                    _birthTime != null ? _birthTime!.format(context) : "Select Birth Time",
+                    style: GoogleFonts.montserrat(color: _birthTime != null ? AppTheme.textCarbon : AppTheme.textMuted, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Autocomplete<String>(
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              if (textEditingValue.text.isEmpty) {
+                return const Iterable<String>.empty();
+              }
+              return IndiaLocations.statesAndDistricts.values
+                  .expand((list) => list)
+                  .where((String option) {
+                return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+              });
+            },
+            onSelected: (String selection) {
+              _birthPlaceController.text = selection;
+            },
+            fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+              return CustomTextField(
+                controller: controller,
+                focusNode: focusNode,
+                labelText: 'Birth Place',
+                hintText: 'Birth Place',
+                prefixIcon: Icons.location_on_outlined,
+                onChanged: (v) {
+                  _birthPlaceController.text = v;
+                },
+              );
+            },
+            optionsViewBuilder: (context, onSelected, options) {
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 4,
+                  child: Container(
+                    height: 200,
+                    width: MediaQuery.of(context).size.width - 48,
+                    color: AppTheme.backgroundBlack,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(8.0),
+                      itemCount: options.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final String option = options.elementAt(index);
+                        return GestureDetector(
+                          onTap: () {
+                            onSelected(option);
+                          },
+                          child: ListTile(
+                            title: Text(option, style: const TextStyle(color: Colors.white)),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          _buildSaveAndContinueButton(),
+        ],
+      ),
+    );
+  }
 
   Widget _buildLabeledDropdown({
     required String labelText,
@@ -2404,9 +2512,12 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
       'whatsappPrivacy': _isWhatsappPrivate ? 'private' : 'public',
       'firstName': _firstNameController.text.trim(),
       'lastName': _surnameController.text.trim(),
-      'email': _emailController.text.trim(),
+      'sindhiType': _sindhiType ?? 'Sindhi Hindu',
       'dob': _dob != null ? _dob!.toIso8601String() : '',
-      'height': _height,
+      'birthTime': _birthTime != null ? _birthTime!.format(context) : '',
+      'birthPlace': _birthPlaceController.text.trim(),
+      'email': _emailController.text.trim(),
+      'height': _height ?? '',
       'city': _cityController.text.trim(),
       'state': _selectedState ?? '',
       'maritalStatus': _maritalStatus,
@@ -2438,7 +2549,6 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
       'mothersOccupation': _mothersOccupationController.text.trim(),
       'siblingsCount': _siblingsCountController.text.trim(),
       'siblingsDetails': _siblingsDetailsController.text.trim(),
-      'sindhiType': _sindhiType == 'Other' ? _otherSindhiTypeController.text.trim() : _sindhiType,
       'manglikStatus': _manglikStatus,
       'otherGrah': _manglikStatus == 'Other' ? _otherGrahController.text.trim() : '',
       'medicalFit': _medicalFit,
@@ -2544,6 +2654,9 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
         int nonNullPhotos = _uploadedPhotos.where((p) => p != null && p!.isNotEmpty).length;
         if (nonNullPhotos == 0) return false;
         break;
+      case 10:
+        // Astrology is optional
+        return true;
     }
     return true;
   }
@@ -2558,12 +2671,16 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
     
     _showMotivationalPopup(_currentStep);
 
-    if (_currentStep == 9) {
+    if (_currentStep == 10) {
+      // Final Submit
       _submitProfile();
       return;
     }
 
-    if (_currentStep < 9) {
+    if (_currentStep < 10) {
+      setState(() {
+        _currentStep++;
+      });
       _pageController.nextPage(
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,

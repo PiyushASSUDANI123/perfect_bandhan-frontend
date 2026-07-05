@@ -48,10 +48,28 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       _socketService.connect(myId);
     }
 
+    _socketService.onConnectionError((data) {
+      if (mounted) {
+        setState(() {
+          _messages.add({
+            'text': 'SOCKET_CONN_ERROR: $data',
+            'sender': 'system',
+            'createdAt': DateTime.now().toIso8601String()
+          });
+        });
+        _scrollToBottom();
+      }
+    });
+
     _socketService.onReceiveMessage((data) {
       if (mounted) {
         setState(() {
-          _messages.add(Map<String, dynamic>.from(data));
+          try {
+            dynamic msgData = data is List && data.isNotEmpty ? data.first : data;
+            _messages.add(Map<String, dynamic>.from(msgData));
+          } catch (e) {
+            _messages.add({'text': 'RECEIVE_PARSE_ERROR: $e', 'sender': 'system', 'createdAt': DateTime.now().toIso8601String()});
+          }
         });
         _scrollToBottom();
       }
@@ -61,10 +79,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       if (mounted) {
         setState(() {
           _isSending = false;
-          // Find if we already added an optimistic message, or just append the real one
-          // For simplicity, we just add the real one returned by backend if we didn't add optimistically.
-          // Since we might add optimistically, let's just use the backend's confirmed message.
-          _messages.add(Map<String, dynamic>.from(data));
+          try {
+            dynamic msgData = data is List && data.isNotEmpty ? data.first : data;
+            _messages.add(Map<String, dynamic>.from(msgData));
+          } catch (e) {
+            _messages.add({'text': 'SENT_PARSE_ERROR: $e | Data: $data', 'sender': 'system', 'createdAt': DateTime.now().toIso8601String()});
+          }
         });
         _scrollToBottom();
       }
@@ -74,11 +94,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       if (mounted) {
         setState(() {
           _isSending = false;
+          dynamic errData = data is List && data.isNotEmpty ? data.first : data;
+          _messages.add({'text': 'SERVER_ERROR: ${errData['error']}', 'sender': 'system', 'createdAt': DateTime.now().toIso8601String()});
         });
+        
+        dynamic errData = data is List && data.isNotEmpty ? data.first : data;
         PremiumFeedback.showError(
           context: context,
           title: 'Error',
-          message: data['error'] ?? "Unable to send your message. Please try again.",
+          message: errData['error'] ?? "Unable to send your message. Please try again.",
         );
       }
     });
@@ -170,8 +194,37 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final myId = authProvider.myProfile?['id'] ?? '';
     
-    // Check limit first (fallback check, ideally limit logic is on backend before emit)
-    _socketService.sendMessage(myId, widget.profile.id, text);
+    // Connect socket just in case it's needed for receiving
+    if (myId.isNotEmpty) {
+      _socketService.connect(myId);
+    }
+    
+    // Use reliable HTTP API for sending
+    final response = await authProvider.sendChatMessage(widget.profile.id, text);
+    
+    if (mounted) {
+      setState(() {
+        _isSending = false;
+        if (response.isNotEmpty && response['status'] == 'success') {
+           // Successfully sent via HTTP
+           _messages.add({
+             'text': text,
+             'sender': myId,
+             'createdAt': DateTime.now().toIso8601String(),
+             'isSent': true,
+             'status': 'sent',
+           });
+        } else {
+           // Failed to send
+           PremiumFeedback.showError(
+             context: context,
+             title: 'Error',
+             message: response['message'] ?? response['error'] ?? "Unable to send your message. Please try again.",
+           );
+        }
+      });
+      _scrollToBottom();
+    }
   }
 
   void _showLimitReachedDialog(String message) {
@@ -432,7 +485,7 @@ Expanded(
                           itemCount: _messages.length,
                           itemBuilder: (context, index) {
                             final msg = _messages[index];
-                            final isMe = msg['sender'] == selfUserId;
+                            final isMe = (msg['sender'] ?? msg['senderId']) == selfUserId;
                             final text = msg['text'] ?? '';
                             final timestamp = msg['createdAt'] != null
                                 ? DateTime.parse(msg['createdAt'].toString()).toLocal()

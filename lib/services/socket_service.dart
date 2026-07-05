@@ -15,12 +15,17 @@ class SocketService {
   final String _socketUrl = 'https://humsafar.piyushassudani.in';
 
   void connect(String userId) {
-    if (_socket != null && _socket!.connected) return;
+    if (_socket != null) {
+      if (!_socket!.connected) {
+        _socket!.connect();
+      }
+      return;
+    }
 
     _socket = IO.io(
       _socketUrl,
       IO.OptionBuilder()
-          .setTransports(['websocket'])
+          .setPath('/api/socket.io')
           .disableAutoConnect()
           .setQuery({'userId': userId}) // Map userId on the backend
           .build(),
@@ -36,14 +41,6 @@ class SocketService {
     _socket!.onDisconnect((_) {
       debugPrint('Disconnected from Socket.io server');
     });
-
-    _socket!.onConnectError((err) {
-      debugPrint('Socket connect error: $err');
-    });
-    
-    _socket!.onError((err) {
-      debugPrint('Socket error: $err');
-    });
   }
 
   void disconnect() {
@@ -54,7 +51,7 @@ class SocketService {
     }
   }
 
-  Future<void> sendMessage(String senderId, String receiverId, String text) async {
+  Future<bool> sendMessage(String senderId, String receiverId, String text) async {
     final payload = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(), // Temp local ID
       'senderId': senderId,
@@ -69,7 +66,9 @@ class SocketService {
     // 2. Try emitting if connected
     if (_socket != null && _socket!.connected) {
       _emitMessage(payload);
+      return true;
     }
+    return false;
   }
 
   void _emitMessage(Map<dynamic, dynamic> payload) {
@@ -86,14 +85,21 @@ class SocketService {
     }
   }
 
-  // Allow the UI to register a callback for incoming messages
+  void onConnectionError(Function(dynamic data) callback) {
+    if (_socket == null) return;
+    _socket!.on('connect_error', (data) => callback(data));
+    _socket!.on('connect_timeout', (data) => callback(data));
+    _socket!.on('error', (data) => callback(data));
+  }
+
   void onReceiveMessage(Function(dynamic data) callback) {
     if (_socket == null) return;
     
     // Remove previous listeners to avoid duplicates if re-registering
     _socket!.off('receiveMessage');
     _socket!.on('receiveMessage', (data) {
-      callback(data);
+      dynamic msgData = data is List && data.isNotEmpty ? data.first : data;
+      callback(msgData);
     });
   }
   
@@ -103,7 +109,8 @@ class SocketService {
     
     _socket!.off('messageError');
     _socket!.on('messageError', (data) {
-      callback(data);
+      dynamic errData = data is List && data.isNotEmpty ? data.first : data;
+      callback(errData);
     });
   }
   
@@ -118,16 +125,18 @@ class SocketService {
       // For a bulletproof fix, we could pass localId in payload and return it.
       // For now, let's just mark the most recent pending message as sent if text matches.
       
+      dynamic msgData = data is List && data.isNotEmpty ? data.first : data;
+      
       final pendingMessages = _messageQueue.values.where((msg) => msg['isSent'] == false).toList();
       for (var msg in pendingMessages) {
-        if (msg['text'] == data['text']) {
+        if (msg['text'] == msgData['text']) {
           msg['isSent'] = true;
           _messageQueue.put(msg['id'], msg);
           break; // Found and updated
         }
       }
       
-      callback(data);
+      callback(msgData);
     });
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
@@ -265,6 +266,153 @@ class _MyProfileScreenState extends State<MyProfileScreen>
         );
       },
     );
+  }
+
+  void _handleAstrologyInsight(BuildContext context, AuthProvider provider) async {
+    final data = provider.myProfile ?? {};
+    final dob = _safeStr(data, 'dob');
+    final birthTime = _safeStr(data, 'birthTime');
+    final birthPlace = _safeStr(data, 'birthPlace');
+
+    if (dob.isEmpty || birthTime.isEmpty || birthPlace.isEmpty) {
+      _showFillAstrologyDetailsPopup(context, provider);
+    } else {
+      _fetchAndShowAstrologyInsight(context, provider, dob, birthTime, birthPlace);
+    }
+  }
+
+  void _showFillAstrologyDetailsPopup(BuildContext context, AuthProvider provider) {
+    TimeOfDay? selectedTime;
+    final placeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: AppTheme.backgroundBlack,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text('Fill your detail now', style: GoogleFonts.cinzel(color: AppTheme.accentGold)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () async {
+                      final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+                      if (picked != null) setState(() => selectedTime = picked);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.glassColor,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppTheme.glassBorderColor),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.access_time, color: AppTheme.textMuted),
+                          const SizedBox(width: 12),
+                          Text(selectedTime != null ? selectedTime!.format(context) : 'Select Birth Time',
+                              style: const TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: placeController,
+                    labelText: 'Place of Birth',
+                    hintText: 'Place of Birth',
+                    prefixIcon: Icons.location_on_outlined,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx), 
+                  child: Text('Cancel', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold),
+                  onPressed: () {
+                    if (selectedTime == null || placeController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill both fields')));
+                      return;
+                    }
+                    Navigator.pop(ctx);
+                    _fetchAndShowAstrologyInsight(context, provider, provider.myProfile?['dob'], selectedTime!.format(context), placeController.text);
+                  },
+                  child: Text('Submit', style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _fetchAndShowAstrologyInsight(BuildContext context, AuthProvider provider, String? dob, String? time, String? place) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
+    );
+
+    try {
+      final token = await provider.getToken();
+      final response = await http.post(
+        Uri.parse('${AuthProvider.baseUrl}/user/astrology-insight'),
+        headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'dob': dob,
+          'birthTime': time,
+          'birthPlace': place,
+        }),
+      );
+
+      if (context.mounted) Navigator.pop(context); // Close loading
+
+      if (response.statusCode == 200) {
+        final resData = jsonDecode(response.body);
+        final insight = resData['data'];
+        
+        if (context.mounted) {
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: AppTheme.backgroundBlack,
+            isScrollControlled: true,
+            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+            builder: (ctx) {
+              return Container(
+                padding: const EdgeInsets.all(24),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('✨ Know About Yourself', style: GoogleFonts.cinzel(fontSize: 22, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 24),
+                      Text(insight['english'] ?? '', style: GoogleFonts.montserrat(color: Colors.white, fontSize: 14)),
+                      const SizedBox(height: 16),
+                      const Divider(color: AppTheme.glassBorderColor),
+                      const SizedBox(height: 16),
+                      Text(insight['hindi'] ?? '', style: GoogleFonts.montserrat(color: Colors.white, fontSize: 14)),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        }
+      } else {
+        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load insight')));
+      }
+    } catch (e) {
+      if (context.mounted) Navigator.pop(context);
+      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('An error occurred')));
+    }
   }
 
   // ─── Build ─────────────────────────────────────────────────────────────────
@@ -1062,6 +1210,30 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                       fullWidth: true,
                     ),
 
+                    const SizedBox(height: 32),
+                    // ✨ Know About Yourself Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.auto_awesome, color: Colors.white),
+                        label: Text(
+                          'Know about yourself (AI Insight)',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.accentGold,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 8,
+                          shadowColor: AppTheme.accentGold.withValues(alpha: 0.4),
+                        ),
+                        onPressed: () => _handleAstrologyInsight(context, provider),
+                      ),
+                    ),
                     const SizedBox(height: 32),
                   ],
                 ),
