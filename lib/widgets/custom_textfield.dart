@@ -18,6 +18,7 @@ class CustomTextField extends StatefulWidget {
   final String? helperText;
   final double bottomMargin;
   final bool readOnly;
+  final FocusNode? focusNode;
 
   const CustomTextField({
     super.key,
@@ -35,6 +36,7 @@ class CustomTextField extends StatefulWidget {
     this.helperText,
     this.bottomMargin = 16.0,
     this.readOnly = false,
+    this.focusNode,
   });
 
   @override
@@ -44,12 +46,13 @@ class CustomTextField extends StatefulWidget {
 class _CustomTextFieldState extends State<CustomTextField> {
   bool _obscureText = true;
   bool _isFocused = false;
-  final FocusNode _focusNode = FocusNode();
+  late final FocusNode _focusNode;
   String? _errorText;
 
   @override
   void initState() {
     super.initState();
+    _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(() {
       setState(() {
         _isFocused = _focusNode.hasFocus;
@@ -59,7 +62,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   void dispose() {
-    _focusNode.dispose();
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
     super.dispose();
   }
 

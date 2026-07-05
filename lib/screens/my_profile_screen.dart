@@ -361,7 +361,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
     );
 
     try {
-      final token = await provider.getToken();
+      final token = provider.token;
       final response = await http.post(
         Uri.parse('${AuthProvider.baseUrl}/user/astrology-insight'),
         headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
