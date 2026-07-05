@@ -859,7 +859,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               ),
             ),
           ),
-          if (_currentStep > 0 && _currentStep < 10)
+          if (_currentStep > 0 && _currentStep < 10 && _currentStep != 3)
             Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: TextButton(
@@ -1248,7 +1248,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
                   const Icon(Icons.calendar_today_outlined, color: AppTheme.textMuted, size: 20),
                   const SizedBox(width: 12),
                   Text(
-                    _dob != null ? "${_dob!.day}/${_dob!.month}/${_dob!.year} ($_calculatedAge yrs)" : "Select Date of Birth",
+                    _dob != null ? "${_dob!.day}/${_dob!.month}/${_dob!.year} ($_calculatedAge yrs)" : "Select Date of Birth *",
                     style: GoogleFonts.montserrat(color: _dob != null ? AppTheme.textCarbon : AppTheme.textMuted, fontSize: 14),
                   ),
                 ],

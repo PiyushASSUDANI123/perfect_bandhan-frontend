@@ -121,10 +121,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppTheme.textCarbon),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
           onPressed: () {
             if (auth.isAdmin) {
-              auth.reset();
+              auth.adminLogout();
             }
             Navigator.pop(context);
           },
@@ -134,7 +134,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             IconButton(
               icon: const Icon(Icons.power_settings_new_rounded, color: Colors.redAccent),
               onPressed: () {
-                auth.reset();
+                auth.adminLogout();
+                Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Logged out of Admin Portal.')),
                 );
@@ -2131,23 +2132,59 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               auth.fetchAppConfig();
             },
           ),
-          if (isBanner)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: TextFormField(
-                initialValue: bannerMsg,
-                style: GoogleFonts.montserrat(color: AppTheme.textCarbon),
-                decoration: const InputDecoration(
-                  labelText: 'Banner Message',
-                  border: OutlineInputBorder(),
+            if (isBanner)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      initialValue: bannerMsg,
+                      style: GoogleFonts.montserrat(color: AppTheme.textCarbon),
+                      decoration: const InputDecoration(
+                        labelText: 'Banner Message',
+                        border: OutlineInputBorder(),
+                      ),
+                      onFieldSubmitted: (val) async {
+                        await auth.adminUpdateAppConfig({'globalBannerMessage': val});
+                        auth.fetchAppConfig();
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saved')));
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Text('Global Banner Image', style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
+                    const SizedBox(height: 4),
+                    Text('Recommended size: 800x400 pixels (2:1 aspect ratio). Supported formats: JPG, PNG.', 
+                      style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.textMuted)),
+                    const SizedBox(height: 12),
+                    if (auth.appConfig != null && auth.appConfig!['globalBannerImageUrl'] != null && auth.appConfig!['globalBannerImageUrl'].toString().isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(auth.appConfig!['globalBannerImageUrl'], height: 120, width: double.infinity, fit: BoxFit.cover),
+                        ),
+                      ),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final picker = ImagePicker();
+                        final picked = await picker.pickImage(source: ImageSource.gallery);
+                        if (picked != null) {
+                          final bytes = await picked.readAsBytes();
+                          final base64String = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+                          if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Uploading banner image...')));
+                          await auth.adminUpdateAppConfig({'globalBannerImageUrl': base64String});
+                          auth.fetchAppConfig();
+                          if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Banner Image Uploaded Successfully')));
+                        }
+                      },
+                      icon: const Icon(Icons.upload_file, color: Colors.black),
+                      label: Text('Upload Image', style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold),
+                    ),
+                  ],
                 ),
-                onFieldSubmitted: (val) async {
-                  await auth.adminUpdateAppConfig({'globalBannerMessage': val});
-                  auth.fetchAppConfig();
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saved')));
-                },
               ),
-            ),
         ],
       ),
       ),

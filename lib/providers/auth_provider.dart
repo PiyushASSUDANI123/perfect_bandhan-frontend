@@ -180,6 +180,11 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void adminLogout() {
+    _isAdmin = false;
+    notifyListeners();
+  }
+
   Future<void> logout() async {
     reset();
     await AppStorage.delete('token');
@@ -1186,7 +1191,7 @@ class AuthProvider extends ChangeNotifier {
       );
       final responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        _adminUsers = responseData['users'] ?? [];
+        _adminUsers = responseData['data'] ?? [];
         _isLoadingAdminUsers = false;
         notifyListeners();
       } else {

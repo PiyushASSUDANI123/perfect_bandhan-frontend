@@ -381,15 +381,25 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               FloatingNavBar(
                 currentIndex: _currentIndex,
                 onTap: (int index) {
+                  final provider = Provider.of<AuthProvider>(context, listen: false);
+                  if (index == 3 && provider.appConfig?['chatComingSoon'] == true) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Chat is currently under development. Coming soon!'),
+                        backgroundColor: Colors.blueAccent,
+                      ),
+                    );
+                    return;
+                  }
                   setState(() {
                     _currentIndex = index;
                   });
                   if (index == 4) {
-                    Provider.of<AuthProvider>(context, listen: false).fetchMyProfile();
+                    provider.fetchMyProfile();
                   } else if (index == 2) {
-                    Provider.of<AuthProvider>(context, listen: false).fetchActivityData();
+                    provider.fetchActivityData();
                   } else if (index == 3) {
-                    Provider.of<AuthProvider>(context, listen: false).fetchConversations();
+                    provider.fetchConversations();
                   }
                 },
               ),
@@ -407,15 +417,25 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       backgroundColor: AppTheme.cardWhite,
       selectedIndex: _currentIndex,
       onDestinationSelected: (int index) {
+        final provider = Provider.of<AuthProvider>(context, listen: false);
+        if (index == 3 && provider.appConfig?['chatComingSoon'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Chat is currently under development. Coming soon!'),
+              backgroundColor: Colors.blueAccent,
+            ),
+          );
+          return;
+        }
         setState(() {
           _currentIndex = index;
         });
         if (index == 4) {
-          Provider.of<AuthProvider>(context, listen: false).fetchMyProfile();
+          provider.fetchMyProfile();
         } else if (index == 2) {
-          Provider.of<AuthProvider>(context, listen: false).fetchActivityData();
+          provider.fetchActivityData();
         } else if (index == 3) {
-          Provider.of<AuthProvider>(context, listen: false).fetchConversations();
+          provider.fetchConversations();
         }
       },
       labelType: NavigationRailLabelType.all,
