@@ -375,10 +375,17 @@ class _HomeScreenWrapperState extends State<HomeScreenWrapper> {
 
     final authProvider = Provider.of<AuthProvider>(context);
     
-    if (!_updatePopupShown && authProvider.appConfig != null && authProvider.appConfig!['forceUpdate'] == true) {
+    if (authProvider.appConfig != null &&
+        authProvider.appConfig!['latestVersion'] != AuthProvider.localAppVersion &&
+        !_updatePopupShown) {
       _updatePopupShown = true;
+      final isForced = authProvider.appConfig!['forceUpdate'] == true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showUpdateDialog(authProvider.appConfig!['updateMessage'] ?? 'A new version of Perfect Bandhan is available. Please update for the best experience.', authProvider.appConfig!['downloadUrl']);
+        _showUpdateDialog(
+          authProvider.appConfig!['updateMessage'] ?? 'A new version of Perfect Bandhan is available. Please update for the best experience.', 
+          authProvider.appConfig!['downloadUrl'],
+          isForced,
+        );
       });
     }
 
@@ -392,31 +399,35 @@ class _HomeScreenWrapperState extends State<HomeScreenWrapper> {
     return const LoginScreen();
   }
 
-  void _showUpdateDialog(String message, String? url) {
+  void _showUpdateDialog(String message, String? url, bool isForced) {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.cardGray,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Update Available', style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
-        content: Text(message, style: GoogleFonts.montserrat(color: AppTheme.textWhite)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Later', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              if (url != null && await canLaunchUrl(Uri.parse(url))) {
-                await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-              }
-            },
-            child: Text('Update Now', style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold)),
-          ),
-        ],
+      barrierDismissible: !isForced,
+      builder: (ctx) => PopScope(
+        canPop: !isForced,
+        child: AlertDialog(
+          backgroundColor: AppTheme.cardGray,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(isForced ? 'Update Required' : 'Update Available', style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+          content: Text(message, style: GoogleFonts.montserrat(color: AppTheme.textWhite)),
+          actions: [
+            if (!isForced)
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('Later', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
+              ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold),
+              onPressed: () async {
+                if (!isForced) Navigator.pop(ctx);
+                if (url != null && await canLaunchUrl(Uri.parse(url))) {
+                  await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Text('Update Now', style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
       ),
     );
   }
