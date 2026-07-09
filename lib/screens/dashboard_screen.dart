@@ -2317,7 +2317,11 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
 
     // Calculate a height that perfectly fits the screen without scrolling
     // Account for header (~80), filters (~60), bottom nav (~80) = ~220px total vertical space used
-    final double cardHeight = MediaQuery.of(context).size.height - 220;
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isDesktop = screenWidth > 900;
+    final double cardHeight = isDesktop 
+        ? 600.0 // Fixed height for desktop to prevent extremely elongated cards
+        : MediaQuery.of(context).size.height - 220;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -2683,23 +2687,28 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
   }
 
   Widget _buildActionButton({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
+    final bool isDesktop = MediaQuery.of(context).size.width > 900;
+    final double iconSize = isDesktop ? 18.0 : 24.0;
+    final double padding = isDesktop ? 8.0 : 12.0;
+    final double fontSize = isDesktop ? 9.0 : 11.0;
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(padding),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: iconSize),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+            style: TextStyle(color: Colors.white, fontSize: fontSize, fontWeight: FontWeight.w600),
           ),
         ],
       ),
