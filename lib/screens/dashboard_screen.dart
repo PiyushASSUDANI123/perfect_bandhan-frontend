@@ -56,12 +56,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     final double screenWidth = MediaQuery.sizeOf(context).width;
     int crossAxisCount = 1;
     double maxContainerWidth = 600;
-    if (screenWidth >= 1100) {
+    if (screenWidth >= 1200) {
       crossAxisCount = 3;
-      maxContainerWidth = 1000;
-    } else if (screenWidth >= 700) {
+      maxContainerWidth = 1250; // Much wider for premium large cards
+    } else if (screenWidth >= 750) {
       crossAxisCount = 2;
-      maxContainerWidth = 850;
+      maxContainerWidth = 900;
     }
     return {
       'crossAxisCount': crossAxisCount,
@@ -2320,7 +2320,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isDesktop = screenWidth > 900;
     final double cardHeight = isDesktop 
-        ? 560.0 // Increased fixed height for desktop to make photos larger and more premium
+        ? 650.0 // Increased fixed height to match the new wider 1250px container, maintaining a premium 2:3 ratio
         : MediaQuery.of(context).size.height - 220;
 
     return Padding(
