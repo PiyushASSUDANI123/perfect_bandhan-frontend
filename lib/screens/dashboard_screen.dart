@@ -2320,7 +2320,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isDesktop = screenWidth > 900;
     final double cardHeight = isDesktop 
-        ? 460.0 // Reduced fixed height for desktop to give a proper premium portrait ratio (approx 2:3 or 3:4)
+        ? 560.0 // Increased fixed height for desktop to make photos larger and more premium
         : MediaQuery.of(context).size.height - 220;
 
     return Padding(
