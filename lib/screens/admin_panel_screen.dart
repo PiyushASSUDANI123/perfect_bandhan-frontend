@@ -652,9 +652,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                 inactiveTrackColor: AppTheme.glassBorderColor,
                                 onChanged: (val) async {
                                   final authProv = Provider.of<AuthProvider>(context, listen: false);
-                                  bool success = await authProv.adminEditUser(user['_id'] ?? user['id'] ?? '', {'isActive': val});
+                                  final String uId = user['_id'] ?? user['id'] ?? '';
+                                  bool success = await authProv.adminEditUser(uId, {'isActive': val});
                                   if (success && mounted) {
                                     authProv.fetchAdminUsers();
+                                    if (val == false) {
+                                      authProv.removeProfileLocally(uId);
+                                    }
                                   }
                                 },
                               ),
@@ -951,11 +955,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               if (mounted) Navigator.pop(context); // close loader
               
               if (success) {
+                auth.removeProfileLocally(userId);
                 if (mounted) Navigator.pop(context); // close inspector sheet
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Profile deleted permanently.', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
                   );
+                  auth.fetchAdminUsers();
                 }
               } else {
                 if (mounted) {
