@@ -31,7 +31,6 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
       final provider = Provider.of<AuthProvider>(context, listen: false);
       
       final currentPhotos = provider.myProfile?['photos'] as List<dynamic>? ?? [];
-    final String? housePhoto = provider.myProfile?['housePhoto'] as String?;
       final List<String> updatedPhotos = currentPhotos.map((p) => p.toString()).toList();
       
       updatedPhotos.add(dataUri);
@@ -62,7 +61,6 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
   Future<void> _deletePhoto(int index) async {
     final provider = Provider.of<AuthProvider>(context, listen: false);
     final currentPhotos = provider.myProfile?['photos'] as List<dynamic>? ?? [];
-    final String? housePhoto = provider.myProfile?['housePhoto'] as String?;
     
     if (currentPhotos.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -265,19 +263,20 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
             ),
             const SizedBox(height: 24.0),
             Text(
-              'House Photo',
+              'House/Property Photo (ONLY)',
               style: GoogleFonts.cinzel(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textCarbon,
+                color: Colors.redAccent,
               ),
             ),
             const SizedBox(height: 8.0),
             Text(
-              'Upload a photo of your house/residence.',
+              'Please upload ONLY a photo of your house/residence (No selfies).',
               style: GoogleFonts.montserrat(
                 fontSize: 12,
-                color: AppTheme.textMuted,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textCarbon,
               ),
             ),
             const SizedBox(height: 16.0),
@@ -346,7 +345,7 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
                       const Icon(Icons.home_outlined, color: AppTheme.accentGold, size: 32),
                       const SizedBox(height: 8),
                       Text(
-                        'Upload House Photo',
+                        'Upload House Photo ONLY',
                         style: GoogleFonts.montserrat(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,

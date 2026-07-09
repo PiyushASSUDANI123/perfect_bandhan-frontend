@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../models/profile.dart';
 import '../utils/storage_helper.dart';
@@ -1304,7 +1303,7 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = e.toString();
-      throw e;
+      rethrow;
     }
   }
 
@@ -1324,7 +1323,7 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = e.toString();
-      throw e;
+      rethrow;
     }
   }
 
@@ -1348,7 +1347,7 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = e.toString();
-      throw e;
+      rethrow;
     }
   }
 

@@ -181,7 +181,7 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
   late ConfettiController _confettiController;
   bool _hasCelebrated = false;
   bool _isCelebrating = false;
-  bool _forceComplete = false; // Developer toggle state
+  final bool _forceComplete = false; // Developer toggle state
 
   @override
   void initState() {
@@ -207,7 +207,6 @@ class _GlobalCompletionOverlayState extends State<GlobalCompletionOverlay> {
           completion = 100;
         }
 
-        final isDeveloper = profile['phone'] == '9413879444' || profile['phone'] == '+919413879444';
 
         if (completion >= 100 && !_hasCelebrated) {
           // Defer the start of confetti so it happens outside of the build phase

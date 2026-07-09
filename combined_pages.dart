@@ -537,8 +537,11 @@
                   backgroundColor: AppTheme.glassColor,
                   onSelected: (val) {
                     setState(() {
-                      if (val) _selectedHobbies.add(hobby);
-                      else _selectedHobbies.remove(hobby);
+                      if (val) {
+                        _selectedHobbies.add(hobby);
+                      } else {
+                        _selectedHobbies.remove(hobby);
+                      }
                     });
                   },
                 );

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:convert';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/custom_textfield.dart';
@@ -123,9 +122,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
           onPressed: () {
-            if (auth.isAdmin) {
-              auth.adminLogout();
-            }
             Navigator.pop(context);
           },
         ),
@@ -650,7 +646,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             children: [
                               Switch(
                                 value: user['isActive'] ?? true,
-                                activeColor: AppTheme.accentGold,
+                                activeThumbColor: AppTheme.accentGold,
                                 activeTrackColor: AppTheme.accentGold.withValues(alpha: 0.3),
                                 inactiveThumbColor: AppTheme.textMuted,
                                 inactiveTrackColor: AppTheme.glassBorderColor,
@@ -1359,7 +1355,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     }
   }
   void _showBoostDialog(Map<String, dynamic> user) {
-    final TextEditingController _scoreController = TextEditingController(text: (user['adminRankScore'] ?? 0).toString());
+    final TextEditingController scoreController = TextEditingController(text: (user['adminRankScore'] ?? 0).toString());
     
     showDialog(
       context: context,
@@ -1373,7 +1369,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               Text('Enter a boost score (higher score appears higher in search).', style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white70)),
               const SizedBox(height: 16),
               TextField(
-                controller: _scoreController,
+                controller: scoreController,
                 keyboardType: TextInputType.number,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
@@ -1393,7 +1389,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 Navigator.pop(ctx);
                 final auth = Provider.of<AuthProvider>(context, listen: false);
                 try {
-                  final newScore = int.tryParse(_scoreController.text.trim()) ?? 0;
+                  final newScore = int.tryParse(scoreController.text.trim()) ?? 0;
                   final payload = {'adminRankScore': newScore};
                   await auth.adminEditUser(user['phone'], payload);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile boosted successfully!'), backgroundColor: Colors.green));
@@ -1549,22 +1545,27 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     int incomplete = users.where((u) => u['isProfileComplete'] != true).length;
     int inactive = users.where((u) => u['isActive'] == false).length;
 
-    int crossAxisCount = MediaQuery.of(context).size.width > 1000 ? 5 : (MediaQuery.of(context).size.width > 600 ? 3 : 2);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        int columns = constraints.maxWidth > 1000 ? 5 : (constraints.maxWidth > 600 ? 3 : 2);
+        double spacing = 12.0;
+        double width = (constraints.maxWidth - (spacing * (columns - 1))) / columns;
+        width = width.floorToDouble();
 
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: crossAxisCount,
-      crossAxisSpacing: 12.0,
-      mainAxisSpacing: 12.0,
-      childAspectRatio: 1.6,
-      children: [
-        _buildStatCard('Total Users', total.toString(), Icons.people_alt_outlined, Colors.blue),
-        _buildStatCard('Male Profiles', males.toString(), Icons.man_outlined, Colors.orange),
-        _buildStatCard('Female Profiles', females.toString(), Icons.woman_outlined, Colors.pink),
-        _buildStatCard('Incomplete', incomplete.toString(), Icons.warning_amber_rounded, Colors.purple),
-        _buildStatCard('Inactive', inactive.toString(), Icons.person_off_outlined, Colors.redAccent),
-      ],
+        final children = [
+          _buildStatCard('Total Users', total.toString(), Icons.people_alt_outlined, Colors.blue),
+          _buildStatCard('Male Profiles', males.toString(), Icons.man_outlined, Colors.orange),
+          _buildStatCard('Female Profiles', females.toString(), Icons.woman_outlined, Colors.pink),
+          _buildStatCard('Incomplete', incomplete.toString(), Icons.warning_amber_rounded, Colors.purple),
+          _buildStatCard('Inactive', inactive.toString(), Icons.person_off_outlined, Colors.redAccent),
+        ];
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: children.map((child) => SizedBox(width: width, child: child)).toList(),
+        );
+      },
     );
   }
 
@@ -2087,7 +2088,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             title: Text('Maintenance Mode', style: GoogleFonts.cinzel(color: AppTheme.textCarbon, fontWeight: FontWeight.bold)),
             subtitle: Text('Instantly locks all users out of the app.', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
             value: isMaintenance,
-            activeColor: AppTheme.primaryRed,
+            activeThumbColor: AppTheme.primaryRed,
             onChanged: (val) async {
               await auth.adminUpdateAppConfig({'isMaintenanceMode': val});
               auth.fetchAppConfig();
@@ -2115,7 +2116,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             title: Text('Chat - Coming Soon Mode', style: GoogleFonts.cinzel(color: AppTheme.textCarbon, fontWeight: FontWeight.bold)),
             subtitle: Text('Disables chat API and shows "coming soon".', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
             value: isChatComingSoon,
-            activeColor: AppTheme.accentGold,
+            activeThumbColor: AppTheme.accentGold,
             onChanged: (val) async {
               await auth.adminUpdateAppConfig({'chatComingSoon': val});
               auth.fetchAppConfig();
@@ -2126,13 +2127,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             title: Text('Global Banner', style: GoogleFonts.cinzel(color: AppTheme.textCarbon, fontWeight: FontWeight.bold)),
             subtitle: Text('Displays a banner at the top of the screen for all users.', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
             value: isBanner,
-            activeColor: AppTheme.accentGold,
+            activeThumbColor: AppTheme.accentGold,
             onChanged: (val) async {
               await auth.adminUpdateAppConfig({'globalBannerEnabled': val});
               auth.fetchAppConfig();
             },
           ),
-            if (isBanner)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Column(
@@ -2153,6 +2153,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text('Global Banner Image', style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
+                    const SizedBox(height: 4),
+                    Text('Recommended size: 1200x400 (Aspect Ratio 3:1). Max size: 2MB.', style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.textMuted)),
                     const SizedBox(height: 4),
                     Text('Recommended size: 800x400 pixels (2:1 aspect ratio). Supported formats: JPG, PNG.', 
                       style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.textMuted)),

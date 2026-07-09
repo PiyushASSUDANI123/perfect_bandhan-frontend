@@ -41,6 +41,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   String? _gender;
   String? _manglikStatus;
   DateTime? _dob;
+  bool _isDobSetFromBackend = false;
   bool _isSubmitting = false;
 
   @override
@@ -75,6 +76,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     if (profile['dob'] != null && profile['dob'].toString().isNotEmpty) {
       try {
         _dob = DateTime.parse(profile['dob'].toString());
+        _isDobSetFromBackend = true;
       } catch (e) {
         _dob = null;
       }
@@ -171,7 +173,6 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final lang = Provider.of<LanguageProvider>(context);
     final provider = Provider.of<AuthProvider>(context, listen: false);
     final isDeveloper = provider.phoneNumber == '9413879444';
 
@@ -225,7 +226,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _gender,
+                  initialValue: _gender,
                   dropdownColor: AppTheme.cardWhite,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -285,56 +286,58 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
               Text(Provider.of<LanguageProvider>(context, listen: false).translate('astrological_intel'), style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 16),
               
-              GestureDetector(
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: _dob ?? DateTime.now().subtract(const Duration(days: 365 * 25)),
-                    firstDate: DateTime(1950),
-                    lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
-                    builder: (context, child) {
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: const ColorScheme.light(
-                            primary: AppTheme.accentGold,
-                            onPrimary: Colors.white,
-                            onSurface: AppTheme.textCarbon,
+              if (!_isDobSetFromBackend) ...[
+                GestureDetector(
+                  onTap: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: _dob ?? DateTime.now().subtract(const Duration(days: 365 * 25)),
+                      firstDate: DateTime(1950),
+                      lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.light(
+                              primary: AppTheme.accentGold,
+                              onPrimary: Colors.white,
+                              onSurface: AppTheme.textCarbon,
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (date != null) {
+                      setState(() => _dob = date);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardWhite,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.glassBorderColor),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _dob != null ? "${_dob!.day}/${_dob!.month}/${_dob!.year}" : "Select Date of Birth",
+                          style: GoogleFonts.montserrat(
+                            color: _dob != null ? AppTheme.textCarbon : AppTheme.textMuted,
+                            fontSize: 14,
                           ),
                         ),
-                        child: child!,
-                      );
-                    },
-                  );
-                  if (date != null) {
-                    setState(() => _dob = date);
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.cardWhite,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.glassBorderColor),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _dob != null ? "${_dob!.day}/${_dob!.month}/${_dob!.year}" : "Select Date of Birth",
-                        style: GoogleFonts.montserrat(
-                          color: _dob != null ? AppTheme.textCarbon : AppTheme.textMuted,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const Icon(Icons.calendar_today_rounded, color: AppTheme.accentGold, size: 20),
-                    ],
+                        const Icon(Icons.calendar_today_rounded, color: AppTheme.accentGold, size: 20),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
+              ],
               
               DropdownButtonFormField<String>(
-                value: _manglikStatus,
+                initialValue: _manglikStatus,
                 decoration: InputDecoration(
                   labelText: 'Manglik Status',
                   labelStyle: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 14),

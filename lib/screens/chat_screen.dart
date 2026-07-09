@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_windowmanager/flutter_windowmanager.dart';
+import 'package:flutter_windowmanager_plus/flutter_windowmanager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +37,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     if (!kIsWeb && Platform.isAndroid) {
-      FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+      FlutterWindowManagerPlus.addFlags(FlutterWindowManagerPlus.FLAG_SECURE);
     }
     
     _socketService = SocketService();
@@ -134,7 +134,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     if (!kIsWeb && Platform.isAndroid) {
-      FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_SECURE);
+      FlutterWindowManagerPlus.clearFlags(FlutterWindowManagerPlus.FLAG_SECURE);
     }
     // We do NOT disconnect the socket here if we want it global, 
     // but we should remove the listeners tied to this specific chat screen.
@@ -412,7 +412,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             constraints: const BoxConstraints(maxWidth: 1200),
             child: Column(
           children: [
-                        if (widget.profile.whatsappNumber != null && widget.profile.whatsappNumber!.contains('*'))
+                        if (widget.profile.whatsappNumber.contains('*'))
               Container(
                 margin: const EdgeInsets.all(8.0),
                 padding: const EdgeInsets.all(12.0),
@@ -697,8 +697,11 @@ Expanded(
     bool hasThem = false;
     final selfUserId = Provider.of<AuthProvider>(context, listen: false).myProfile?["id"] ?? "";
     for (var m in _messages) {
-      if (m["sender"] == selfUserId) hasMe = true;
-      else hasThem = true;
+      if (m["sender"] == selfUserId) {
+        hasMe = true;
+      } else {
+        hasThem = true;
+      }
       if (hasMe && hasThem) return true;
     }
     return false;

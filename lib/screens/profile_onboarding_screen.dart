@@ -2,19 +2,13 @@ import '../utils/image_picker_helper.dart';
 
 import 'dart:convert';
 import 'dart:ui';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import '../utils/image_picker_helper.dart';
-import '../utils/image_picker_helper.dart';
-import '../utils/image_picker_helper.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
@@ -24,8 +18,6 @@ import '../widgets/custom_textfield.dart';
 import '../utils/india_locations.dart';
 import '../widgets/premium_feedback.dart';
 import 'congratulations_screen.dart';
-import 'dashboard_screen.dart';
-import '../utils/image_picker_helper.dart';
 import '../utils/storage_helper.dart';
 import '../widgets/animated_field_reveal.dart';
 
@@ -259,12 +251,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
     _saveOnboardingProgress();
   }
 
-  // Form keys for individual steps
-  final _step1Key = GlobalKey<FormState>();
-  final _step2Key = GlobalKey<FormState>();
-  final _step3Key = GlobalKey<FormState>();
-  final _step4Key = GlobalKey<FormState>();
-  final _step5Key = GlobalKey<FormState>();
+
   // --- Phase 1: Core Identity Fields ---
   String? _gender;
   DateTime? _dob;
@@ -337,7 +324,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
   // --- Phase 4: Photos & Requirements & Hobbies ---
   final List<String?> _uploadedPhotos = List.generate(3, (_) => null);
   final List<String> _availableHobbies = ['None', 'Reading', 'Traveling', 'Cooking', 'Music', 'Sports', 'Photography', 'Art', 'Dance', 'Movies', 'Gaming', 'Other'];
-  List<String> _selectedHobbies = [];
+  final List<String> _selectedHobbies = [];
   final _otherHobbiesController = TextEditingController();
   final _requirementsController = TextEditingController();
   final _whatWeProvideController = TextEditingController();
@@ -398,30 +385,6 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
     });
   }
 
-  Future<void> _selectDateOfBirth(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 365 * 22)), // Default 22 years ago
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)), // At least 18 yrs
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppTheme.accentGold,
-              onPrimary: Colors.black,
-              surface: AppTheme.cardGray,
-              onSurface: AppTheme.textCarbon,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      _calculateAge(picked);
-    }
-  }
 
   Future<void> _pickAndCompressPhoto(int index, ImageSource source) async {
     try {
@@ -551,86 +514,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
     }
   }
 
-  void _simulateHousePhotoUpload() {
-    if (kIsWeb) {
-      _pickHousePhoto(ImageSource.gallery);
-      return;
-    }
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.cardGray,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-      ),
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt_outlined, color: AppTheme.accentGold),
-                title: Text('Take Photo (Camera)', style: GoogleFonts.montserrat(color: AppTheme.textCarbon)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickHousePhoto(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library_outlined, color: AppTheme.accentGold),
-                title: Text('Choose from Gallery', style: GoogleFonts.montserrat(color: AppTheme.textCarbon)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickHousePhoto(ImageSource.gallery);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // Photo upload selector
-  void _simulatePhotoUpload(int index) {
-    // On web, camera is not reliably supported — skip the bottom sheet and
-    // go straight to the file-picker (gallery/file system).
-    if (kIsWeb) {
-      _pickAndCompressPhoto(index, ImageSource.gallery);
-      return;
-    }
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppTheme.cardGray,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-      ),
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt_outlined, color: AppTheme.accentGold),
-                title: Text('Take Photo (Camera)', style: GoogleFonts.montserrat(color: AppTheme.textCarbon)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickAndCompressPhoto(index, ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library_outlined, color: AppTheme.accentGold),
-                title: Text('Choose from Gallery', style: GoogleFonts.montserrat(color: AppTheme.textCarbon)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickAndCompressPhoto(index, ImageSource.gallery);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
 
   void _scrollToTop() {
@@ -960,30 +844,6 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-            
-          AnimatedFieldReveal(
-            isVisible: _whatsappNumberController.text.trim().length >= 10,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: AppTheme.cardWhite,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.glassBorderColor),
-              ),
-              child: SwitchListTile(
-                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
-                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
-                activeColor: AppTheme.accentGold,
-                value: _isWhatsappPrivate,
-                onChanged: (val) {
-                  setState(() {
-                    _isWhatsappPrivate = val;
-                  });
-                  _saveOnboardingProgress();
-                },
-              ),
-            ),
-          ),
           _buildSaveAndContinueButton()
         ],
       ),
@@ -1047,8 +907,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
                 return null;
               },
             ),
-          ),
-            
+          ),          
           AnimatedFieldReveal(
             isVisible: _whatsappNumberController.text.trim().length >= 10,
             child: Container(
@@ -1057,11 +916,14 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
                 color: AppTheme.cardWhite,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppTheme.glassBorderColor),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                ],
               ),
               child: SwitchListTile(
                 title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
                 subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
-                activeColor: AppTheme.accentGold,
+                activeThumbColor: AppTheme.accentGold,
                 value: _isWhatsappPrivate,
                 onChanged: (val) {
                   setState(() {
@@ -1131,9 +993,12 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: AppTheme.glassColor,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.glassBorderColor),
+                    color: AppTheme.cardWhite,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.glassBorderColor, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                    ],
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -1182,31 +1047,6 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-          
-          
-          AnimatedFieldReveal(
-            isVisible: _whatsappNumberController.text.trim().length >= 10,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: AppTheme.cardWhite,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.glassBorderColor),
-              ),
-              child: SwitchListTile(
-                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
-                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
-                activeColor: AppTheme.accentGold,
-                value: _isWhatsappPrivate,
-                onChanged: (val) {
-                  setState(() {
-                    _isWhatsappPrivate = val;
-                  });
-                  _saveOnboardingProgress();
-                },
-              ),
-            ),
-          ),
           _buildSaveAndContinueButton(),
         ],
       ),
@@ -1238,10 +1078,14 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: AppTheme.glassColor,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppTheme.glassBorderColor, width: 0.5),
+                color: AppTheme.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.glassBorderColor, width: 1.5),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                ],
               ),
               child: Row(
                 children: [
@@ -1259,7 +1103,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
           AnimatedFieldReveal(
             isVisible: _dob != null,
             child: DropdownButtonFormField<String>(
-              value: _height,
+              initialValue: _height,
               hint: Text('Height', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
               decoration: _dropdownDeco(Icons.height),
               items: _generateHeights().map((h) => DropdownMenuItem(value: h, child: Text(h))).toList(),
@@ -1318,30 +1162,6 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               hintText: Provider.of<LanguageProvider>(context).translate('other_specify') ?? 'Please specify (Other)',
               prefixIcon: Icons.info_outline,
               onChanged: (_) => setState(() {}),
-            ),
-          ),
-            
-          AnimatedFieldReveal(
-            isVisible: _whatsappNumberController.text.trim().length >= 10,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: AppTheme.cardWhite,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.glassBorderColor),
-              ),
-              child: SwitchListTile(
-                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
-                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
-                activeColor: AppTheme.accentGold,
-                value: _isWhatsappPrivate,
-                onChanged: (val) {
-                  setState(() {
-                    _isWhatsappPrivate = val;
-                  });
-                  _saveOnboardingProgress();
-                },
-              ),
             ),
           ),
           _buildSaveAndContinueButton()
@@ -1438,30 +1258,6 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               hintText: 'Nukh (Gotra)',
               prefixIcon: Icons.diversity_3_outlined,
               onChanged: (_) => setState(() {}),
-            ),
-          ),
-            
-          AnimatedFieldReveal(
-            isVisible: _whatsappNumberController.text.trim().length >= 10,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: AppTheme.cardWhite,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.glassBorderColor),
-              ),
-              child: SwitchListTile(
-                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
-                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
-                activeColor: AppTheme.accentGold,
-                value: _isWhatsappPrivate,
-                onChanged: (val) {
-                  setState(() {
-                    _isWhatsappPrivate = val;
-                  });
-                  _saveOnboardingProgress();
-                },
-              ),
             ),
           ),
           _buildSaveAndContinueButton()
@@ -1577,30 +1373,6 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               prefixIcon: Icons.account_balance_wallet_outlined,
               keyboardType: TextInputType.number,
               onChanged: (_) => setState(() {}),
-            ),
-          ),
-            
-          AnimatedFieldReveal(
-            isVisible: _whatsappNumberController.text.trim().length >= 10,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: AppTheme.cardWhite,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.glassBorderColor),
-              ),
-              child: SwitchListTile(
-                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
-                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
-                activeColor: AppTheme.accentGold,
-                value: _isWhatsappPrivate,
-                onChanged: (val) {
-                  setState(() {
-                    _isWhatsappPrivate = val;
-                  });
-                  _saveOnboardingProgress();
-                },
-              ),
             ),
           ),
           _buildSaveAndContinueButton()
@@ -1731,30 +1503,6 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-            
-          AnimatedFieldReveal(
-            isVisible: _whatsappNumberController.text.trim().length >= 10,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: AppTheme.cardWhite,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.glassBorderColor),
-              ),
-              child: SwitchListTile(
-                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
-                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
-                activeColor: AppTheme.accentGold,
-                value: _isWhatsappPrivate,
-                onChanged: (val) {
-                  setState(() {
-                    _isWhatsappPrivate = val;
-                  });
-                  _saveOnboardingProgress();
-                },
-              ),
-            ),
-          ),
           _buildSaveAndContinueButton()
         ],
       ),
@@ -1816,7 +1564,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('House/Property Photo (Optional)', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
+                  Text('House/Property Photo (Please upload House Photo ONLY)', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.redAccent)),
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () {
@@ -1952,30 +1700,6 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               hintText: Provider.of<LanguageProvider>(context).translate('other_specify') ?? 'Please specify (Other)',
               prefixIcon: Icons.star_outline,
               onChanged: (_) => setState(() {}),
-            ),
-          ),
-            
-          AnimatedFieldReveal(
-            isVisible: _whatsappNumberController.text.trim().length >= 10,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: AppTheme.cardWhite,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.glassBorderColor),
-              ),
-              child: SwitchListTile(
-                title: Text('Keep WhatsApp Number Private', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textCarbon)),
-                subtitle: Text('Only share with users you approve', style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.textMuted)),
-                activeColor: AppTheme.accentGold,
-                value: _isWhatsappPrivate,
-                onChanged: (val) {
-                  setState(() {
-                    _isWhatsappPrivate = val;
-                  });
-                  _saveOnboardingProgress();
-                },
-              ),
             ),
           ),
           _buildSaveAndContinueButton()
@@ -2447,7 +2171,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
             ),
           ),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           hint: Text(hintText, style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
           decoration: _dropdownDeco(prefixIcon),
           items: items.map((c) => DropdownMenuItem(value: c, child: Text(c, style: GoogleFonts.montserrat(color: AppTheme.textCarbon)))).toList(),
@@ -2585,8 +2309,9 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
     if (!mounted) return;
     final lang = Provider.of<LanguageProvider>(context, listen: false);
     String? message;
-    if (step == 2) message = lang.translate('motivational_1');
-    else if (step == 5) message = lang.translate('motivational_2');
+    if (step == 2) {
+      message = lang.translate('motivational_1');
+    } else if (step == 5) message = lang.translate('motivational_2');
     else if (step == 7) message = lang.translate('motivational_3');
     
     if (message != null) {
@@ -2626,7 +2351,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
         if (_hasDisability == 'Yes' && (_disabilityType == null || (_disabilityType == 'Other' && _otherDisabilityController.text.trim().isEmpty))) return false;
         break;
       case 4:
-        if (_maritalStatus == null || _manglikStatus == null || _medicalFit == null || _sindhiType == null || _nukhController.text.trim().isEmpty) return false;
+        if (_maritalStatus == null || _nukhController.text.trim().isEmpty) return false;
         if (_manglikStatus == 'Other' && _otherGrahController.text.trim().isEmpty) return false;
         if (_medicalFit == 'No' && _medicalIssueController.text.trim().isEmpty) return false;
         if (_sindhiType == 'Other' && _otherSindhiTypeController.text.trim().isEmpty) return false;
@@ -2639,9 +2364,9 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
         }
         break;
       case 6:
-        if (_fatherStatus == null || _motherStatus == null || _siblingsCountController.text.trim().isEmpty || _siblingsDetailsController.text.trim().isEmpty || _liveWithFamily == null) return false;
-        if (_fatherStatus != null && _fatherNameController.text.trim().isEmpty) return false;
-        if (_motherStatus != null && _motherNameController.text.trim().isEmpty) return false;
+        if (_siblingsCountController.text.trim().isEmpty || _siblingsDetailsController.text.trim().isEmpty) return false;
+        if (_fatherNameController.text.trim().isEmpty) return false;
+        if (_motherNameController.text.trim().isEmpty) return false;
         break;
       case 7:
         if (_ownHouse == null || _selectedHobbies.isEmpty) return false;
@@ -2651,7 +2376,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
         break;
       case 9:
         if (!_acceptedTerms || !_acceptedInfoTrue) return false;
-        int nonNullPhotos = _uploadedPhotos.where((p) => p != null && p!.isNotEmpty).length;
+        int nonNullPhotos = _uploadedPhotos.where((p) => p != null && p.isNotEmpty).length;
         if (nonNullPhotos == 0) return false;
         break;
       case 10:
@@ -2663,6 +2388,13 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
 
   void _nextStep() {
     if (!_validateCurrentStep()) {
+      if (_currentStep == 9) {
+        int nonNullPhotos = _uploadedPhotos.where((p) => p != null && p.isNotEmpty).length;
+        if (nonNullPhotos == 0) {
+          _showErrorSnackBar('At least 1 profile photo is mandatory.');
+          return;
+        }
+      }
       _showErrorSnackBar(Provider.of<LanguageProvider>(context, listen: false).translate('fill_all_fields') ?? 'Please fill all required fields correctly before proceeding.');
       return;
     }

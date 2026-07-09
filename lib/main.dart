@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:app_links/app_links.dart';
 import 'dart:async';
@@ -18,7 +17,6 @@ import 'screens/welcome_screen.dart';
 import 'utils/storage_helper.dart';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'screens/splash_screen.dart';
 
@@ -135,6 +133,7 @@ class _MyAppState extends State<MyApp> {
             final bool bannerEnabled = config?['globalBannerEnabled'] == true;
             final String maintMsg = config?['maintenanceMessage'] ?? 'Software under maintenance, come back later.';
             final String bannerMsg = config?['globalBannerMessage'] ?? 'Welcome to Perfect Bandhan!';
+            final String? bannerImg = config?['globalBannerImageUrl'];
 
             Widget mainContent = child ?? const SizedBox.shrink();
 
@@ -177,17 +176,26 @@ class _MyAppState extends State<MyApp> {
                       child: Material(
                         elevation: 4,
                         color: AppTheme.accentGold,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: SizedBox(
                           width: double.infinity,
-                          child: Row(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.info_outline, color: Colors.black, size: 20),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  bannerMsg,
-                                  style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
+                              if (bannerImg != null && bannerImg.isNotEmpty)
+                                Image.network(bannerImg, width: double.infinity, fit: BoxFit.cover, errorBuilder: (ctx, _, _) => const SizedBox.shrink()),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.info_outline, color: Colors.black, size: 20),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        bannerMsg,
+                                        style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],

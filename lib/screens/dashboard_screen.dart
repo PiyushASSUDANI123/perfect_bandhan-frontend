@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -21,8 +20,6 @@ import 'chat_screen.dart';
 import 'notifications_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/storage_helper.dart';
-import '../widgets/profile_completion_ring.dart';
-import '../widgets/global_completion_overlay.dart';
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -756,7 +753,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   Text(lang.translate('city_filter'), style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: _homeSelectedState,
+                    initialValue: _homeSelectedState,
                     decoration: const InputDecoration(border: OutlineInputBorder()),
                     hint: Text(lang.translate('all_locations')),
                     items: [
@@ -1405,7 +1402,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             child: Row(
               children: [
                 _buildActivityStatCard(
-                  count: provider.profileVisitsList.length > 0 ? provider.profileVisitsList.length.toString() : provider.profileVisits.toString(),
+                  count: provider.profileVisitsList.isNotEmpty ? provider.profileVisitsList.length.toString() : provider.profileVisits.toString(),
                   label: lang.translate('profile_visits'),
                   color: Colors.green,
                   onTap: () => _showProfileListDialog(context, 'Profile Visits', provider.profileVisitsList),
@@ -1419,7 +1416,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 ),
                 const SizedBox(width: 10),
                 _buildActivityStatCard(
-                  count: provider.contactViewsList.length > 0 ? provider.contactViewsList.length.toString() : provider.contactViews.toString(),
+                  count: provider.contactViewsList.isNotEmpty ? provider.contactViewsList.length.toString() : provider.contactViews.toString(),
                   label: lang.translate('contact_views'),
                   color: Colors.blue,
                   onTap: () => _showProfileListDialog(context, 'Contact Views', provider.contactViewsList),
@@ -1479,8 +1476,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                       ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
                       : provider.incomingInterests.isEmpty
                           ? _buildActivityEmptyState()
-                          : ListView.builder(
+                          : MasonryGridView.count(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
                               itemCount: provider.incomingInterests.length,
                               itemBuilder: (context, index) {
                                 final p = provider.incomingInterests[index];
@@ -1491,8 +1491,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 // Accepted Tab
                 provider.acceptedInterests.isEmpty
                     ? _buildActivityEmptyState()
-                    : ListView.builder(
+                    : MasonryGridView.count(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
                         itemCount: provider.acceptedInterests.length,
                         itemBuilder: (context, index) {
                           final profile = provider.acceptedInterests[index];
@@ -1502,8 +1505,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                 // Sent Tab
                 provider.sentInterests.isEmpty
                     ? _buildActivityEmptyState()
-                    : ListView.builder(
+                    : MasonryGridView.count(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
                         itemCount: provider.sentInterests.length,
                         itemBuilder: (context, index) {
                           final profile = provider.sentInterests[index];
@@ -1767,6 +1773,15 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                         context: context,
                                         title: lang.translate('chat_locked'),
                                         message: 'You must have an accepted mutual interest to open this chat.',
+                                      );
+                                      return;
+                                    }
+                                    if (provider.appConfig?['chatComingSoon'] == true) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Chat is currently under development. Coming soon!'),
+                                          backgroundColor: Colors.blueAccent,
+                                        ),
                                       );
                                       return;
                                     }
@@ -2191,7 +2206,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                   const Text('Reason:'),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: selectedReason,
+                    initialValue: selectedReason,
                     items: ['Not Interested', 'Harassment', 'Spam', 'Fake Profile', 'Other']
                         .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                         .toList(),
@@ -2252,7 +2267,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                   const Text('Reason:'),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: selectedReason,
+                    initialValue: selectedReason,
                     items: ['Inappropriate Content', 'Fake Profile', 'Spam', 'Harassment', 'Other']
                         .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                         .toList(),
@@ -2767,7 +2782,7 @@ _Shared via Perfect Bandhan — Sindhi Matrimony App_ 🤝
 /// Compact scrollable card for the Received Requests tab
 class ReceivedRequestCard extends StatefulWidget {
   final Profile profile;
-  const ReceivedRequestCard({required this.profile});
+  const ReceivedRequestCard({super.key, required this.profile});
 
   @override
   State<ReceivedRequestCard> createState() => ReceivedRequestCardState();
@@ -2814,7 +2829,7 @@ class ReceivedRequestCardState extends State<ReceivedRequestCard> {
                     borderRadius: BorderRadius.circular(14),
                     child: hasPhoto
                         ? Image.network(profile.photos.first, width: 72, height: 72, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildInitialsAvatar(profile))
+                            errorBuilder: (_, _, _) => _buildInitialsAvatar(profile))
                         : _buildInitialsAvatar(profile),
                   ),
                   const SizedBox(width: 14),
@@ -2823,7 +2838,7 @@ class ReceivedRequestCardState extends State<ReceivedRequestCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${profile.name}${profile.age != null ? ", ${profile.age}" : ""}',
+                          '${profile.name}${", ${profile.age}"}',
                           style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textCarbon),
                         ),
                         const SizedBox(height: 4),
@@ -2997,7 +3012,7 @@ class _AcceptedRequestCardState extends State<AcceptedRequestCard> {
                     borderRadius: BorderRadius.circular(14),
                     child: hasPhoto
                         ? Image.network(profile.photos.first, width: 72, height: 72, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildInitialsAvatar(profile))
+                            errorBuilder: (_, _, _) => _buildInitialsAvatar(profile))
                         : _buildInitialsAvatar(profile),
                   ),
                   const SizedBox(width: 14),
@@ -3006,7 +3021,7 @@ class _AcceptedRequestCardState extends State<AcceptedRequestCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${profile.name}${profile.age != null ? ", ${profile.age}" : ""}',
+                          '${profile.name}${", ${profile.age}"}',
                           style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textCarbon),
                         ),
                         const SizedBox(height: 4),
@@ -3061,7 +3076,13 @@ class _AcceptedRequestCardState extends State<AcceptedRequestCard> {
                 Expanded(
                   flex: 2,
                   child: ElevatedButton.icon(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(profile: profile))),
+                    onPressed: () {
+                      if (provider.appConfig?['chatComingSoon'] == true) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat is currently under development. Coming soon!'), backgroundColor: Colors.blueAccent));
+                        return;
+                      }
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(profile: profile)));
+                    },
                     icon: const Icon(Icons.chat_bubble_rounded, size: 16),
                     label: Text('Chat Now', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w700)),
                     style: ElevatedButton.styleFrom(
@@ -3133,7 +3154,7 @@ class SentRequestCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                     child: hasPhoto
                         ? Image.network(profile.photos.first, width: 72, height: 72, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildInitialsAvatar(profile))
+                            errorBuilder: (_, _, _) => _buildInitialsAvatar(profile))
                         : _buildInitialsAvatar(profile),
                   ),
                   const SizedBox(width: 14),
@@ -3142,7 +3163,7 @@ class SentRequestCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${profile.name}${profile.age != null ? ", ${profile.age}" : ""}',
+                          '${profile.name}${", ${profile.age}"}',
                           style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textCarbon),
                         ),
                         const SizedBox(height: 4),

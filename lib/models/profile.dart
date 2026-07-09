@@ -13,7 +13,15 @@ class Profile {
   final String bio;
   final int compatibilityScore;
   final List<Color> gradientColors; // For premium Apple-style abstract background shapes
-  final String initials;
+  String get initials {
+    if (name.isEmpty) return 'U';
+    final parts = name.trim().split(' ');
+    if (parts.length > 1) {
+      return "${parts[0][0]}${parts[1][0]}".toUpperCase();
+    }
+    return name[0].toUpperCase();
+  }
+
   final String fathersOccupation;
   final String weight;
   final String fatherStatus;
@@ -61,7 +69,6 @@ class Profile {
     required this.bio,
     required this.compatibilityScore,
     required this.gradientColors,
-    required this.initials,
     required this.fathersOccupation,
     this.weight = '',
     this.fatherStatus = 'Alive',
@@ -117,7 +124,8 @@ class Profile {
     if (json['photos'] != null && json['photos'] is List) {
       photoList = (json['photos'] as List)
           .where((p) => p != null)
-          .map((p) => p.toString())
+          .map((p) => p.toString().trim())
+          .where((p) => p.isNotEmpty && (p.startsWith('http') || p.startsWith('data:image')))
           .toList();
     }
 
@@ -142,7 +150,6 @@ class Profile {
       bio: s('bio'),
       compatibilityScore: json['compatibilityScore'] is int ? json['compatibilityScore'] : int.tryParse(json['compatibilityScore']?.toString() ?? '0') ?? 0,
       gradientColors: colors,
-      initials: s('initials'),
       fathersOccupation: s('fathersOccupation'),
       weight: s('weight'),
       fatherStatus: s('fatherStatus', 'Alive'),
@@ -196,7 +203,6 @@ class Profile {
           bio: 'Design enthusiast who loves minimalism, traveling to Nordic countries, and standard filter coffees. Believes in balancing Sindhi heritage with progressive global views.',
           compatibilityScore: 98,
           gradientColors: [const Color(0xFFE0C3FC), const Color(0xFF8EC5FC)],
-          initials: 'PC',
           fathersOccupation: 'Real Estate Developer',
           incomeBracket: '20+ Lakhs',
           professionSector: 'Corporate Job',
@@ -218,7 +224,6 @@ class Profile {
           bio: 'Building systems to democratize credit in India. Passionate about scaling startups, writing tech blogs, and playing classical piano. Looking for a partner who is driven and empathetic.',
           compatibilityScore: 95,
           gradientColors: [const Color(0xFFFEE140), const Color(0xFFFA709A)],
-          initials: 'RL',
           fathersOccupation: 'Retired Textile Merchant',
           incomeBracket: '20+ Lakhs',
           professionSector: 'Business',
@@ -240,7 +245,6 @@ class Profile {
           bio: 'Analyzes markets by day, paints abstract art by night. Love exploring boutique cafes in Dubai and reading philosophy. Looking for a sincere companion to build a beautiful life.',
           compatibilityScore: 92,
           gradientColors: [const Color(0xFF43E97B), const Color(0xFF38F9D7)],
-          initials: 'HS',
           fathersOccupation: 'Diamond Merchant',
           incomeBracket: '20+ Lakhs',
           professionSector: 'Corporate Job',
@@ -262,7 +266,6 @@ class Profile {
           bio: 'AI researcher and open-source contributor. Weekend runner and trekker. Looking for someone with a scientific temperament, a warm heart, and a love for deep conversations.',
           compatibilityScore: 90,
           gradientColors: [const Color(0xFFFA8BFF), const Color(0xFF2BD2FF), const Color(0xFF2BFF88)],
-          initials: 'KG',
           fathersOccupation: 'Senior Cardiologist',
           incomeBracket: '20+ Lakhs',
           professionSector: 'Corporate Job',
@@ -284,7 +287,6 @@ class Profile {
           bio: 'Dedicated to children\'s healthcare. Enjoys gardening, baking artisanal sourdoughs, and family gatherings. Looking for a family-oriented, kind-hearted gentleman.',
           compatibilityScore: 88,
           gradientColors: [const Color(0xFFFF9A9E), const Color(0xFFFECFEF)],
-          initials: 'MV',
           fathersOccupation: 'Industrialist (Chemicals)',
           incomeBracket: '10-20 Lakhs',
           professionSector: 'Corporate Job',
@@ -306,7 +308,6 @@ class Profile {
           bio: 'Oversees asset portfolios. Passionate about architecture, sailing, and golf. Believes that mutual respect and shared laughter are the pillars of a long-lasting marriage.',
           compatibilityScore: 85,
           gradientColors: [const Color(0xFFF6D365), const Color(0xFFFDA085)],
-          initials: 'VM',
           fathersOccupation: 'Chairman, Mulchandani Group',
           incomeBracket: '20+ Lakhs',
           professionSector: 'Business',

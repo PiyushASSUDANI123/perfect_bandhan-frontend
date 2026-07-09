@@ -10,7 +10,6 @@ import '../providers/auth_provider.dart';
 import '../providers/language_provider.dart';
 import '../widgets/custom_loader.dart';
 import 'otp_screen.dart';
-import 'admin_panel_screen.dart';
 import '../main.dart';
 
 class LoginScreen extends StatefulWidget {

@@ -152,6 +152,17 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
   }
 
   void _openInAppChat() {
+    final provider = Provider.of<AuthProvider>(context, listen: false);
+    if (provider.appConfig?['chatComingSoon'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Chat is currently under development. Coming soon!'),
+          backgroundColor: Colors.blueAccent,
+        ),
+      );
+      return;
+    }
+    
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -181,7 +192,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
         heightFactor: 0.9,
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
+            constraints: BoxConstraints(maxWidth: isDesktop ? 1200 : 800),
             child: Column(
               children: [
                 // Slide Bar / Drag Handle
@@ -200,38 +211,76 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
     
                 // Scrollable Content
                 Expanded(
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    physics: const BouncingScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Photo Carousel / Premium Bento Hero Card
-                          const SizedBox(height: 12.0),
-                          _buildPhotoCarousel(size),
-                          const SizedBox(height: 20.0),
-    
-                          // Match Rate & Compatibility Tag
-                          _buildHeaderSection(),
-                          const SizedBox(height: 24.0),
-    
-                          // Bento Blocks Layout
-                          _buildBentoBlocks(isDesktop),
-                          const SizedBox(height: 24.0),
-
-                          // UGC Safety details (Play Store compliance)
-                          _buildUgcSafetyButtons(),
-                          const SizedBox(height: 32.0),
-                        ],
-                      ),
+                  child: isDesktop 
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Pane (Sticky Photo Carousel)
+                        Expanded(
+                          flex: 4,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 12, 12, 24),
+                            child: Column(
+                              children: [
+                                _buildPhotoCarousel(size),
+                                const Spacer(),
+                                _buildStickyBottomBar(),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Right Pane (Scrollable Info)
+                        Expanded(
+                          flex: 6,
+                          child: SingleChildScrollView(
+                            controller: _scrollController,
+                            physics: const BouncingScrollPhysics(),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 12, 24, 24),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildHeaderSection(),
+                                  const SizedBox(height: 24.0),
+                                  _buildBentoBlocks(isDesktop),
+                                  const SizedBox(height: 24.0),
+                                  _buildUgcSafetyButtons(),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            controller: _scrollController,
+                            physics: const BouncingScrollPhysics(),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 12.0),
+                                  _buildPhotoCarousel(size),
+                                  const SizedBox(height: 20.0),
+                                  _buildHeaderSection(),
+                                  const SizedBox(height: 24.0),
+                                  _buildBentoBlocks(isDesktop),
+                                  const SizedBox(height: 24.0),
+                                  _buildUgcSafetyButtons(),
+                                  const SizedBox(height: 32.0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        _buildStickyBottomBar(),
+                      ],
                     ),
-                  ),
                 ),
-    
-                // Sticky Bottom CTA Bar
-                _buildStickyBottomBar(),
               ],
             ),
           ),
@@ -889,7 +938,6 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
   Widget _buildStickyBottomBar() {
     final provider = Provider.of<AuthProvider>(context);
     final profile = widget.profile;
-    final isLocked = profile.phone == 'LOCKED';
     final interestStatus = profile.interestStatus;
     final isDeveloper = provider.phoneNumber == '9413879444' || provider.phoneNumber == '+919413879444';
 
@@ -1393,7 +1441,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
                   Text('Reason:', style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: selectedReason,
+                    initialValue: selectedReason,
                     items: ['Inappropriate Content', 'Fake Profile', 'Spam', 'Harassment', 'Other']
                         .map((e) => DropdownMenuItem(value: e, child: Text(e, style: GoogleFonts.montserrat(fontSize: 13))))
                         .toList(),
@@ -1470,7 +1518,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
                   Text('Reason:', style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: selectedReason,
+                    initialValue: selectedReason,
                     items: ['Not Interested', 'Harassment', 'Spam', 'Fake Profile', 'Other']
                         .map((e) => DropdownMenuItem(value: e, child: Text(e, style: GoogleFonts.montserrat(fontSize: 13))))
                         .toList(),

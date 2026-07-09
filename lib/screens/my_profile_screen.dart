@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,11 +15,8 @@ import '../widgets/manage_photos_sheet.dart';
 import '../widgets/edit_profile_sheet.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/partner_preferences_sheet.dart';
-import '../utils/image_picker_helper.dart';
-import 'partner_preferences_screen.dart';
 import 'terms_and_conditions_screen.dart';
 import 'about_screen.dart';
-import '../widgets/profile_completion_ring.dart';
 import 'login_screen.dart';
 import 'admin_panel_screen.dart';
 class MyProfileScreen extends StatefulWidget {
@@ -58,6 +54,70 @@ class _MyProfileScreenState extends State<MyProfileScreen>
   }
 
   // ─── Helper ───────────────────────────────────────────────────────────────
+
+  void _openFullScreenPhoto(String photoUrl) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog.fullscreen(
+        backgroundColor: Colors.black,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: photoUrl.startsWith('data:image/')
+                    ? (() {
+                        try {
+                          final String base64Data = photoUrl.split(',')[1];
+                          final Uint8List imageBytes = base64Decode(base64Data);
+                          return Image.memory(imageBytes, fit: BoxFit.contain);
+                        } catch (_) {
+                          return const Icon(Icons.broken_image, color: Colors.white, size: 64);
+                        }
+                      })()
+                    : Image.network(photoUrl, fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.broken_image, color: Colors.white, size: 64)),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 16,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 32),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResponsiveGrid(BuildContext context, List<Widget> children) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Decide column count based on available width
+        int columns = constraints.maxWidth >= 900 ? 4 : (constraints.maxWidth >= 600 ? 3 : 2);
+        
+        // Use Wrap for dynamic height cards
+        double spacing = 12.0;
+        // Total spacing = (columns - 1) * spacing
+        double width = (constraints.maxWidth - (spacing * (columns - 1))) / columns;
+        
+        // To avoid pixel precision errors, floor the width slightly
+        width = width.floorToDouble();
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: children.map((child) => SizedBox(width: width, child: child)).toList(),
+        );
+      },
+    );
+  }
 
   String _safeStr(Map<String, dynamic> data, String key,
       {String fallback = '—'}) {
@@ -880,35 +940,40 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 900),
+                constraints: const BoxConstraints(maxWidth: 1200),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Update Profile Button ──
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (context) => const EditProfileSheet(),
-                          );
-                        },
-                        icon: const Icon(Icons.edit_rounded, size: 20),
-                        label: Text(Provider.of<LanguageProvider>(context).translate('update_profile')),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.accentGold,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          textStyle: GoogleFonts.montserrat(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 400),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) => const EditProfileSheet(),
+                              );
+                            },
+                            icon: const Icon(Icons.edit_rounded, size: 20),
+                            label: Text(Provider.of<LanguageProvider>(context).translate('update_profile')),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.accentGold,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              textStyle: GoogleFonts.montserrat(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -916,65 +981,41 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 24),
                     _sectionLabel('PERSONAL INTEL'),
                     const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.cake_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('age_height'),
-                          value: '${age > 0 ? age : '—'} yrs  ·  ${_safeStr(data, 'height')}',
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.location_on_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('lives_in'),
-                          value: _safeStr(data, 'city'),
-                          subValue: _safeStr(data, 'state'),
-                        )),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.favorite_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('marital_status'),
-                          value: _safeStr(data, 'maritalStatus'),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.people_alt_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('clan_nukh'),
-                          value: _safeStr(data, 'caste'),
-                          accent: true,
-                        )),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.accessibility_new_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('complexion_weight'),
-                          value: _safeStr(data, 'complexion'),
-                          subValue: _safeStr(data, 'weight', fallback: 'Not specified'),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.wheelchair_pickup_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('disability'),
-                          value: _safeStr(data, 'physicalDisability', fallback: 'None'),
-                        )),
-                      ],
-                    ),
+                    _buildResponsiveGrid(context, [
+                      _bentoCard(
+                        icon: Icons.cake_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('age_height'),
+                        value: '${age > 0 ? age : '—'} yrs  ·  ${_safeStr(data, 'height')}',
+                      ),
+                      _bentoCard(
+                        icon: Icons.location_on_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('lives_in'),
+                        value: _safeStr(data, 'city'),
+                        subValue: _safeStr(data, 'state'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.favorite_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('marital_status'),
+                        value: _safeStr(data, 'maritalStatus'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.people_alt_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('clan_nukh'),
+                        value: _safeStr(data, 'caste'),
+                        accent: true,
+                      ),
+                      _bentoCard(
+                        icon: Icons.accessibility_new_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('complexion_weight'),
+                        value: _safeStr(data, 'complexion'),
+                        subValue: _safeStr(data, 'weight', fallback: 'Not specified'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.wheelchair_pickup_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('disability'),
+                        value: _safeStr(data, 'physicalDisability', fallback: 'None'),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.format_quote_rounded,
@@ -1031,24 +1072,18 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 28),
                     _sectionLabel('CONTACT & LOCATION DETAILS'),
                     const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.phone_android_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('whatsapp'),
-                          value: _safeStr(data, 'whatsappNumber', fallback: 'Not provided'),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.map_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('district'),
-                          value: _safeStr(data, 'district', fallback: 'Not provided'),
-                        )),
-                      ],
-                    ),
+                    _buildResponsiveGrid(context, [
+                      _bentoCard(
+                        icon: Icons.phone_android_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('whatsapp'),
+                        value: _safeStr(data, 'whatsappNumber', fallback: 'Not provided'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.map_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('district'),
+                        value: _safeStr(data, 'district', fallback: 'Not provided'),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.home_rounded,
@@ -1060,43 +1095,28 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 28),
                     _sectionLabel('ASTROLOGICAL INTEL'),
                     const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.calendar_today_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('date_of_birth'),
-                          value: _safeStr(data, 'dob') != '' && _safeStr(data, 'dob').length > 10 ? _safeStr(data, 'dob').substring(0, 10) : _safeStr(data, 'dob', fallback: 'Not specified'),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.access_time_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('birth_time'),
-                          value: _safeStr(data, 'birthTime', fallback: 'Not specified'),
-                        )),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.place_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('birth_place'),
-                          value: _safeStr(data, 'birthPlace', fallback: 'Not specified'),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.star_border_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('manglik_status'),
-                          value: _safeStr(data, 'manglikStatus', fallback: 'Not specified'),
-                        )),
-                      ],
-                    ),
+                    _buildResponsiveGrid(context, [
+                      _bentoCard(
+                        icon: Icons.calendar_today_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('date_of_birth'),
+                        value: _safeStr(data, 'dob') != '' && _safeStr(data, 'dob').length > 10 ? _safeStr(data, 'dob').substring(0, 10) : _safeStr(data, 'dob', fallback: 'Not specified'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.access_time_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('birth_time'),
+                        value: _safeStr(data, 'birthTime', fallback: 'Not specified'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.place_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('birth_place'),
+                        value: _safeStr(data, 'birthPlace', fallback: 'Not specified'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.star_border_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('manglik_status'),
+                        value: _safeStr(data, 'manglikStatus', fallback: 'Not specified'),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.auto_awesome_rounded,
@@ -1108,24 +1128,18 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 28),
                     _sectionLabel('FAMILY INTEL'),
                     const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.family_restroom_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('family_type'),
-                          value: _safeStr(data, 'familyType', fallback: 'Not specified'),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.groups_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('siblings'),
-                          value: _safeStr(data, 'siblingsCount', fallback: '0'),
-                        )),
-                      ],
-                    ),
+                    _buildResponsiveGrid(context, [
+                      _bentoCard(
+                        icon: Icons.family_restroom_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('family_type'),
+                        value: _safeStr(data, 'familyType', fallback: 'Not specified'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.groups_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('siblings'),
+                        value: _safeStr(data, 'siblingsCount', fallback: '0'),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.info_outline_rounded,
@@ -1134,69 +1148,48 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                       fullWidth: true,
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.person_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('father'),
-                          value: _safeStr(data, 'fatherStatus', fallback: 'Alive'),
-                          subValue: _safeStr(data, 'fathersOccupation', fallback: 'Occupation not specified'),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.pregnant_woman_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('mother'),
-                          value: _safeStr(data, 'motherStatus', fallback: 'Alive'),
-                          subValue: _safeStr(data, 'mothersOccupation', fallback: 'Occupation not specified'),
-                        )),
-                      ],
-                    ),
+                    _buildResponsiveGrid(context, [
+                      _bentoCard(
+                        icon: Icons.person_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('father'),
+                        value: _safeStr(data, 'fatherStatus', fallback: 'Alive'),
+                        subValue: _safeStr(data, 'fathersOccupation', fallback: 'Occupation not specified'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.pregnant_woman_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('mother'),
+                        value: _safeStr(data, 'motherStatus', fallback: 'Alive'),
+                        subValue: _safeStr(data, 'mothersOccupation', fallback: 'Occupation not specified'),
+                      ),
+                    ]),
 
                     const SizedBox(height: 28),
                     _sectionLabel('CAREER & WEALTH'),
                     const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.work_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('profession'),
-                          value: _safeStr(data, 'profession'),
-                          subValue: _safeStr(data, 'company'),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.school_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('education'),
-                          value: _safeStr(data, 'education'),
-                        )),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.account_balance_wallet_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('monthly_income'),
-                          value: incomeHidden ? 'Private' : _safeStr(data, 'monthlyIncome'),
-                          accent: !incomeHidden,
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.badge_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('job_title'),
-                          value: _safeStr(data, 'jobPost', fallback: 'Not working/Self'),
-                        )),
-                      ],
-                    ),
+                    _buildResponsiveGrid(context, [
+                      _bentoCard(
+                        icon: Icons.work_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('profession'),
+                        value: _safeStr(data, 'profession'),
+                        subValue: _safeStr(data, 'company'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.school_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('education'),
+                        value: _safeStr(data, 'education'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.account_balance_wallet_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('monthly_income'),
+                        value: incomeHidden ? 'Private' : _safeStr(data, 'monthlyIncome'),
+                        accent: !incomeHidden,
+                      ),
+                      _bentoCard(
+                        icon: Icons.badge_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('job_title'),
+                        value: _safeStr(data, 'jobPost', fallback: 'Not working/Self'),
+                      ),
+                    ]),
                     const SizedBox(height: 12),
                     _bentoCard(
                       icon: Icons.account_balance_rounded,
@@ -1209,64 +1202,40 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     const SizedBox(height: 28),
                     _sectionLabel('FAMILY BACKGROUND'),
                     const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.family_restroom_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('family_type'),
-                          value: _safeStr(data, 'familyType', fallback: 'Nuclear'),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.place_rounded,
-                          label: 'City of Origin',
-                          value: _safeStr(data, 'cityOfOrigin', fallback: 'Not specified'),
-                        )),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.person_rounded,
-                          label: "Father",
-                          value: _safeStr(data, 'fatherStatus', fallback: 'Alive'),
-                          subValue: _safeStr(data, 'fathersOccupation', fallback: ''),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.pregnant_woman_rounded,
-                          label: "Mother",
-                          value: _safeStr(data, 'motherStatus', fallback: 'Alive'),
-                          subValue: _safeStr(data, 'mothersOccupation', fallback: ''),
-                        )),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.people_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('siblings'),
-                          value: _safeStr(data, 'siblingsCount', fallback: '0'),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: _bentoCard(
-                          icon: Icons.house_rounded,
-                          label: Provider.of<LanguageProvider>(context).translate('own_house'),
-                          value: _safeStr(data, 'ownHouse', fallback: 'No'),
-                        )),
-                      ],
-                    ),
+                    _buildResponsiveGrid(context, [
+                      _bentoCard(
+                        icon: Icons.family_restroom_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('family_type'),
+                        value: _safeStr(data, 'familyType', fallback: 'Nuclear'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.place_rounded,
+                        label: 'City of Origin',
+                        value: _safeStr(data, 'cityOfOrigin', fallback: 'Not specified'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.person_rounded,
+                        label: "Father",
+                        value: _safeStr(data, 'fatherStatus', fallback: 'Alive'),
+                        subValue: _safeStr(data, 'fathersOccupation', fallback: ''),
+                      ),
+                      _bentoCard(
+                        icon: Icons.pregnant_woman_rounded,
+                        label: "Mother",
+                        value: _safeStr(data, 'motherStatus', fallback: 'Alive'),
+                        subValue: _safeStr(data, 'mothersOccupation', fallback: ''),
+                      ),
+                      _bentoCard(
+                        icon: Icons.people_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('siblings'),
+                        value: _safeStr(data, 'siblingsCount', fallback: '0'),
+                      ),
+                      _bentoCard(
+                        icon: Icons.house_rounded,
+                        label: Provider.of<LanguageProvider>(context).translate('own_house'),
+                        value: _safeStr(data, 'ownHouse', fallback: 'No'),
+                      ),
+                    ]),
                     if (_safeStr(data, 'siblingsCount', fallback: '0') != '0' && _safeStr(data, 'siblingsCount', fallback: '0') != '0 ') ...[
                       const SizedBox(height: 12),
                       _bentoCard(
@@ -1302,6 +1271,92 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     ),
 
                     const SizedBox(height: 32),
+
+                    // ✨ My Gallery
+                    if (uploadedPhotos.isNotEmpty || (housePhoto.isNotEmpty))
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('✨ My Gallery', style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold, fontSize: 18)),
+                              IconButton(
+                                icon: const Icon(Icons.camera_alt, color: AppTheme.textMuted, size: 20),
+                                onPressed: _managePhotos,
+                                tooltip: 'Manage Photos',
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 140,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              children: [
+                                ...uploadedPhotos.map((photo) {
+                                  return GestureDetector(
+                                    onTap: () => _openFullScreenPhoto(photo.toString()),
+                                    child: Container(
+                                      width: 120,
+                                      margin: const EdgeInsets.only(right: 12),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(color: AppTheme.glassBorderGold, width: 1.0),
+                                        boxShadow: [
+                                          BoxShadow(color: AppTheme.accentGold.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))
+                                        ],
+                                        image: DecorationImage(
+                                          image: (photo.toString().startsWith('data:image/') 
+                                            ? MemoryImage(base64Decode(photo.toString().split(',')[1]))
+                                            : NetworkImage(photo.toString())) as ImageProvider,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                                if (housePhoto.isNotEmpty)
+                                  GestureDetector(
+                                    onTap: () => _openFullScreenPhoto(housePhoto),
+                                    child: Container(
+                                      width: 120,
+                                      margin: const EdgeInsets.only(right: 12),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(color: AppTheme.glassBorderGold, width: 1.0),
+                                        boxShadow: [
+                                          BoxShadow(color: AppTheme.accentGold.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))
+                                        ],
+                                        image: DecorationImage(
+                                          image: (housePhoto.startsWith('data:image/') 
+                                            ? MemoryImage(base64Decode(housePhoto.split(',')[1]))
+                                            : NetworkImage(housePhoto)) as ImageProvider,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.bottomCenter,
+                                        child: Container(
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.6),
+                                            borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(vertical: 6),
+                                          child: Text('House', textAlign: TextAlign.center, style: GoogleFonts.montserrat(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+                      ),
+
                     // ✨ Know About Yourself AI Insight Section
                     if (birthTime.isEmpty || birthPlace.isEmpty)
                       Container(
