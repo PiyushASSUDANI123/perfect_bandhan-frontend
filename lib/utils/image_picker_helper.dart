@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 
-Future<Uint8List?> selectImage() async {
+Future<Uint8List?> selectImage(BuildContext context) async {
   final ImagePicker picker = ImagePicker();
   final XFile? pickedFile = await picker.pickImage(
     source: ImageSource.gallery,
@@ -38,6 +38,14 @@ Future<Uint8List?> selectImage() async {
           CropAspectRatioPreset.ratio4x3,
           CropAspectRatioPreset.ratio16x9
         ],
+      ),
+      WebUiSettings(
+        context: context,
+        presentStyle: WebPresentStyle.dialog,
+        boundary: const CroppieBoundary(width: 520, height: 520),
+        viewPort: const CroppieViewPort(width: 480, height: 480, type: 'square'),
+        enableZoom: true,
+        showZoomer: true,
       ),
     ],
   );

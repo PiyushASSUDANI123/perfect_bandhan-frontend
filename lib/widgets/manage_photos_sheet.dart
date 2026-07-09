@@ -19,7 +19,7 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
 
   Future<void> _addPhoto() async {
     try {
-      final Uint8List? originalBytes = await selectImage();
+      final Uint8List? originalBytes = await selectImage(context);
       if (originalBytes == null) return;
 
       setState(() => _isSaving = true);
@@ -322,7 +322,7 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
             else
               InkWell(
                 onTap: _isSaving ? null : () async {
-                  final Uint8List? bytes = await selectImage();
+                  final Uint8List? bytes = await selectImage(context);
                   if (bytes == null) return;
                   setState(() => _isSaving = true);
                   final b64 = base64Encode(bytes);

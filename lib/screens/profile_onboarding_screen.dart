@@ -388,7 +388,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
 
   Future<void> _pickAndCompressPhoto(int index, ImageSource source) async {
     try {
-      final Uint8List? originalBytes = await selectImage();
+      final Uint8List? originalBytes = await selectImage(context);
       if (originalBytes == null) return;
 
       if (mounted) {
@@ -455,7 +455,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
 
   Future<void> _pickHousePhoto(ImageSource source) async {
     try {
-      final Uint8List? originalBytes = await selectImage();
+      final Uint8List? originalBytes = await selectImage(context);
       if (originalBytes == null) return;
 
       if (mounted) {
@@ -2688,6 +2688,14 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
           ),
           IOSUiSettings(
             title: 'Edit Photo',
+          ),
+          WebUiSettings(
+            context: context,
+            presentStyle: WebPresentStyle.dialog,
+            boundary: const CroppieBoundary(width: 520, height: 520),
+            viewPort: const CroppieViewPort(width: 480, height: 480, type: 'square'),
+            enableZoom: true,
+            showZoomer: true,
           ),
         ],
       );
