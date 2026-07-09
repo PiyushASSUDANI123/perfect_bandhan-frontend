@@ -2692,10 +2692,8 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
           WebUiSettings(
             context: context,
             presentStyle: WebPresentStyle.dialog,
-            boundary: const CroppieBoundary(width: 520, height: 520),
-            viewPort: const CroppieViewPort(width: 480, height: 480, type: 'square'),
-            enableZoom: true,
-            showZoomer: true,
+            rotatable: true,
+            zoomable: true,
           ),
         ],
       );
