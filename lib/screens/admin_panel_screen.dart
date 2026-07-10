@@ -653,7 +653,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                 onChanged: (val) async {
                                   final authProv = Provider.of<AuthProvider>(context, listen: false);
                                   final String uId = user['_id'] ?? user['id'] ?? '';
-                                  bool success = await authProv.adminEditUser(uId, {'isActive': val});
+                                  bool success = await authProv.adminEditUser(uId, {'isActive': val, 'profileHidden': !val});
                                   if (success && mounted) {
                                     authProv.fetchAdminUsers();
                                     if (val == false) {
