@@ -2673,7 +2673,9 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
   Future<void> _pickPhoto(int index) async {
     final pickedFile = await ImagePicker().pickImage(
       source: ImageSource.gallery,
-      imageQuality: 100,
+      maxWidth: 1080,
+      maxHeight: 1080,
+      imageQuality: 75,
     );
     if (pickedFile != null) {
       final croppedFile = await ImageCropper().cropImage(

@@ -7,6 +7,9 @@ Future<Uint8List?> selectImage(BuildContext context) async {
   final ImagePicker picker = ImagePicker();
   final XFile? pickedFile = await picker.pickImage(
     source: ImageSource.gallery,
+    maxWidth: 1080,
+    maxHeight: 1080,
+    imageQuality: 75,
   );
   
   if (pickedFile == null) return null;
