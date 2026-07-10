@@ -88,13 +88,11 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     final double screenWidth = MediaQuery.sizeOf(context).width;
     int crossAxisCount = 1;
     
-    if (screenWidth >= 1800) {
-      crossAxisCount = 5;
-    } else if (screenWidth >= 1400) {
+    if (screenWidth >= 2000) {
       crossAxisCount = 4;
-    } else if (screenWidth >= 900) {
+    } else if (screenWidth >= 1100) {
       crossAxisCount = 3;
-    } else if (screenWidth >= 600) {
+    } else if (screenWidth >= 700) {
       crossAxisCount = 2;
     }
     
