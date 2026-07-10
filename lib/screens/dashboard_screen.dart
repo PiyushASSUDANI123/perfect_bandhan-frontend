@@ -584,9 +584,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                         )
                                       : Padding(
                                           padding: const EdgeInsets.symmetric(vertical: 24.0),
-                                          child: provider.isLoadingDailyPicks && provider.dailyPicks.isNotEmpty
-                                              ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
-                                              : const SizedBox(height: 80),
+                                          child: SizedBox(
+                                            height: 80,
+                                            child: provider.isLoadingDailyPicks && provider.dailyPicks.isNotEmpty
+                                                ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
+                                                : const SizedBox.shrink(),
+                                          ),
                                         ),
                                 ),
                             ],
@@ -920,9 +923,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                         )
                                       : Padding(
                                           padding: const EdgeInsets.symmetric(vertical: 24.0),
-                                          child: provider.isLoadingSearch && provider.searchResults.isNotEmpty
-                                              ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
-                                              : const SizedBox(height: 80),
+                                          child: SizedBox(
+                                            height: 80,
+                                            child: provider.isLoadingSearch && provider.searchResults.isNotEmpty
+                                                ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
+                                                : const SizedBox.shrink(),
+                                          ),
                                         ),
                                 ),
                               ],
