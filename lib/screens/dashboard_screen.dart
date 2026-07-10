@@ -20,6 +20,38 @@ import 'chat_screen.dart';
 import 'notifications_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/storage_helper.dart';
+
+void showProfileDetailsSheet(BuildContext context, Profile profile) {
+  final bool isDesktop = MediaQuery.of(context).size.width > 900;
+  if (isDesktop) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 1100,
+            maxHeight: MediaQuery.of(context).size.height * 0.92,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: ProfileDetailsSheet(profile: profile),
+          ),
+        ),
+      ),
+    );
+  } else {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => ProfileDetailsSheet(profile: profile),
+    );
+  }
+}
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -2678,7 +2710,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                 bottom: 120, // keep buttons clickable
                 child: GestureDetector(
                   onTap: () {
-                    _showProfileSheet(profile);
+                    showProfileDetailsSheet(context, profile);
                   },
                 ),
               ),
@@ -2689,36 +2721,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
     );
   }
 
-  void _showProfileSheet(Profile profile) {
-    final bool isDesktop = MediaQuery.of(context).size.width > 900;
-    if (isDesktop) {
-      showDialog(
-        context: context,
-        barrierColor: Colors.black.withValues(alpha: 0.6),
-        builder: (ctx) => Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 1100,
-              maxHeight: MediaQuery.of(context).size.height * 0.92,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: ProfileDetailsSheet(profile: profile),
-            ),
-          ),
-        ),
-      );
-    } else {
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (ctx) => ProfileDetailsSheet(profile: profile),
-      );
-    }
-  }
+
 
   Widget _buildActionButton({required IconData icon, required String label, required Color color, required VoidCallback onTap}) {
     final bool isDesktop = MediaQuery.of(context).size.width > 900;
@@ -2858,7 +2861,7 @@ class ReceivedRequestCardState extends State<ReceivedRequestCard> {
         children: [
           InkWell(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            onTap: () => _showProfileSheet(profile),
+            onTap: () => showProfileDetailsSheet(context, profile),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -3036,7 +3039,7 @@ class _AcceptedRequestCardState extends State<AcceptedRequestCard> {
         children: [
           InkWell(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            onTap: () => _showProfileSheet(profile),
+            onTap: () => showProfileDetailsSheet(context, profile),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -3173,7 +3176,7 @@ class SentRequestCard extends StatelessWidget {
         children: [
           InkWell(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            onTap: () => _showProfileSheet(profile),
+            onTap: () => showProfileDetailsSheet(context, profile),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
