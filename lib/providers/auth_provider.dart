@@ -1258,7 +1258,7 @@ class AuthProvider extends ChangeNotifier {
     if (_token == null || !_isAdmin) return false;
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/admin/user/$userId'),
+        Uri.parse('$baseUrl/user/admin/user/$userId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $_token',
