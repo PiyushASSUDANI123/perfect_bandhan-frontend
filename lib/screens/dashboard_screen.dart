@@ -2779,8 +2779,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
 
