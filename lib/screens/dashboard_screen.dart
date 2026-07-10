@@ -87,21 +87,20 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   Map<String, dynamic> _getResponsiveLayout() {
     final double screenWidth = MediaQuery.sizeOf(context).width;
     int crossAxisCount = 1;
-    double maxContainerWidth = 600;
     
-    if (screenWidth >= 1200) {
+    if (screenWidth >= 1800) {
+      crossAxisCount = 5;
+    } else if (screenWidth >= 1400) {
+      crossAxisCount = 4;
+    } else if (screenWidth >= 900) {
       crossAxisCount = 3;
-      // Allow the grid to take up to 94% of the screen width, capped at 1600px
-      // This will make the cards significantly wider
-      maxContainerWidth = screenWidth > 1700 ? 1600 : screenWidth * 0.94;
-    } else if (screenWidth >= 750) {
+    } else if (screenWidth >= 600) {
       crossAxisCount = 2;
-      maxContainerWidth = screenWidth * 0.92;
     }
     
     return {
       'crossAxisCount': crossAxisCount,
-      'maxContainerWidth': maxContainerWidth,
+      'maxContainerWidth': double.infinity,
     };
   }
 
