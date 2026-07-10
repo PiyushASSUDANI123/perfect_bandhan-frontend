@@ -2283,9 +2283,12 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
     };
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
+    
+    // As per user request, flush local storage immediately regardless of DB success
+    _clearOnboardingProgress();
+
     auth.completeOnboarding(finalPayload).then((success) {
       if (success && mounted) {
-        _clearOnboardingProgress();
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
             builder: (_) => CongratulationsScreen(profileData: finalPayload),
