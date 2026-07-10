@@ -134,8 +134,60 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         if (mounted) _checkForUpdate(provider);
       });
 
+      provider.fetchMyProfile().then((_) {
+        if (mounted && provider.myProfile != null && provider.myProfile!['isActive'] == false) {
+          _showAccountBlockedDialog();
+        }
+      });
+
       _checkAndShowPartnerPreferences();
     });
+  }
+
+  void _showAccountBlockedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          backgroundColor: AppTheme.cardWhite,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
+          icon: const Icon(Icons.block, color: Colors.redAccent, size: 48),
+          title: Text(
+            'Account Hidden',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.cinzel(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: AppTheme.textCarbon,
+            ),
+          ),
+          content: Text(
+            'Admin has hidden your profile. Please contact +91 9413879444 to resolve this issue.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              color: AppTheme.textMuted,
+              height: 1.6,
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Provider.of<AuthProvider>(context, listen: false).logout();
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentGold,
+                foregroundColor: Colors.black,
+              ),
+              child: const Text('Logout'),
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _checkAndShowPartnerPreferences() async {
