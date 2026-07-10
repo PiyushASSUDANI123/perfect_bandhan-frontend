@@ -2427,9 +2427,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
         ? 650.0 // Increased fixed height to match the new wider 1250px container, maintaining a premium 2:3 ratio
         : MediaQuery.of(context).size.height - 220;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Container(
+    return Container(
         height: cardHeight > 400 ? cardHeight : 400,
         decoration: BoxDecoration(
           color: AppTheme.cardWhite,
