@@ -90,7 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     
     if (screenWidth >= 2000) {
       crossAxisCount = 4;
-    } else if (screenWidth >= 1100) {
+    } else if (screenWidth >= 1500) {
       crossAxisCount = 3;
     } else if (screenWidth >= 700) {
       crossAxisCount = 2;
