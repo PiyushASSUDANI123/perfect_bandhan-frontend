@@ -550,7 +550,11 @@ class AuthProvider extends ChangeNotifier {
         if (profilesJson.isEmpty) {
           _hasMoreDailyPicks = false;
         } else {
-          _dailyPicks.addAll(profilesJson.map((e) => Profile.fromJson(e)).toList());
+          _dailyPicks.addAll(
+            profilesJson
+                .map((e) => Profile.fromJson(e))
+                .where((p) => p.name.trim().toLowerCase() != 'new user')
+                .toList());
         }
       } else {
         _dailyPicksError = "Failed to load feed";
@@ -591,7 +595,11 @@ class AuthProvider extends ChangeNotifier {
         if (profilesJson.isEmpty) {
           _hasMoreSearch = false;
         } else {
-          _searchResults.addAll(profilesJson.map((e) => Profile.fromJson(e)).toList());
+          _searchResults.addAll(
+            profilesJson
+                .map((e) => Profile.fromJson(e))
+                .where((p) => p.name.trim().toLowerCase() != 'new user')
+                .toList());
         }
       } else {
         _searchError = "Failed to load search results";
