@@ -9,7 +9,8 @@ import 'set_password_screen.dart';
 import 'dart:async';
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+  final bool isReset;
+  const OtpScreen({super.key, this.isReset = false});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -78,7 +79,7 @@ class _OtpScreenState extends State<OtpScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final success = await authProvider.verifyOtp(code);
     if (success && context.mounted) {
-      if (!authProvider.isProfileComplete) {
+      if (!authProvider.isProfileComplete || widget.isReset) {
         // Direct to SetPasswordScreen first
         Navigator.pushReplacement(
           context,

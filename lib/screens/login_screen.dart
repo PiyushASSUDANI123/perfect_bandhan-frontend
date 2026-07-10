@@ -701,7 +701,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     if (mounted) {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const OtpScreen()),
+                        MaterialPageRoute(builder: (context) => const OtpScreen(isReset: true)),
                       );
                     }
                   },
