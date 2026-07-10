@@ -182,36 +182,30 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     final bool isDesktop = size.width > 900;
-    
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.backgroundLight,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32.0)),
-      ),
-      child: FractionallySizedBox(
-        heightFactor: 0.9,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: isDesktop ? 1200 : 800),
-            child: Column(
-              children: [
-                // Slide Bar / Drag Handle
-                const SizedBox(height: 12.0),
-                Center(
-                  child: Container(
-                    height: 5,
-                    width: 40,
-                    decoration: BoxDecoration(
-                      color: AppTheme.glassBorderColor,
-                      borderRadius: BorderRadius.circular(2.5),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8.0),
-    
-                // Scrollable Content
-                Expanded(
-                  child: isDesktop 
+
+    final content = Column(
+      children: [
+        // Drag handle — only on mobile
+        if (!isDesktop) ...[
+          const SizedBox(height: 12.0),
+          Center(
+            child: Container(
+              height: 5,
+              width: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.glassBorderColor,
+                borderRadius: BorderRadius.circular(2.5),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8.0),
+        ] else
+          const SizedBox(height: 4),
+
+        // Scrollable Content
+        Expanded(
+          child: isDesktop
+
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -280,11 +274,27 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
                         _buildStickyBottomBar(),
                       ],
                     ),
-                ),
-              ],
-            ),
-          ),
         ),
+      ],
+    );
+
+    // On desktop: shown inside a Dialog (ClipRRect handles border-radius)
+    if (isDesktop) {
+      return Container(
+        color: AppTheme.backgroundLight,
+        child: content,
+      );
+    }
+
+    // On mobile: shown as BottomSheet with rounded top corners
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppTheme.backgroundLight,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32.0)),
+      ),
+      child: FractionallySizedBox(
+        heightFactor: 0.92,
+        child: content,
       ),
     );
   }
