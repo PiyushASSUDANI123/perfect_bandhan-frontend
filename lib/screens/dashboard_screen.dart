@@ -545,14 +545,16 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                     ),
                                   ),
                                 SliverToBoxAdapter(
-                                  child: provider.isLoadingDailyPicks && provider.dailyPicks.isNotEmpty
-                                      ? const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 24.0),
-                                          child: Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
-                                        )
-                                      : Padding(
+                                  child: !provider.hasMoreDailyPicks
+                                      ? Padding(
                                           padding: const EdgeInsets.only(bottom: 80.0),
                                           child: _buildEmptyStateCards(),
+                                        )
+                                      : Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 24.0),
+                                          child: provider.isLoadingDailyPicks && provider.dailyPicks.isNotEmpty
+                                              ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
+                                              : const SizedBox(height: 80),
                                         ),
                                 ),
                             ],
@@ -879,14 +881,16 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                     ),
                                   ),
                                 SliverToBoxAdapter(
-                                  child: provider.isLoadingSearch && provider.searchResults.isNotEmpty
-                                      ? const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 24.0),
-                                          child: Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
-                                        )
-                                      : Padding(
+                                  child: !provider.hasMoreSearch
+                                      ? Padding(
                                           padding: const EdgeInsets.only(bottom: 80.0),
                                           child: _buildEmptyStateCards(),
+                                        )
+                                      : Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 24.0),
+                                          child: provider.isLoadingSearch && provider.searchResults.isNotEmpty
+                                              ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
+                                              : const SizedBox(height: 80),
                                         ),
                                 ),
                               ],
