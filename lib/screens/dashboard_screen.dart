@@ -903,11 +903,14 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                     padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                                     sliver: SliverPadding(
                                       padding: EdgeInsets.zero,
-                                      sliver: SliverMasonryGrid.count(
-                                        crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
-                                        mainAxisSpacing: 24.0,
-                                        crossAxisSpacing: 24.0,
-                                        childCount: provider.searchResults.length,
+                                      sliver: SliverGrid.builder(
+                                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
+                                          mainAxisSpacing: 24.0,
+                                          crossAxisSpacing: 24.0,
+                                          mainAxisExtent: MediaQuery.of(context).size.width > 900 ? 650.0 : MediaQuery.of(context).size.height - 220,
+                                        ),
+                                        itemCount: provider.searchResults.length,
                                         itemBuilder: (context, index) {
                                           final profile = provider.searchResults[index];
                                           return ProfileBentoCard(profile: profile);
