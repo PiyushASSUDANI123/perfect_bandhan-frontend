@@ -18,6 +18,7 @@ import '../widgets/custom_textfield.dart';
 import '../utils/india_locations.dart';
 import '../widgets/premium_feedback.dart';
 import 'congratulations_screen.dart';
+import 'login_screen.dart';
 import '../utils/storage_helper.dart';
 import '../widgets/animated_field_reveal.dart';
 
@@ -565,14 +566,22 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
             children: [
               Row(
                 children: [
-                  if (_currentStep > 0)
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios, color: AppTheme.accentGold, size: 18),
-                      onPressed: _prevStep,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  if (_currentStep > 0) const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, color: AppTheme.accentGold, size: 18),
+                    onPressed: () {
+                      if (_currentStep > 0) {
+                        _prevStep();
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        );
+                      }
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 8),
                   Text(
                     'STEP ${_currentStep + 1} OF $_totalSteps',
                     style: GoogleFonts.cinzel(
