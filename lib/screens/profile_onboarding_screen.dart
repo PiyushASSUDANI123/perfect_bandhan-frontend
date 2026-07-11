@@ -2337,12 +2337,26 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
         if (_gender == null || _firstNameController.text.trim().isEmpty || _surnameController.text.trim().isEmpty) return false;
         break;
       case 1:
-        if (_emailController.text.trim().isEmpty || 
-            _mobileNumberController.text.trim().isEmpty || 
-            _mobileNumberController.text.trim().length != 10 ||
-            !RegExp(r'^[6-9]\d{9}$').hasMatch(_mobileNumberController.text.trim()) ||
-            RegExp(r'^(\d)\1{9}$').hasMatch(_mobileNumberController.text.trim()) ||
-            _whatsappNumberController.text.trim().length < 10) {
+        if (_emailController.text.trim().isEmpty) {
+          _showErrorSnackBar('Please enter a valid email address.');
+          return false;
+        }
+        final mob = _mobileNumberController.text.trim();
+        if (mob.isEmpty || mob.length != 10) {
+          _showErrorSnackBar('Please enter exactly 10 digits for mobile number.');
+          return false;
+        }
+        if (!RegExp(r'^[6-9]\d{9}$').hasMatch(mob)) {
+          _showErrorSnackBar('Please enter a valid Indian mobile number.');
+          return false;
+        }
+        if (RegExp(r'^(\d)\1{9}$').hasMatch(mob)) {
+          _showErrorSnackBar('Mobile number cannot be all same digits.');
+          return false;
+        }
+        final wa = _whatsappNumberController.text.trim();
+        if (wa.isNotEmpty && wa.length != 10) {
+          _showErrorSnackBar('WhatsApp number must be exactly 10 digits.');
           return false;
         }
         break;

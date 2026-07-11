@@ -630,6 +630,15 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
   }
 
   Widget _buildBentoBlockContact() {
+    final provider = Provider.of<AuthProvider>(context, listen: false);
+    final isOwner = provider.userProfile?.id == widget.profile.id;
+    final isPrivate = widget.profile.whatsappPrivacy == 'private';
+
+    String displayMobile = widget.profile.phone.isEmpty ? 'Not Provided' : widget.profile.phone;
+    String displayWa = widget.profile.whatsappNumber.isEmpty ? 'Not Provided' : widget.profile.whatsappNumber;
+    bool showHidden = isPrivate && !isOwner;
+    Color? overrideColor = (isPrivate && isOwner) ? Colors.blue : null;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20.0),
@@ -643,8 +652,8 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
         children: [
           _buildBlockTitle('Contact Information'),
           const SizedBox(height: 14.0),
-          _buildInfoRow(Icons.phone_android_outlined, 'Mobile Number', widget.profile.phone.isEmpty ? 'Not Provided' : widget.profile.phone),
-          _buildInfoRow(Icons.chat_outlined, 'WhatsApp Number', widget.profile.whatsappNumber.isEmpty ? 'Not Provided' : widget.profile.whatsappNumber),
+          _buildInfoRow(Icons.phone_android_outlined, 'Mobile Number', showHidden ? '**********' : displayMobile, isHidden: showHidden, overrideColor: overrideColor),
+          _buildInfoRow(Icons.chat_outlined, 'WhatsApp Number', showHidden ? '**********' : displayWa, isHidden: showHidden, overrideColor: overrideColor),
         ],
       ),
     );
@@ -908,7 +917,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value, {bool isHidden = false, Color? overrideColor}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
@@ -929,13 +938,54 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
                   ),
                 ),
                 const SizedBox(height: 2.0),
-                Text(
-                  value,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textCarbon,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      value,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: overrideColor ?? AppTheme.textCarbon,
+                      ),
+                    ),
+                    if (isHidden)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: AppTheme.cardWhite,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                title: Text('Private Number', style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+                                content: Text('Send request to see mobile no', style: GoogleFonts.montserrat(color: AppTheme.textCarbon)),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: Text('Close', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Request sent successfully!', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.accentGold,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    child: Text('Send Request', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              )
+                            );
+                          },
+                          child: const Icon(Icons.remove_red_eye, size: 16, color: AppTheme.accentGold),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),

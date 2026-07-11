@@ -36,6 +36,7 @@ class Profile {
   String interestStatus;
   final String sindhiType;
   final String whatsappNumber;
+  final String whatsappPrivacy;
   final String monthlyIncome;
   final String yearlyIncome;
   final String district;
@@ -83,6 +84,7 @@ class Profile {
     this.interestStatus = 'none',
     this.sindhiType = 'Sindhi Hindu',
     this.whatsappNumber = '',
+    this.whatsappPrivacy = 'public',
     this.monthlyIncome = '',
     this.yearlyIncome = '',
     this.district = '',
@@ -164,6 +166,7 @@ class Profile {
       interestStatus: s('interestStatus', 'none'),
       sindhiType: s('sindhiType', 'Sindhi Hindu'),
       whatsappNumber: s('whatsappNumber'),
+      whatsappPrivacy: s('whatsappPrivacy', 'public'),
       monthlyIncome: s('monthlyIncome'),
       yearlyIncome: s('yearlyIncome'),
       district: s('district'),
