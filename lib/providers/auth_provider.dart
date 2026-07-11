@@ -12,6 +12,7 @@ enum AuthStatus {
   sendingOtp,
   waitingForOtp,
   verifyingOtp,
+  authenticatingGoogle,
   authenticated,
   error
 }
@@ -354,7 +355,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> loginWithGoogle() async {
-    _status = AuthStatus.sendingOtp; // Reusing state for loader
+    _status = AuthStatus.authenticatingGoogle;
     _errorMessage = null;
     notifyListeners();
 
@@ -554,11 +555,15 @@ class AuthProvider extends ChangeNotifier {
         if (profilesJson.isEmpty) {
           _hasMoreDailyPicks = false;
         } else {
-          _dailyPicks.addAll(
-            profilesJson
-                .map((e) => Profile.fromJson(e))
-                .where((p) => p.name.trim().toLowerCase() != 'new user')
-                .toList());
+          final newProfiles = profilesJson
+              .map((e) => Profile.fromJson(e))
+              .where((p) => p.name.trim().toLowerCase() != 'new user')
+              .toList();
+          for (var p in newProfiles) {
+            if (!_dailyPicks.any((existing) => existing.id == p.id)) {
+              _dailyPicks.add(p);
+            }
+          }
         }
       } else {
         _dailyPicksError = "Failed to load feed";
@@ -599,11 +604,15 @@ class AuthProvider extends ChangeNotifier {
         if (profilesJson.isEmpty) {
           _hasMoreSearch = false;
         } else {
-          _searchResults.addAll(
-            profilesJson
-                .map((e) => Profile.fromJson(e))
-                .where((p) => p.name.trim().toLowerCase() != 'new user')
-                .toList());
+          final newProfiles = profilesJson
+              .map((e) => Profile.fromJson(e))
+              .where((p) => p.name.trim().toLowerCase() != 'new user')
+              .toList();
+          for (var p in newProfiles) {
+            if (!_searchResults.any((existing) => existing.id == p.id)) {
+              _searchResults.add(p);
+            }
+          }
         }
       } else {
         _searchError = "Failed to load search results";

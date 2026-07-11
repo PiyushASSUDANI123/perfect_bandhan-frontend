@@ -162,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
-        final bool isLoading = authProvider.status == AuthStatus.sendingOtp || authProvider.status == AuthStatus.verifyingOtp;
+        final bool isLoading = authProvider.status == AuthStatus.sendingOtp || authProvider.status == AuthStatus.verifyingOtp || authProvider.status == AuthStatus.authenticatingGoogle;
         final bool hasError = authProvider.status == AuthStatus.error;
 
         return Scaffold(
@@ -500,7 +500,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         Text(
                           authProvider.status == AuthStatus.sendingOtp
                               ? 'Sending OTP...'
-                              : 'Signing in...',
+                              : authProvider.status == AuthStatus.authenticatingGoogle
+                                  ? 'Signing in with Google...'
+                                  : 'Verifying...',
                           style: GoogleFonts.montserrat(
                             color: AppTheme.textWhite,
                             fontSize: 13,
