@@ -257,6 +257,24 @@ class AuthProvider extends ChangeNotifier {
     return phoneRegex.hasMatch(phone);
   }
 
+  Future<bool> checkPhoneRegistration(String phone) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/check-phone'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone': phone}),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['isRegistered'] == true;
+      }
+      return false;
+    } catch (e) {
+      consoleLog('Check phone error: $e');
+      return false;
+    }
+  }
+
   Future<bool> sendOtp(String phone, {bool reset = false}) async {
     if (!isValidPhoneNumber(phone)) {
       _setErrorMessage("Invalid phone number. Must be exactly 10 digits.");
