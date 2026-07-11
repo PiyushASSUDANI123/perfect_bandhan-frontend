@@ -39,6 +39,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
   bool _acceptedInfoTrue = false;
   bool _isAiLoading = false;
   bool _isSubmitting = false;
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -598,14 +599,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
                     Padding(
                       padding: const EdgeInsets.only(right: 12.0),
                       child: GestureDetector(
-                        onTap: () {
-                          if (_currentStep == 10) {
-                            _submitProfile();
-                          } else {
-                            _pageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
-                            _scrollToTop();
-                          }
-                        },
+                        onTap: () => _nextStep(),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
@@ -2419,6 +2413,8 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
   }
 
   Future<void> _nextStep() async {
+    if (_isNavigating) return;
+    
     if (_pageController.hasClients && _pageController.page != null) {
       // If we are currently animating to a new page, ignore the click to prevent double-click validation bugs
       if ((_pageController.page! - _currentStep).abs() > 0.01) {
@@ -2426,7 +2422,10 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
       }
     }
 
-    if (!_validateCurrentStep()) {
+    setState(() => _isNavigating = true);
+
+    try {
+      if (!_validateCurrentStep()) {
       if (_currentStep == 9) {
         int nonNullPhotos = _uploadedPhotos.where((p) => p != null && p.isNotEmpty).length;
         if (nonNullPhotos == 0) {
@@ -2448,26 +2447,31 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
       }
     }
 
-    _saveOnboardingProgress();
-    
-    _showMotivationalPopup(_currentStep);
+      _saveOnboardingProgress();
+      
+      _showMotivationalPopup(_currentStep);
 
-    if (_currentStep == 10) {
-      // Final Submit
-      _submitProfile();
-      return;
-    }
+      if (_currentStep == 10) {
+        // Final Submit
+        _submitProfile();
+        return;
+      }
 
-    if (_currentStep < 10) {
-      setState(() {
-        _currentStep++;
-      });
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
+      if (_currentStep < 10) {
+        setState(() {
+          _currentStep++;
+        });
+        await _pageController.nextPage(
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+        _scrollToTop();
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isNavigating = false);
+      }
     }
-    _scrollToTop();
   }
 
   void _prevStep() {
