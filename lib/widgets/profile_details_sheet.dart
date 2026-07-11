@@ -631,7 +631,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
 
   Widget _buildBentoBlockContact() {
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    final isOwner = provider.userProfile?.id == widget.profile.id;
+    final isOwner = provider.myProfile != null && (provider.myProfile!['_id'] == widget.profile.id || provider.myProfile!['id'] == widget.profile.id);
     final isPrivate = widget.profile.whatsappPrivacy == 'private';
 
     String displayMobile = widget.profile.phone.isEmpty ? 'Not Provided' : widget.profile.phone;
