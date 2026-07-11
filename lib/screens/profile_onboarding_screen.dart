@@ -2195,6 +2195,25 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
       _isSubmitting = true;
     });
 
+    // Validate all steps before submitting
+    int originalStep = _currentStep;
+    for (int i = 0; i < _totalSteps; i++) {
+      _currentStep = i;
+      if (!_validateCurrentStep()) {
+        _currentStep = originalStep;
+        setState(() {
+          _isSubmitting = false;
+          _currentStep = i;
+        });
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(i);
+        }
+        _showErrorSnackBar('Please fill all required fields in this step.');
+        return;
+      }
+    }
+    _currentStep = originalStep;
+
     if (!_acceptedTerms || !_acceptedInfoTrue) {
       setState(() {
         _isSubmitting = false;
