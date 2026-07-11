@@ -748,28 +748,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               ),
             ),
           ),
-          if (_currentStep > 0 && _currentStep < 10 && _currentStep != 3)
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: TextButton(
-                onPressed: () {
-                  setState(() {
-                    if (_currentStep < 10) {
-                      _currentStep++;
-                      _scrollToTop();
-                    }
-                  });
-                },
-                child: Text(
-                  'Skip for now',
-                  style: GoogleFonts.montserrat(
-                    color: AppTheme.textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
+
         ],
       ),
     );
