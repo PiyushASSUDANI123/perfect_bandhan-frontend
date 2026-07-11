@@ -10,6 +10,7 @@ import '../widgets/custom_textfield.dart';
 import '../widgets/edit_profile_sheet.dart';
 import '../widgets/manage_photos_sheet.dart';
 import '../widgets/admin_user_settings_sheet.dart';
+import '../widgets/admin_create_profile_sheet.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -489,9 +490,32 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Manage Users', style: GoogleFonts.cinzel(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
+              ElevatedButton.icon(
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => const AdminCreateProfileSheet(),
+                  );
+                },
+                icon: const Icon(Icons.person_add_alt_1, size: 18),
+                label: const Text('CREATE USER'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.accentGold,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 16.0),
           // Search input bar
           Container(
