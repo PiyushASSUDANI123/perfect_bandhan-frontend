@@ -32,10 +32,14 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
       if (!mounted) return;
       final provider = Provider.of<AuthProvider>(context, listen: false);
       
-      final currentPhotos = widget.adminEditUser != null 
+      final rawPhotos = widget.adminEditUser != null 
           ? (widget.adminEditUser!['uploadedPhotos'] as List<dynamic>? ?? widget.adminEditUser!['photos'] as List<dynamic>? ?? [])
           : (provider.myProfile?['photos'] as List<dynamic>? ?? []);
-      final List<String> updatedPhotos = currentPhotos.map((p) => p.toString()).toList();
+      final List<String> currentPhotos = rawPhotos
+          .map((p) => p?.toString().trim() ?? '')
+          .where((p) => p.isNotEmpty)
+          .toList();
+      final List<String> updatedPhotos = List.from(currentPhotos);
       
       updatedPhotos.add(dataUri);
 
@@ -71,9 +75,13 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
 
   Future<void> _deletePhoto(int index) async {
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    final currentPhotos = widget.adminEditUser != null 
+    final rawPhotos = widget.adminEditUser != null 
         ? (widget.adminEditUser!['uploadedPhotos'] as List<dynamic>? ?? widget.adminEditUser!['photos'] as List<dynamic>? ?? [])
         : (provider.myProfile?['photos'] as List<dynamic>? ?? []);
+    final List<String> currentPhotos = rawPhotos
+        .map((p) => p?.toString().trim() ?? '')
+        .where((p) => p.isNotEmpty)
+        .toList();
     
     if (currentPhotos.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -87,7 +95,7 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
 
     setState(() => _isSaving = true);
 
-    final List<String> updatedPhotos = currentPhotos.map((p) => p.toString()).toList();
+    final List<String> updatedPhotos = List.from(currentPhotos);
     updatedPhotos.removeAt(index);
 
     bool success = false;
@@ -191,9 +199,13 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AuthProvider>(context);
-    final currentPhotos = widget.adminEditUser != null 
+    final rawPhotos = widget.adminEditUser != null 
         ? (widget.adminEditUser!['uploadedPhotos'] as List<dynamic>? ?? widget.adminEditUser!['photos'] as List<dynamic>? ?? [])
         : (provider.myProfile?['photos'] as List<dynamic>? ?? []);
+    final List<String> currentPhotos = rawPhotos
+        .map((p) => p?.toString().trim() ?? '')
+        .where((p) => p.isNotEmpty)
+        .toList();
     final String? housePhoto = widget.adminEditUser != null 
         ? (widget.adminEditUser!['housePhoto'] as String?)
         : (provider.myProfile?['housePhoto'] as String?);
