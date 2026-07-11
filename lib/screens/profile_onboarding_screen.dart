@@ -2388,6 +2388,13 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
   }
 
   void _nextStep() {
+    if (_pageController.hasClients && _pageController.page != null) {
+      // If we are currently animating to a new page, ignore the click to prevent double-click validation bugs
+      if ((_pageController.page! - _currentStep).abs() > 0.01) {
+        return;
+      }
+    }
+
     if (!_validateCurrentStep()) {
       if (_currentStep == 9) {
         int nonNullPhotos = _uploadedPhotos.where((p) => p != null && p.isNotEmpty).length;
