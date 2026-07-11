@@ -2728,8 +2728,12 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
       );
 
       if (croppedFile != null) {
+        final bytes = await croppedFile.readAsBytes();
+        final base64String = base64Encode(bytes);
+        final dataUri = 'data:image/jpeg;base64,$base64String';
+        
         setState(() {
-          _uploadedPhotos[index] = croppedFile.path;
+          _uploadedPhotos[index] = dataUri;
         });
         _saveOnboardingProgress();
       }
