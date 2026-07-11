@@ -2102,7 +2102,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
                   child: Container(
                     height: 200,
                     width: MediaQuery.of(context).size.width - 48,
-                    color: AppTheme.backgroundBlack,
+                    color: AppTheme.cardWhite,
                     child: ListView.builder(
                       padding: const EdgeInsets.all(8.0),
                       itemCount: options.length,
@@ -2113,7 +2113,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
                             onSelected(option);
                           },
                           child: ListTile(
-                            title: Text(option, style: const TextStyle(color: Colors.white)),
+                            title: Text(option, style: const TextStyle(color: AppTheme.textCarbon)),
                           ),
                         );
                       },
