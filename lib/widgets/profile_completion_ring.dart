@@ -89,11 +89,22 @@ List<String> getMissingProfileFields(Map<String, dynamic>? profile) {
   for (final entry in fields.entries) {
     final key = entry.key;
     final displayName = entry.value;
-    final val = profile[key];
+    
+    // The backend might return 'photos' instead of 'uploadedPhotos'
+    final val = (key == 'uploadedPhotos') 
+        ? (profile['photos'] ?? profile['uploadedPhotos']) 
+        : profile[key];
 
     if (key == 'uploadedPhotos') {
       if (!(val is List && val.isNotEmpty && val[0] != null && val[0].toString().isNotEmpty)) {
         missing.add(displayName);
+      }
+    } else if (key == 'company' || key == 'monthlyIncome') {
+      // If the user is "Not Working", company and income are not required
+      if (profile['profession'] != 'Not Working') {
+        if (val == null || val.toString().trim().isEmpty) {
+          missing.add(displayName);
+        }
       }
     } else {
       if (val == null || val.toString().trim().isEmpty) {
