@@ -158,12 +158,12 @@ class _MyAppState extends State<MyApp> {
               );
             }
 
+            final originalScale = MediaQuery.of(context).textScaler.scale(1.0);
+            final clampedScale = originalScale.clamp(1.0, 1.15);
+
             return MediaQuery(
               data: MediaQuery.of(context).copyWith(
-                textScaler: MediaQuery.of(context).textScaler.clamp(
-                  minScaleFactor: 1.0, 
-                  maxScaleFactor: 1.15,
-                ),
+                textScaler: TextScaler.linear(clampedScale),
               ),
               child: Stack(
                 children: [
