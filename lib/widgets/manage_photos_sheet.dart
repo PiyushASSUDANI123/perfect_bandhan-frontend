@@ -37,7 +37,7 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
           : (provider.myProfile?['photos'] as List<dynamic>? ?? []);
       final List<String> currentPhotos = rawPhotos
           .map((p) => p?.toString().trim() ?? '')
-          .where((p) => p.isNotEmpty)
+          .where((p) => p.isNotEmpty && p != 'null' && (p.startsWith('http') || p.startsWith('data:image/')))
           .toList();
       final List<String> updatedPhotos = List.from(currentPhotos);
       
@@ -80,7 +80,7 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
         : (provider.myProfile?['photos'] as List<dynamic>? ?? []);
     final List<String> currentPhotos = rawPhotos
         .map((p) => p?.toString().trim() ?? '')
-        .where((p) => p.isNotEmpty)
+        .where((p) => p.isNotEmpty && p != 'null' && (p.startsWith('http') || p.startsWith('data:image/')))
         .toList();
     
     if (currentPhotos.length <= 1) {
@@ -204,7 +204,7 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
         : (provider.myProfile?['photos'] as List<dynamic>? ?? []);
     final List<String> currentPhotos = rawPhotos
         .map((p) => p?.toString().trim() ?? '')
-        .where((p) => p.isNotEmpty)
+        .where((p) => p.isNotEmpty && p != 'null' && (p.startsWith('http') || p.startsWith('data:image/')))
         .toList();
     final String? housePhoto = widget.adminEditUser != null 
         ? (widget.adminEditUser!['housePhoto'] as String?)
