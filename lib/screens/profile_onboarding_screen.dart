@@ -2389,9 +2389,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
         }
         break;
       case 6:
-        if (_siblingsCountController.text.trim().isEmpty || _siblingsDetailsController.text.trim().isEmpty) return false;
-        if (_fatherNameController.text.trim().isEmpty) return false;
-        if (_motherNameController.text.trim().isEmpty) return false;
+        // Family details are optional since there is a Skip button
         break;
       case 7:
         if (_ownHouse == null || _selectedHobbies.isEmpty) return false;
@@ -2411,7 +2409,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
     return true;
   }
 
-  void _nextStep() {
+  Future<void> _nextStep() async {
     if (_pageController.hasClients && _pageController.page != null) {
       // If we are currently animating to a new page, ignore the click to prevent double-click validation bugs
       if ((_pageController.page! - _currentStep).abs() > 0.01) {
@@ -2429,6 +2427,16 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
       }
       _showErrorSnackBar(Provider.of<LanguageProvider>(context, listen: false).translate('fill_all_fields') ?? 'Please fill all required fields correctly before proceeding.');
       return;
+    }
+
+    if (_currentStep == 1) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final mob = _mobileNumberController.text.trim();
+      bool isRegistered = await authProvider.checkPhoneRegistration(mob);
+      if (isRegistered) {
+        _showErrorSnackBar('This mobile number is already registered. Please login or use another number.');
+        return;
+      }
     }
 
     _saveOnboardingProgress();
