@@ -359,7 +359,11 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final String webClientId = '901626431984-etl37j0go12oc7u034uk2qe9p0aho1lh.apps.googleusercontent.com';
+      final GoogleSignInAccount? googleUser = await GoogleSignIn(
+        clientId: kIsWeb ? webClientId : null,
+        serverClientId: kIsWeb ? null : webClientId,
+      ).signIn();
       if (googleUser == null) {
         _status = AuthStatus.idle;
         notifyListeners();
@@ -410,7 +414,7 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       consoleLog('Google login exception: $e');
-      _errorMessage = 'An error occurred during Google Login';
+      _errorMessage = 'Google Login Error: $e';
       _status = AuthStatus.error;
       notifyListeners();
       return false;
