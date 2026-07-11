@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/custom_textfield.dart';
+import '../widgets/edit_profile_sheet.dart';
+import '../widgets/manage_photos_sheet.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -738,14 +740,38 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       ElevatedButton.icon(
                         onPressed: () {
                           Navigator.pop(context); // Close dossier
-                          _showEditUserForm(user); // Open edit form
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => EditProfileSheet(adminEditUser: user),
+                          );
                         },
                         icon: const Icon(Icons.edit_note_rounded, size: 16, color: Colors.black),
-                        label: Text('EDIT', style: GoogleFonts.cinzel(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black)),
+                        label: Text('EDIT DETAILS', style: GoogleFonts.cinzel(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.accentGold,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        ),
+                      ),
+                      const SizedBox(width: 8.0),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context); // Close dossier
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => ManagePhotosSheet(adminEditUser: user),
+                          );
+                        },
+                        icon: const Icon(Icons.photo_library_outlined, size: 16, color: Colors.black),
+                        label: Text('PHOTOS', style: GoogleFonts.cinzel(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.accentGold,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         ),
                       ),
                       const SizedBox(width: 8.0),
@@ -1408,139 +1434,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           ],
         );
       }
-    );
-  }
-
-
-  void _showEditUserForm(Map<String, dynamic> user) {
-    final editFirstName = TextEditingController(text: user['firstName'] ?? '');
-    final editLastName = TextEditingController(text: user['lastName'] ?? '');
-    final editNukh = TextEditingController(text: user['nukh'] ?? '');
-    final editPhone = TextEditingController(text: user['phone'] ?? '');
-    final editWhatsapp = TextEditingController(text: user['whatsappNumber'] ?? '');
-    final editCity = TextEditingController(text: user['city'] ?? '');
-    final editProfession = TextEditingController(text: user['profession'] ?? '');
-    final editBio = TextEditingController(text: user['bio'] ?? '');
-
-    bool isSaving = false;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppTheme.cardGray,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return DraggableScrollableSheet(
-              initialChildSize: 0.9,
-              minChildSize: 0.6,
-              maxChildSize: 0.95,
-              expand: false,
-              builder: (context, scrollController) {
-                return SingleChildScrollView(
-                  controller: scrollController,
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
-                    left: 24.0,
-                    right: 24.0,
-                    top: 24.0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 50,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: AppTheme.glassBorderColor,
-                            borderRadius: BorderRadius.circular(2.0),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'EDIT PROFILE DETAILS',
-                            style: GoogleFonts.cinzel(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.accentGold,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close_rounded, color: AppTheme.textMuted),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ],
-                      ),
-                      const Divider(color: AppTheme.glassBorderColor),
-                      const SizedBox(height: 12.0),
-                      CustomTextField(labelText: 'FIRST NAME', controller: editFirstName, hintText: 'First Name', prefixIcon: Icons.badge_outlined),
-                      CustomTextField(labelText: 'LAST NAME', controller: editLastName, hintText: 'Last Name', prefixIcon: Icons.badge_outlined),
-                      CustomTextField(labelText: 'CLAN / NUKH', controller: editNukh, hintText: 'Nukh', prefixIcon: Icons.groups_outlined),
-                      CustomTextField(labelText: 'PHONE NUMBER', controller: editPhone, hintText: '10 digit number', prefixIcon: Icons.phone_outlined),
-                      CustomTextField(labelText: 'WHATSAPP NUMBER', controller: editWhatsapp, hintText: '10 digit number', prefixIcon: Icons.chat_outlined),
-                      CustomTextField(labelText: 'CITY', controller: editCity, hintText: 'City', prefixIcon: Icons.location_on_outlined),
-                      CustomTextField(labelText: 'PROFESSION', controller: editProfession, hintText: 'Profession', prefixIcon: Icons.work_outline_rounded),
-                      CustomTextField(labelText: 'BIO', controller: editBio, hintText: 'Bio', prefixIcon: Icons.info_outline_rounded),
-                      const SizedBox(height: 24.0),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: isSaving ? null : () async {
-                            setModalState(() => isSaving = true);
-                            final auth = Provider.of<AuthProvider>(context, listen: false);
-                            final success = await auth.adminEditUser(user['_id'] ?? user['id'] ?? '', {
-                              'firstName': editFirstName.text.trim(),
-                              'lastName': editLastName.text.trim(),
-                              'nukh': editNukh.text.trim(),
-                              'phone': editPhone.text.trim(),
-                              'whatsappNumber': editWhatsapp.text.trim(),
-                              'city': editCity.text.trim(),
-                              'profession': editProfession.text.trim(),
-                              'bio': editBio.text.trim(),
-                            });
-                            setModalState(() => isSaving = false);
-                            if (mounted) {
-                              Navigator.pop(context); // Close edit form
-                              if (success) {
-                                auth.fetchAdminUsers(); // Refresh users list
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Profile updated successfully by Admin!'), backgroundColor: Colors.green),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Failed to update candidate profile.'), backgroundColor: Colors.redAccent),
-                                );
-                              }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.accentGold,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.0)),
-                          ),
-                          child: isSaving
-                              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
-                              : Text('SAVE CHANGES', style: GoogleFonts.cinzel(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
     );
   }
 

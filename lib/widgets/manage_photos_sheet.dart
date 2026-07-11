@@ -8,7 +8,9 @@ import '../theme/app_theme.dart';
 import '../utils/image_picker_helper.dart';
 
 class ManagePhotosSheet extends StatefulWidget {
-  const ManagePhotosSheet({super.key});
+  final Map<String, dynamic>? adminEditUser;
+
+  const ManagePhotosSheet({super.key, this.adminEditUser});
 
   @override
   State<ManagePhotosSheet> createState() => _ManagePhotosSheetState();
@@ -30,7 +32,9 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
       if (!mounted) return;
       final provider = Provider.of<AuthProvider>(context, listen: false);
       
-      final currentPhotos = provider.myProfile?['photos'] as List<dynamic>? ?? [];
+      final currentPhotos = widget.adminEditUser != null 
+          ? (widget.adminEditUser!['uploadedPhotos'] as List<dynamic>? ?? widget.adminEditUser!['photos'] as List<dynamic>? ?? [])
+          : (provider.myProfile?['photos'] as List<dynamic>? ?? []);
       final List<String> updatedPhotos = currentPhotos.map((p) => p.toString()).toList();
       
       updatedPhotos.add(dataUri);
@@ -40,8 +44,15 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
         updatedPhotos.removeRange(3, updatedPhotos.length);
       }
 
-      final success = await provider.updateProfileSettings({'uploadedPhotos': updatedPhotos});
-      await provider.fetchMyProfile();
+      bool success = false;
+      if (widget.adminEditUser != null) {
+        final userId = widget.adminEditUser!['_id'] ?? widget.adminEditUser!['id'] ?? widget.adminEditUser!['phone'];
+        success = await provider.adminEditUser(userId, {'uploadedPhotos': updatedPhotos});
+        provider.fetchAdminUsers();
+      } else {
+        success = await provider.updateProfileSettings({'uploadedPhotos': updatedPhotos});
+        await provider.fetchMyProfile();
+      }
 
       if (mounted) {
         setState(() => _isSaving = false);
@@ -60,7 +71,9 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
 
   Future<void> _deletePhoto(int index) async {
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    final currentPhotos = provider.myProfile?['photos'] as List<dynamic>? ?? [];
+    final currentPhotos = widget.adminEditUser != null 
+        ? (widget.adminEditUser!['uploadedPhotos'] as List<dynamic>? ?? widget.adminEditUser!['photos'] as List<dynamic>? ?? [])
+        : (provider.myProfile?['photos'] as List<dynamic>? ?? []);
     
     if (currentPhotos.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -77,8 +90,15 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
     final List<String> updatedPhotos = currentPhotos.map((p) => p.toString()).toList();
     updatedPhotos.removeAt(index);
 
-    final success = await provider.updateProfileSettings({'uploadedPhotos': updatedPhotos});
-    await provider.fetchMyProfile();
+    bool success = false;
+    if (widget.adminEditUser != null) {
+      final userId = widget.adminEditUser!['_id'] ?? widget.adminEditUser!['id'] ?? widget.adminEditUser!['phone'];
+      success = await provider.adminEditUser(userId, {'uploadedPhotos': updatedPhotos});
+      provider.fetchAdminUsers();
+    } else {
+      success = await provider.updateProfileSettings({'uploadedPhotos': updatedPhotos});
+      await provider.fetchMyProfile();
+    }
 
     if (mounted) {
       setState(() => _isSaving = false);
@@ -171,8 +191,12 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AuthProvider>(context);
-    final currentPhotos = provider.myProfile?['photos'] as List<dynamic>? ?? [];
-    final String? housePhoto = provider.myProfile?['housePhoto'] as String?;
+    final currentPhotos = widget.adminEditUser != null 
+        ? (widget.adminEditUser!['uploadedPhotos'] as List<dynamic>? ?? widget.adminEditUser!['photos'] as List<dynamic>? ?? [])
+        : (provider.myProfile?['photos'] as List<dynamic>? ?? []);
+    final String? housePhoto = widget.adminEditUser != null 
+        ? (widget.adminEditUser!['housePhoto'] as String?)
+        : (provider.myProfile?['housePhoto'] as String?);
 
     return Container(
       decoration: const BoxDecoration(
@@ -303,8 +327,14 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
                     child: InkWell(
                       onTap: () async {
                         setState(() => _isSaving = true);
-                        await provider.updateProfileSettings({'housePhoto': ''});
-                        await provider.fetchMyProfile();
+                        if (widget.adminEditUser != null) {
+                          final userId = widget.adminEditUser!['_id'] ?? widget.adminEditUser!['id'] ?? widget.adminEditUser!['phone'];
+                          await provider.adminEditUser(userId, {'housePhoto': ''});
+                          provider.fetchAdminUsers();
+                        } else {
+                          await provider.updateProfileSettings({'housePhoto': ''});
+                          await provider.fetchMyProfile();
+                        }
                         if (mounted) setState(() => _isSaving = false);
                       },
                       child: Container(
@@ -327,8 +357,15 @@ class _ManagePhotosSheetState extends State<ManagePhotosSheet> {
                   setState(() => _isSaving = true);
                   final b64 = base64Encode(bytes);
                   final uri = 'data:image/jpeg;base64,$b64';
-                  await provider.updateProfileSettings({'housePhoto': uri});
-                  await provider.fetchMyProfile();
+                  
+                  if (widget.adminEditUser != null) {
+                    final userId = widget.adminEditUser!['_id'] ?? widget.adminEditUser!['id'] ?? widget.adminEditUser!['phone'];
+                    await provider.adminEditUser(userId, {'housePhoto': uri});
+                    provider.fetchAdminUsers();
+                  } else {
+                    await provider.updateProfileSettings({'housePhoto': uri});
+                    await provider.fetchMyProfile();
+                  }
                   if (mounted) setState(() => _isSaving = false);
                 },
                 child: Container(

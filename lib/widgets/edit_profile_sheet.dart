@@ -8,7 +8,9 @@ import 'custom_textfield.dart';
 import 'premium_feedback.dart';
 
 class EditProfileSheet extends StatefulWidget {
-  const EditProfileSheet({super.key});
+  final Map<String, dynamic>? adminEditUser;
+
+  const EditProfileSheet({super.key, this.adminEditUser});
 
   @override
   State<EditProfileSheet> createState() => _EditProfileSheetState();
@@ -48,7 +50,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   void initState() {
     super.initState();
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    final profile = provider.myProfile ?? {};
+    final profile = widget.adminEditUser ?? provider.myProfile ?? {};
     
     _bioController = TextEditingController(text: profile['bio']?.toString() ?? '');
     _weightController = TextEditingController(text: profile['weight']?.toString() ?? '');
@@ -143,17 +145,28 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
       payload['manglikStatus'] = _manglikStatus;
     }
     
-    // Only pass gender if it's the developer account
-    if (provider.phoneNumber == '9413879444' && _gender != null) {
+    // If in admin mode, allow editing gender as well.
+    if ((provider.phoneNumber == '9413879444' || widget.adminEditUser != null) && _gender != null) {
       payload['gender'] = _gender;
     }
 
-    final success = await provider.completeOnboarding(payload);
+    bool success = false;
+    if (widget.adminEditUser != null) {
+      final userId = widget.adminEditUser!['_id'] ?? widget.adminEditUser!['id'] ?? widget.adminEditUser!['phone'];
+      success = await provider.adminEditUser(userId, payload);
+    } else {
+      success = await provider.completeOnboarding(payload);
+    }
     
     setState(() => _isSubmitting = false);
     
     if (success && mounted) {
-      await provider.fetchMyProfile(); // Refresh profile 
+      if (widget.adminEditUser != null) {
+        provider.fetchAdminUsers();
+      } else {
+        await provider.fetchMyProfile(); // Refresh profile 
+      }
+      
       if (mounted) {
         Navigator.pop(context);
         PremiumFeedback.showSuccess(
@@ -174,7 +187,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    final isDeveloper = provider.phoneNumber == '9413879444';
+    final isDeveloper = provider.phoneNumber == '9413879444' || widget.adminEditUser != null;
 
     return Container(
       decoration: const BoxDecoration(
