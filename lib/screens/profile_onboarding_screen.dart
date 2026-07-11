@@ -585,13 +585,17 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               ),
               Row(
                 children: [
-                  if (_currentStep == 6 || _currentStep == 8)
+                  if (_currentStep == 6 || _currentStep == 8 || _currentStep == 10)
                     Padding(
                       padding: const EdgeInsets.only(right: 12.0),
                       child: GestureDetector(
                         onTap: () {
-                          _pageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
-                          _scrollToTop();
+                          if (_currentStep == 10) {
+                            _submitProfile();
+                          } else {
+                            _pageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+                            _scrollToTop();
+                          }
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -604,7 +608,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
                             style: GoogleFonts.montserrat(
                               color: AppTheme.accentGold,
                               fontWeight: FontWeight.bold,
-                              fontSize: 10,
+                              fontSize: 12,
                             ),
                           ),
                         ),
@@ -634,21 +638,22 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
           ),
 
           if (_isSubmitting)
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                child: Container(
-                  color: AppTheme.backgroundBlack.withValues(alpha: 0.6),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const CircularProgressIndicator(color: AppTheme.accentGold),
-                        const SizedBox(height: 16),
-                        Text('Saving Profile...', style: GoogleFonts.montserrat(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
-                      ],
+            Container(
+              color: AppTheme.backgroundBlack.withValues(alpha: 0.95),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(color: AppTheme.accentGold),
+                    const SizedBox(height: 24),
+                    Text('Setting up your profile...', style: GoogleFonts.montserrat(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+                    Text(
+                      'We are building a better experience for you.\nPlease wait a moment.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.montserrat(color: Colors.white70, fontSize: 14),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -2522,6 +2527,15 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
     );
   }
 
+  Widget _buildPhotoWidget(String? photoUrl) {
+    if (photoUrl == null) return const SizedBox.shrink();
+    if (photoUrl.startsWith('data:image')) {
+      final base64Str = photoUrl.split(',').last;
+      return Image.memory(base64Decode(base64Str), fit: BoxFit.cover);
+    }
+    return Image.network(photoUrl, fit: BoxFit.cover);
+  }
+
   Widget _buildStep6Photos() {
     return Column(
       children: [
@@ -2553,7 +2567,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(20),
-                        child: Image.network(_uploadedPhotos[0]!, fit: BoxFit.cover),
+                        child: _buildPhotoWidget(_uploadedPhotos[0]),
                       ),
                       Positioned(
                         top: 10,
@@ -2623,7 +2637,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(16),
-                              child: Image.network(_uploadedPhotos[1]!, fit: BoxFit.cover),
+                              child: _buildPhotoWidget(_uploadedPhotos[1]),
                             ),
                             Positioned(
                               bottom: 8,
@@ -2667,7 +2681,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(16),
-                              child: Image.network(_uploadedPhotos[2]!, fit: BoxFit.cover),
+                              child: _buildPhotoWidget(_uploadedPhotos[2]),
                             ),
                             Positioned(
                               bottom: 8,

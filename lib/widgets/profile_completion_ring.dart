@@ -42,10 +42,20 @@ int calculateProfileCompletion(Map<String, dynamic>? profile) {
   for (final entry in fields.entries) {
     final key = entry.key;
     final weight = entry.value;
-    final val = profile[key];
+    
+    // Fallback for backend naming differences
+    final val = (key == 'uploadedPhotos') ? (profile['photos'] ?? profile['uploadedPhotos']) : 
+                (key == 'siblings') ? (profile['siblingsDetails'] ?? profile['siblings']) : 
+                profile[key];
 
     if (key == 'uploadedPhotos') {
       if (val is List && val.isNotEmpty && val[0] != null && val[0].toString().isNotEmpty) {
+        score += weight;
+      }
+    } else if (key == 'company' || key == 'jobPost' || key == 'monthlyIncome') {
+      if (profile['profession'] == 'Not Working') {
+        score += weight; // Auto-grant points if not working
+      } else if (val != null && val.toString().trim().isNotEmpty) {
         score += weight;
       }
     } else if (key == 'dob') {
@@ -90,16 +100,15 @@ List<String> getMissingProfileFields(Map<String, dynamic>? profile) {
     final key = entry.key;
     final displayName = entry.value;
     
-    // The backend might return 'photos' instead of 'uploadedPhotos'
-    final val = (key == 'uploadedPhotos') 
-        ? (profile['photos'] ?? profile['uploadedPhotos']) 
-        : profile[key];
+    final val = (key == 'uploadedPhotos') ? (profile['photos'] ?? profile['uploadedPhotos']) : 
+                (key == 'siblings') ? (profile['siblingsDetails'] ?? profile['siblings']) : 
+                profile[key];
 
     if (key == 'uploadedPhotos') {
       if (!(val is List && val.isNotEmpty && val[0] != null && val[0].toString().isNotEmpty)) {
         missing.add(displayName);
       }
-    } else if (key == 'company' || key == 'monthlyIncome') {
+    } else if (key == 'company' || key == 'monthlyIncome' || key == 'jobPost') {
       // If the user is "Not Working", company and income are not required
       if (profile['profession'] != 'Not Working') {
         if (val == null || val.toString().trim().isEmpty) {
