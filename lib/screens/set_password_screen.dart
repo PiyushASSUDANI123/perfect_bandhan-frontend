@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/premium_feedback.dart';
 import '../providers/auth_provider.dart';
+import '../main.dart'; // To access HomeScreenWrapper
 
 class SetPasswordScreen extends StatefulWidget {
   const SetPasswordScreen({super.key});
@@ -60,7 +61,11 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         message: 'Your account password has been set successfully. Please complete the remaining onboarding steps.',
         onDismiss: () {
           if (mounted) {
-            Navigator.pop(context); // Go back to OTP, which resolves to onboarding
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreenWrapper()),
+              (route) => false,
+            );
           }
         },
       );

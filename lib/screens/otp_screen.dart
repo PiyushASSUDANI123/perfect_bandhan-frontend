@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/premium_feedback.dart';
 import '../providers/auth_provider.dart';
+import '../main.dart'; // To access HomeScreenWrapper
 import 'set_password_screen.dart';
 import 'dart:async';
 
@@ -86,7 +87,11 @@ class _OtpScreenState extends State<OtpScreen> {
           MaterialPageRoute(builder: (context) => const SetPasswordScreen()),
         );
       } else {
-        navigator.pop();
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreenWrapper()),
+          (route) => false,
+        );
       }
     } else if (!success && context.mounted) {
       PremiumFeedback.showError(
