@@ -198,6 +198,11 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
         _liveWithWhomController.text = data['liveWithWhom'] ?? '';
         _aboutFamilyController.text = data['aboutFamily'] ?? '';
       });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(_currentStep);
+        }
+      });
     } catch (e) {
       debugPrint('[Load Progress Error]: $e');
     }
