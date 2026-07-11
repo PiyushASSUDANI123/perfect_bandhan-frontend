@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/edit_profile_sheet.dart';
 import '../widgets/manage_photos_sheet.dart';
+import '../widgets/admin_user_settings_sheet.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -770,6 +771,25 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         label: Text('PHOTOS', style: GoogleFonts.cinzel(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.accentGold,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        ),
+                      ),
+                      const SizedBox(width: 8.0),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context); // Close dossier
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => AdminUserSettingsSheet(adminEditUser: user),
+                          );
+                        },
+                        icon: const Icon(Icons.settings_outlined, size: 16, color: Colors.white),
+                        label: Text('SETTINGS', style: GoogleFonts.cinzel(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         ),
