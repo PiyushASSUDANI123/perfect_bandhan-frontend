@@ -18,7 +18,7 @@ class EditProfileSheet extends StatefulWidget {
 
 class _EditProfileSheetState extends State<EditProfileSheet> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _bioController;
   late TextEditingController _weightController;
   late TextEditingController _cityController;
@@ -34,13 +34,25 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   late TextEditingController _properAddressController;
   late TextEditingController _jobPostController;
   late TextEditingController _ownHouseController;
-  
+
   late TextEditingController _nukhController;
   late TextEditingController _fatherStatusController;
   late TextEditingController _motherStatusController;
   late TextEditingController _siblingsCountController;
-  
+
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
+  late TextEditingController _phoneController;
+  late TextEditingController _whatsappNumberController;
+  late TextEditingController _heightController;
+  late TextEditingController _casteController;
+  late TextEditingController _sindhiTypeController;
+  late TextEditingController _fathersOccupationController;
+  late TextEditingController _mothersOccupationController;
+  late TextEditingController _siblingsDetailsController;
+
   String? _gender;
+
   String? _manglikStatus;
   DateTime? _dob;
   bool _isDobSetFromBackend = false;
@@ -51,30 +63,100 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     super.initState();
     final provider = Provider.of<AuthProvider>(context, listen: false);
     final profile = widget.adminEditUser ?? provider.myProfile ?? {};
-    
-    _bioController = TextEditingController(text: profile['bio']?.toString() ?? '');
-    _weightController = TextEditingController(text: profile['weight']?.toString() ?? '');
-    _cityController = TextEditingController(text: profile['city']?.toString() ?? '');
-    _stateController = TextEditingController(text: profile['state']?.toString() ?? '');
-    _professionController = TextEditingController(text: profile['profession']?.toString() ?? '');
-    _educationController = TextEditingController(text: profile['education']?.toString() ?? '');
-    _companyController = TextEditingController(text: profile['company']?.toString() ?? '');
-    _maritalStatusController = TextEditingController(text: profile['maritalStatus']?.toString() ?? '');
-    _birthTimeController = TextEditingController(text: profile['birthTime']?.toString() ?? '');
-    _birthPlaceController = TextEditingController(text: profile['birthPlace']?.toString() ?? '');
+
+    _bioController = TextEditingController(
+      text: profile['bio']?.toString() ?? '',
+    );
+    _weightController = TextEditingController(
+      text: profile['weight']?.toString() ?? '',
+    );
+    _cityController = TextEditingController(
+      text: profile['city']?.toString() ?? '',
+    );
+    _stateController = TextEditingController(
+      text: profile['state']?.toString() ?? '',
+    );
+    _professionController = TextEditingController(
+      text: profile['profession']?.toString() ?? '',
+    );
+    _educationController = TextEditingController(
+      text: profile['education']?.toString() ?? '',
+    );
+    _companyController = TextEditingController(
+      text: profile['company']?.toString() ?? '',
+    );
+    _maritalStatusController = TextEditingController(
+      text: profile['maritalStatus']?.toString() ?? '',
+    );
+    _birthTimeController = TextEditingController(
+      text: profile['birthTime']?.toString() ?? '',
+    );
+    _birthPlaceController = TextEditingController(
+      text: profile['birthPlace']?.toString() ?? '',
+    );
     _gender = profile['gender']?.toString();
-    _monthlyIncomeController = TextEditingController(text: profile['monthlyIncome']?.toString() ?? '');
-    _districtController = TextEditingController(text: profile['district']?.toString() ?? '');
-    _properAddressController = TextEditingController(text: profile['properAddress']?.toString() ?? '');
-    _jobPostController = TextEditingController(text: profile['jobPost']?.toString() ?? '');
-    _ownHouseController = TextEditingController(text: profile['ownHouse']?.toString() ?? '');
-    
-    _nukhController = TextEditingController(text: profile['nukh']?.toString() ?? '');
-    _fatherStatusController = TextEditingController(text: profile['fatherStatus']?.toString() ?? 'Alive');
-    _motherStatusController = TextEditingController(text: profile['motherStatus']?.toString() ?? 'Alive');
-    _siblingsCountController = TextEditingController(text: profile['siblingsCount']?.toString() ?? '0');
-    
+    _monthlyIncomeController = TextEditingController(
+      text: profile['monthlyIncome']?.toString() ?? '',
+    );
+    _districtController = TextEditingController(
+      text: profile['district']?.toString() ?? '',
+    );
+    _properAddressController = TextEditingController(
+      text: profile['properAddress']?.toString() ?? '',
+    );
+    _jobPostController = TextEditingController(
+      text: profile['jobPost']?.toString() ?? '',
+    );
+    _ownHouseController = TextEditingController(
+      text: profile['ownHouse']?.toString() ?? '',
+    );
+
+    _nukhController = TextEditingController(
+      text: profile['nukh']?.toString() ?? '',
+    );
+    _fatherStatusController = TextEditingController(
+      text: profile['fatherStatus']?.toString() ?? 'Alive',
+    );
+    _motherStatusController = TextEditingController(
+      text: profile['motherStatus']?.toString() ?? 'Alive',
+    );
+    _siblingsCountController = TextEditingController(
+      text: profile['siblingsCount']?.toString() ?? '0',
+    );
+
+    _firstNameController = TextEditingController(
+      text: profile['firstName']?.toString() ?? '',
+    );
+    _lastNameController = TextEditingController(
+      text: profile['lastName']?.toString() ?? '',
+    );
+    _phoneController = TextEditingController(
+      text: profile['phone']?.toString() ?? '',
+    );
+    _whatsappNumberController = TextEditingController(
+      text: profile['whatsappNumber']?.toString() ?? '',
+    );
+    _heightController = TextEditingController(
+      text: profile['height']?.toString() ?? '',
+    );
+    _casteController = TextEditingController(
+      text: profile['caste']?.toString() ?? '',
+    );
+    _sindhiTypeController = TextEditingController(
+      text: profile['sindhiType']?.toString() ?? '',
+    );
+    _fathersOccupationController = TextEditingController(
+      text: profile['fathersOccupation']?.toString() ?? '',
+    );
+    _mothersOccupationController = TextEditingController(
+      text: profile['mothersOccupation']?.toString() ?? '',
+    );
+    _siblingsDetailsController = TextEditingController(
+      text: profile['siblingsDetails']?.toString() ?? '',
+    );
+
     _manglikStatus = profile['manglikStatus']?.toString();
+
     if (profile['dob'] != null && profile['dob'].toString().isNotEmpty) {
       try {
         _dob = DateTime.parse(profile['dob'].toString());
@@ -106,6 +188,17 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     _fatherStatusController.dispose();
     _motherStatusController.dispose();
     _siblingsCountController.dispose();
+
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _phoneController.dispose();
+    _whatsappNumberController.dispose();
+    _heightController.dispose();
+    _casteController.dispose();
+    _sindhiTypeController.dispose();
+    _fathersOccupationController.dispose();
+    _mothersOccupationController.dispose();
+    _siblingsDetailsController.dispose();
     super.dispose();
   }
 
@@ -113,9 +206,9 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
-    
+
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    
+
     final Map<String, dynamic> payload = {
       'bio': _bioController.text.trim(),
       'weight': _weightController.text.trim(),
@@ -137,49 +230,74 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
       'motherStatus': _motherStatusController.text.trim(),
       'siblingsCount': _siblingsCountController.text.trim(),
     };
-    
+
     if (_dob != null) {
       payload['dob'] = _dob!.toIso8601String();
     }
     if (_manglikStatus != null) {
       payload['manglikStatus'] = _manglikStatus;
     }
-    
+
+    final isDeveloper =
+        provider.phoneNumber == '9413879444' || widget.adminEditUser != null;
     // If in admin mode, allow editing gender as well.
-    if ((provider.phoneNumber == '9413879444' || widget.adminEditUser != null) && _gender != null) {
+    if (isDeveloper && _gender != null) {
       payload['gender'] = _gender;
+    }
+
+    if (isDeveloper) {
+      payload['firstName'] = _firstNameController.text.trim();
+      payload['lastName'] = _lastNameController.text.trim();
+      payload['phone'] = _phoneController.text.trim();
+      payload['whatsappNumber'] = _whatsappNumberController.text.trim();
+      payload['height'] = _heightController.text.trim();
+      payload['caste'] = _casteController.text.trim();
+      payload['sindhiType'] = _sindhiTypeController.text.trim();
+      payload['fathersOccupation'] = _fathersOccupationController.text.trim();
+      payload['mothersOccupation'] = _mothersOccupationController.text.trim();
+      payload['siblingsDetails'] = _siblingsDetailsController.text.trim();
     }
 
     bool success = false;
     if (widget.adminEditUser != null) {
-      final userId = widget.adminEditUser!['_id'] ?? widget.adminEditUser!['id'] ?? widget.adminEditUser!['phone'];
+      final userId =
+          widget.adminEditUser!['_id'] ??
+          widget.adminEditUser!['id'] ??
+          widget.adminEditUser!['phone'];
       success = await provider.adminEditUser(userId, payload);
     } else {
       success = await provider.completeOnboarding(payload);
     }
-    
+
     setState(() => _isSubmitting = false);
-    
+
     if (success && mounted) {
       if (widget.adminEditUser != null) {
         provider.fetchAdminUsers();
       } else {
-        await provider.fetchMyProfile(); // Refresh profile 
+        await provider.fetchMyProfile(); // Refresh profile
       }
-      
+
       if (mounted) {
         Navigator.pop(context);
         PremiumFeedback.showSuccess(
           context: context,
-          title: Provider.of<LanguageProvider>(context, listen: false).translate('profile_updated'),
+          title: Provider.of<LanguageProvider>(
+            context,
+            listen: false,
+          ).translate('profile_updated'),
           message: 'Your profile details have been successfully updated.',
         );
       }
     } else if (mounted) {
       PremiumFeedback.showError(
         context: context,
-        title: Provider.of<LanguageProvider>(context, listen: false).translate('update_failed'),
-        message: provider.errorMessage ?? 'Could not update profile at this time.',
+        title: Provider.of<LanguageProvider>(
+          context,
+          listen: false,
+        ).translate('update_failed'),
+        message:
+            provider.errorMessage ?? 'Could not update profile at this time.',
       );
     }
   }
@@ -187,7 +305,8 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AuthProvider>(context, listen: false);
-    final isDeveloper = provider.phoneNumber == '9413879444' || widget.adminEditUser != null;
+    final isDeveloper =
+        provider.phoneNumber == '9413879444' || widget.adminEditUser != null;
 
     return Container(
       decoration: const BoxDecoration(
@@ -221,16 +340,80 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: AppTheme.textMuted),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppTheme.textMuted,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-              
+
               if (isDeveloper) ...[
                 Text(
-                  'Gender (Developer Only)',
+                  'Core Details (Admin Only)',
+                  style: GoogleFonts.montserrat(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    color: AppTheme.textCarbon,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  labelText: 'First Name',
+                  controller: _firstNameController,
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  labelText: 'Last Name',
+                  controller: _lastNameController,
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  labelText: 'Phone',
+                  controller: _phoneController,
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  labelText: 'WhatsApp',
+                  controller: _whatsappNumberController,
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  labelText: 'Height',
+                  controller: _heightController,
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  labelText: 'Caste',
+                  controller: _casteController,
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  labelText: 'Sindhi Type',
+                  controller: _sindhiTypeController,
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  labelText: 'Father Occupation',
+                  controller: _fathersOccupationController,
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  labelText: 'Mother Occupation',
+                  controller: _mothersOccupationController,
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  labelText: 'Siblings Details',
+                  controller: _siblingsDetailsController,
+                ),
+                const SizedBox(height: 16),
+
+                Text(
+                  'Gender (Admin Only)',
+
                   style: GoogleFonts.montserrat(
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
@@ -242,11 +425,19 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                   initialValue: _gender,
                   dropdownColor: AppTheme.cardWhite,
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.accentGold, width: 2),
+                      borderSide: const BorderSide(
+                        color: AppTheme.accentGold,
+                        width: 2,
+                      ),
                     ),
                   ),
                   items: ['Male', 'Female'].map((String val) {
@@ -260,7 +451,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 ),
                 const SizedBox(height: 16),
               ],
-              
+
               CustomTextField(
                 labelText: 'Bio',
                 hintText: 'Tell us a bit about yourself...',
@@ -269,7 +460,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
-              
+
               CustomTextField(
                 labelText: 'Weight',
                 hintText: 'e.g. 65 kg',
@@ -277,7 +468,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 prefixIcon: Icons.monitor_weight_rounded,
               ),
               const SizedBox(height: 16),
-              
+
               CustomTextField(
                 labelText: 'City',
                 hintText: 'Current City',
@@ -285,7 +476,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 prefixIcon: Icons.location_city_rounded,
               ),
               const SizedBox(height: 16),
-              
+
               CustomTextField(
                 labelText: 'State',
                 hintText: 'Current State',
@@ -296,17 +487,32 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
 
               // --- Astrological Intel ---
               const SizedBox(height: 24),
-              Text(Provider.of<LanguageProvider>(context, listen: false).translate('astrological_intel'), style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                Provider.of<LanguageProvider>(
+                  context,
+                  listen: false,
+                ).translate('astrological_intel'),
+                style: GoogleFonts.montserrat(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
               const SizedBox(height: 16),
-              
+
               if (!_isDobSetFromBackend) ...[
                 GestureDetector(
                   onTap: () async {
                     final date = await showDatePicker(
                       context: context,
-                      initialDate: _dob ?? DateTime.now().subtract(const Duration(days: 365 * 25)),
+                      initialDate:
+                          _dob ??
+                          DateTime.now().subtract(
+                            const Duration(days: 365 * 25),
+                          ),
                       firstDate: DateTime(1950),
-                      lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+                      lastDate: DateTime.now().subtract(
+                        const Duration(days: 365 * 18),
+                      ),
                       builder: (context, child) {
                         return Theme(
                           data: Theme.of(context).copyWith(
@@ -325,7 +531,10 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                     }
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: AppTheme.cardWhite,
                       borderRadius: BorderRadius.circular(12),
@@ -335,33 +544,61 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          _dob != null ? "${_dob!.day}/${_dob!.month}/${_dob!.year}" : "Select Date of Birth",
+                          _dob != null
+                              ? "${_dob!.day}/${_dob!.month}/${_dob!.year}"
+                              : "Select Date of Birth",
                           style: GoogleFonts.montserrat(
-                            color: _dob != null ? AppTheme.textCarbon : AppTheme.textMuted,
+                            color: _dob != null
+                                ? AppTheme.textCarbon
+                                : AppTheme.textMuted,
                             fontSize: 14,
                           ),
                         ),
-                        const Icon(Icons.calendar_today_rounded, color: AppTheme.accentGold, size: 20),
+                        const Icon(
+                          Icons.calendar_today_rounded,
+                          color: AppTheme.accentGold,
+                          size: 20,
+                        ),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
               ],
-              
+
               DropdownButtonFormField<String>(
                 initialValue: _manglikStatus,
                 decoration: InputDecoration(
                   labelText: 'Manglik Status',
-                  labelStyle: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 14),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.glassBorderColor)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.glassBorderColor)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.accentGold)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  labelStyle: GoogleFonts.montserrat(
+                    color: AppTheme.textMuted,
+                    fontSize: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorderColor,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: AppTheme.glassBorderColor,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.accentGold),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
                 ),
-                items: ['Not Manglik', 'Manglik', 'Anshik Manglik', 'Don\'t Know']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
+                items:
+                    ['Not Manglik', 'Manglik', 'Anshik Manglik', 'Don\'t Know']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
                 onChanged: (val) => setState(() => _manglikStatus = val),
               ),
               const SizedBox(height: 16),
@@ -373,14 +610,14 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 prefixIcon: Icons.access_time_rounded,
               ),
               const SizedBox(height: 16),
-              
+
               CustomTextField(
                 labelText: 'Birth Place',
                 hintText: 'e.g. Mumbai',
                 controller: _birthPlaceController,
                 prefixIcon: Icons.location_on_rounded,
               ),
-              
+
               const SizedBox(height: 16),
               CustomTextField(
                 labelText: 'Clan / Nukh',
@@ -391,7 +628,16 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
 
               // --- Family Intel ---
               const SizedBox(height: 24),
-              Text(Provider.of<LanguageProvider>(context, listen: false).translate('family_intel'), style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                Provider.of<LanguageProvider>(
+                  context,
+                  listen: false,
+                ).translate('family_intel'),
+                style: GoogleFonts.montserrat(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
               const SizedBox(height: 16),
 
               CustomTextField(
@@ -419,7 +665,16 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
 
               // --- Professional Intel ---
               const SizedBox(height: 24),
-              Text(Provider.of<LanguageProvider>(context, listen: false).translate('professional_intel'), style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                Provider.of<LanguageProvider>(
+                  context,
+                  listen: false,
+                ).translate('professional_intel'),
+                style: GoogleFonts.montserrat(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
               const SizedBox(height: 16),
 
               CustomTextField(
@@ -429,7 +684,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 prefixIcon: Icons.work_rounded,
               ),
               const SizedBox(height: 16),
-              
+
               CustomTextField(
                 labelText: 'Company',
                 hintText: 'Company name',
@@ -437,7 +692,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 prefixIcon: Icons.business_rounded,
               ),
               const SizedBox(height: 16),
-              
+
               CustomTextField(
                 labelText: 'Education',
                 hintText: 'Highest degree',
@@ -445,7 +700,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 prefixIcon: Icons.school_rounded,
               ),
               const SizedBox(height: 16),
-              
+
               CustomTextField(
                 labelText: 'Marital Status',
                 hintText: 'e.g. Never Married',
@@ -494,20 +749,25 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                 maxLines: 2,
               ),
               const SizedBox(height: 32),
-              
+
               ElevatedButton(
                 onPressed: _isSubmitting ? null : _submitUpdates,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.accentGold,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: _isSubmitting
                     ? const SizedBox(
                         height: 24,
                         width: 24,
-                        child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          color: Colors.black,
+                          strokeWidth: 2,
+                        ),
                       )
                     : Text(
                         'Save Updates',
