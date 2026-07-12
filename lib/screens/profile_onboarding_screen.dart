@@ -595,7 +595,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               ),
               Row(
                 children: [
-                  if (_currentStep == 6 || _currentStep == 8 || _currentStep == 10)
+                  if (_currentStep == 6 || _currentStep == 10)
                     Padding(
                       padding: const EdgeInsets.only(right: 12.0),
                       child: GestureDetector(
