@@ -2230,14 +2230,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
       return;
     }
 
-    int nonNullPhotos = _uploadedPhotos.where((p) => p != null && p.isNotEmpty).length;
-    if (nonNullPhotos == 0) {
-      setState(() {
-        _isSubmitting = false;
-      });
-      _showErrorSnackBar("At least 1 photo is mandatory.");
-      return;
-    }
+    // Photo validation removed to allow bypass
 
     final Map<String, dynamic> finalPayload = {
       'profileFor': 'Self',
@@ -2402,8 +2395,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
         break;
       case 9:
         if (!_acceptedTerms || !_acceptedInfoTrue) return false;
-        int nonNullPhotos = _uploadedPhotos.where((p) => p != null && p.isNotEmpty).length;
-        if (nonNullPhotos == 0) return false;
+        // Photo upload is optional now
         break;
       case 10:
         // Astrology is optional
