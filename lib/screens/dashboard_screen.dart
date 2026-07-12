@@ -581,6 +581,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     return Column(
       children: [
         _buildPremiumHeader(),
+        _buildPremiumFiltersRow(),
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => provider.fetchDailyPicks(refresh: true, filters: _getHomeFilters()),
