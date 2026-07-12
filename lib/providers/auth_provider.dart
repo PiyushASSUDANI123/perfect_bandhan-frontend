@@ -600,7 +600,6 @@ class AuthProvider extends ChangeNotifier {
           _dailyPicksOffset += profilesJson.length;
           final newProfiles = profilesJson
               .map((e) => Profile.fromJson(e))
-              .where((p) => p.name.trim().toLowerCase() != 'new user')
               .toList();
           for (var p in newProfiles) {
             if (!_dailyPicks.any((existing) => existing.id == p.id)) {
@@ -652,7 +651,6 @@ class AuthProvider extends ChangeNotifier {
           _searchOffset += profilesJson.length;
           final newProfiles = profilesJson
               .map((e) => Profile.fromJson(e))
-              .where((p) => p.name.trim().toLowerCase() != 'new user')
               .toList();
           for (var p in newProfiles) {
             if (!_searchResults.any((existing) => existing.id == p.id)) {
