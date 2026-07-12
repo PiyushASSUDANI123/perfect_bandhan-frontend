@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../widgets/floating_nav_bar.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -60,7 +61,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingObserver {
-  int _currentIndex = 0;
+  final ValueNotifier<int> _currentIndexNotifier = ValueNotifier<int>(0);
+  Timer? _scrollDebouncer;
 
   // Controllers
   final ScrollController _dailyPicksController = ScrollController();
@@ -308,6 +310,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   @override
   void dispose() {
+    _scrollDebouncer?.cancel();
+    _currentIndexNotifier.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _dailyPicksController.dispose();
     _searchResultsController.dispose();
@@ -338,26 +342,34 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
 
   void _onDailyPicksScroll() {
     if (!_dailyPicksController.hasClients) return;
-    if (_dailyPicksController.position.pixels >= _dailyPicksController.position.maxScrollExtent - 200) {
-      final provider = Provider.of<AuthProvider>(context, listen: false);
-      if (!provider.isLoadingDailyPicks && provider.hasMoreDailyPicks) {
-        provider.fetchDailyPicks(
-          filters: _getHomeFilters(),
-        );
+    if (_scrollDebouncer?.isActive ?? false) return;
+    _scrollDebouncer = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      if (_dailyPicksController.position.pixels >= _dailyPicksController.position.maxScrollExtent - 200) {
+        final provider = Provider.of<AuthProvider>(context, listen: false);
+        if (!provider.isLoadingDailyPicks && provider.hasMoreDailyPicks) {
+          provider.fetchDailyPicks(
+            filters: _getHomeFilters(),
+          );
+        }
       }
-    }
+    });
   }
 
   void _onSearchResultsScroll() {
     if (!_searchResultsController.hasClients) return;
-    if (_searchResultsController.position.pixels >= _searchResultsController.position.maxScrollExtent - 200) {
-      final provider = Provider.of<AuthProvider>(context, listen: false);
-      if (!provider.isLoadingSearch && provider.hasMoreSearch) {
-        provider.searchProfiles(
-          filters: _getActiveFilters(),
-        );
+    if (_scrollDebouncer?.isActive ?? false) return;
+    _scrollDebouncer = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      if (_searchResultsController.position.pixels >= _searchResultsController.position.maxScrollExtent - 200) {
+        final provider = Provider.of<AuthProvider>(context, listen: false);
+        if (!provider.isLoadingSearch && provider.hasMoreSearch) {
+          provider.searchProfiles(
+            filters: _getActiveFilters(),
+          );
+        }
       }
-    }
+    });
   }
 
   void _triggerSearch() {
@@ -419,15 +431,20 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 800;
-        final bodyContent = IndexedStack(
-          index: _currentIndex,
-          children: [
-            _buildDailyPicksTab(),
-            _buildSearchTab(),
-            _buildActivityTab(),
-            _buildChatsTab(),
-            const MyProfileScreen(),
-          ],
+        final bodyContent = ValueListenableBuilder<int>(
+          valueListenable: _currentIndexNotifier,
+          builder: (context, currentIndex, child) {
+            return IndexedStack(
+              index: currentIndex,
+              children: [
+                _buildDailyPicksTab(),
+                _buildSearchTab(),
+                _buildActivityTab(),
+                _buildChatsTab(),
+                const MyProfileScreen(),
+              ],
+            );
+          },
         );
 
         if (isDesktop) {
@@ -458,9 +475,12 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             children: [
               SafeArea(child: bodyContent),
               const GlobalCompletionOverlay(),
-              FloatingNavBar(
-                currentIndex: _currentIndex,
-                onTap: (int index) {
+              ValueListenableBuilder<int>(
+                valueListenable: _currentIndexNotifier,
+                builder: (context, currentIndex, child) {
+                  return FloatingNavBar(
+                    currentIndex: currentIndex,
+                    onTap: (int index) {
                   final provider = Provider.of<AuthProvider>(context, listen: false);
                   if (index == 3 && provider.appConfig?['chatComingSoon'] == true) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -483,6 +503,8 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   }
                 },
               ),
+                  );
+                },
             ],
           ),
         );
@@ -2334,6 +2356,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                   Navigator.pop(ctx);
                   final provider = Provider.of<AuthProvider>(context, listen: false);
                   final success = await provider.blockUser(profile.phone, selectedReason, detailsController.text);
+                                  if (!mounted) return;
                   if (success && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${profile.name} blocked.')));
                     provider.fetchDailyPicks(refresh: true); // Refresh feed
@@ -2395,6 +2418,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                   Navigator.pop(ctx);
                   final provider = Provider.of<AuthProvider>(context, listen: false);
                   final success = await provider.reportUser(profile.phone, selectedReason, detailsController.text);
+                                  if (!mounted) return;
                   if (success && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${profile.name} reported. Thank you.')));
                   }
@@ -2646,6 +2670,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                                 String reqLabel = 'Request';
                                 VoidCallback reqTap = () async {
                                   final success = await provider.sendInterest(profile.phone, profile.id);
+                                  if (!mounted) return;
                                   if (success && context.mounted) {
                                     showDialog(
                                       context: context,
@@ -2679,6 +2704,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                                   reqLabel = 'Cancel';
                                   reqTap = () async {
                                     final success = await provider.cancelInterest(profile.phone, profile.id);
+                                  if (!mounted) return;
                                     if (success && context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request cancelled.')));
                                     }
@@ -2696,6 +2722,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                                   reqLabel = 'Accept';
                                   reqTap = () async {
                                     final success = await provider.acceptInterest(profile.phone, profile.id);
+                                  if (!mounted) return;
                                     if (success && context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request from ${profile.name} accepted!')));
                                     }
@@ -2729,10 +2756,12 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                                 if (profile.interestStatus == 'incoming') {
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request declined.')));
                                   await provider.rejectInterest(profile.phone, profile.id);
+                                  if (!mounted) return;
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile hidden.')));
                                   provider.removeProfileLocally(profile.id);
                                   await provider.blockUser(profile.phone, 'Ignored', 'Hidden from dashboard');
+                                  if (!mounted) return;
                                 }
                               },
                             ),
@@ -2961,6 +2990,7 @@ class ReceivedRequestCardState extends State<ReceivedRequestCard> {
                     onPressed: _isDeclining ? null : () async {
                       setState(() => _isDeclining = true);
                       await provider.rejectInterest(profile.phone, profile.id);
+                                  if (!mounted) return;
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request from ${profile.name} declined.')));
                       }
@@ -2985,6 +3015,7 @@ class ReceivedRequestCardState extends State<ReceivedRequestCard> {
                     onPressed: _isAccepting ? null : () async {
                       setState(() => _isAccepting = true);
                       final success = await provider.acceptInterest(profile.phone, profile.id);
+                                  if (!mounted) return;
                       if (mounted) {
                         if (success) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -3062,6 +3093,7 @@ class _AcceptedRequestCardState extends State<AcceptedRequestCard> {
             onPressed: () async {
               Navigator.pop(ctx);
               final success = await provider.blockUser(widget.profile.phone, 'User blocked', '');
+                                  if (!mounted) return;
               if (mounted && success) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User blocked.')));
                 provider.removeProfileLocally(widget.profile.id);
@@ -3147,6 +3179,7 @@ class _AcceptedRequestCardState extends State<AcceptedRequestCard> {
                       setState(() => _isRemoving = true);
                       // Treat remove as reject
                       await provider.rejectInterest(profile.phone, profile.id);
+                                  if (!mounted) return;
                       if (mounted) {
                         provider.fetchActivityData(); // Refresh UI
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removed connection.')));
@@ -3275,6 +3308,7 @@ class SentRequestCard extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () async {
                       await provider.cancelInterest(profile.phone, profile.id);
+                                  if (!mounted) return;
                       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request cancelled.')));
                     },
                     icon: const Icon(Icons.close_rounded, size: 16),
