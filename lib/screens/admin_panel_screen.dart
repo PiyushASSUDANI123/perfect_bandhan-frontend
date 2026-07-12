@@ -251,6 +251,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           _buildSidebarItem(7, Icons.block, 'Block Logs'),
           _buildSidebarItem(8, Icons.settings_system_daydream_outlined, 'System Config'),
           _buildSidebarItem(9, Icons.phone_android_rounded, 'Phone Logs'),
+          _buildSidebarItem(10, Icons.assignment_late_outlined, 'Onboarding Drop-offs'),
         ],
       ),
     );
@@ -320,6 +321,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         );
       case 9:
         return _buildPhoneLogsPanel(auth);
+      case 10:
+        return _buildOnboardingDropoffsPanel(auth);
       default:
         return const SizedBox.shrink();
     }
@@ -954,10 +957,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   _buildDetailRow('Special Disability Status', disability),
 
                   const SizedBox(height: 16.0),
-                  _buildInspectorSectionTitle('Personal Notes & Requirements'),
+                  _buildInspectorSectionTitle('Personal Notes'),
                   _buildDetailRow('Candidate Bio', user['bio']),
-                  _buildDetailRow('Partner Requirements', user['requirements']),
-                  _buildDetailRow('What We Provide / Assurances', user['whatWeProvide']),
+
                   
                   const SizedBox(height: 32.0),
                   const Divider(color: AppTheme.glassBorderColor),
@@ -2170,6 +2172,52 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 leading: const Icon(Icons.phone, color: AppTheme.accentGold),
                 title: Text('+91 ${log['phone']}', style: GoogleFonts.montserrat(color: AppTheme.textWhite, fontWeight: FontWeight.bold)),
                 subtitle: Text('Attempted at: $formattedDate', style: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 12)),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildOnboardingDropoffsPanel(AuthProvider auth) {
+    return FutureBuilder<List<dynamic>>(
+      future: auth.getOnboardingDropoffs(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator(color: AppTheme.accentGold));
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error loading drop-offs', style: GoogleFonts.montserrat(color: Colors.red)));
+        }
+        final dropoffs = snapshot.data ?? [];
+        if (dropoffs.isEmpty) {
+          return Center(child: Text('No onboarding drop-offs found.', style: GoogleFonts.montserrat(color: AppTheme.textMuted)));
+        }
+        return ListView.builder(
+          itemCount: dropoffs.length,
+          itemBuilder: (context, index) {
+            final dropoff = dropoffs[index];
+            final date = DateTime.tryParse(dropoff['lastActiveAt'] ?? '');
+            final formattedDate = date != null ? '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}' : 'Unknown time';
+            
+            return Card(
+              color: AppTheme.cardWhite,
+              margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: AppTheme.glassBorderColor, width: 0.5),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.assignment_late_outlined, color: AppTheme.accentGold),
+                title: Text('+91 ${dropoff['phone']}', style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontWeight: FontWeight.bold)),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Dropped at: ${dropoff['stepName'] ?? 'Step ${dropoff['currentStep']}'}', style: GoogleFonts.montserrat(color: Colors.redAccent, fontWeight: FontWeight.w600)),
+                    Text('Last Active: $formattedDate', style: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 12)),
+                  ],
+                ),
               ),
             );
           },

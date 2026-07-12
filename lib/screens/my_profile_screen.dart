@@ -1255,20 +1255,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                       value: _safeStr(data, 'sindhiType', fallback: 'Sindhi Hindu'),
                       fullWidth: true,
                     ),
-                    const SizedBox(height: 12),
-                    _bentoCard(
-                      icon: Icons.list_alt_rounded,
-                      label: 'Partner Requirements',
-                      value: _safeStr(data, 'requirements', fallback: 'Not specified'),
-                      fullWidth: true,
-                    ),
-                    const SizedBox(height: 12),
-                    _bentoCard(
-                      icon: Icons.card_giftcard_rounded,
-                      label: 'What We Provide',
-                      value: _safeStr(data, 'whatWeProvide', fallback: 'Not specified'),
-                      fullWidth: true,
-                    ),
+
 
                     const SizedBox(height: 32),
 

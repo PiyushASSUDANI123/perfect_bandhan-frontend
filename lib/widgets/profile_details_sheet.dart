@@ -769,10 +769,7 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
             _buildInfoRow(Icons.accessibility_new_outlined, 'Physical Status / Disability', widget.profile.physicalDisability),
           if (widget.profile.ownHouse.isNotEmpty)
             _buildInfoRow(Icons.home_outlined, 'House Ownership Status', widget.profile.ownHouse),
-          if (widget.profile.requirements.isNotEmpty)
-            _buildInfoRow(Icons.assignment_outlined, 'Partner Requirements', widget.profile.requirements),
-          if (widget.profile.whatWeProvide.isNotEmpty)
-            _buildInfoRow(Icons.card_giftcard_outlined, 'What We Provide / Family Background Details', widget.profile.whatWeProvide),
+
           if (hasHousePhoto) ...[
             const SizedBox(height: 14.0),
             Text(

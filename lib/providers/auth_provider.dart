@@ -1491,4 +1491,44 @@ class AuthProvider extends ChangeNotifier {
   Future<void> updateMessageStatus(String messageId, String status) async {
     // If backend implements it, otherwise a no-op placeholder for read receipts
   }
+
+  Future<void> saveOnboardingProgress(int step, Map<String, dynamic> data) async {
+    if (_token == null) return;
+    try {
+      await http.post(
+        Uri.parse('$baseUrl/user/onboarding-progress'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: jsonEncode({
+          'step': step,
+          'stepName': 'Step $step',
+          'data': data,
+        }),
+      );
+    } catch (e) {
+      debugPrint('Error saving onboarding progress: $e');
+    }
+  }
+
+  Future<List<dynamic>> getOnboardingDropoffs() async {
+    if (_token == null || !isAdmin) return [];
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/user/admin/onboarding-progress'),
+        headers: {'Authorization': 'Bearer $_token'},
+      );
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded['status'] == 'success') {
+          return decoded['data'] ?? [];
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching onboarding dropoffs: $e');
+    }
+    return [];
+  }
 }
+

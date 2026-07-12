@@ -119,6 +119,11 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
         'aboutFamily': _aboutFamilyController.text,
       };
       await AppStorage.save('onboarding_progress', jsonEncode(data));
+      
+      if (mounted) {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        authProvider.saveOnboardingProgress(_currentStep, data);
+      }
     } catch (e) {
       debugPrint('[Save Progress Error]: $e');
     }
@@ -1709,31 +1714,9 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Partner Preferences & Bio', style: GoogleFonts.cinzel(fontSize: 24, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 24),
-          CustomTextField(
-            controller: _requirementsController,
-            labelText: 'Partner Requirements',
-              hintText: 'Partner Requirements',
-            prefixIcon: Icons.favorite_outline,
-            maxLines: 3,
-            onChanged: (_) => setState(() {}),
-          ),
-          AnimatedFieldReveal(
-            isVisible: _requirementsController.text.trim().isNotEmpty,
-            child: CustomTextField(
-              controller: _whatWeProvideController,
-              labelText: 'What We Provide',
-              hintText: 'What We Provide',
-              prefixIcon: Icons.handshake_outlined,
-              maxLines: 3,
-              onChanged: (_) => setState(() {}),
-            ),
-          ),
-          AnimatedFieldReveal(
-            isVisible: _whatWeProvideController.text.trim().isNotEmpty,
-            child: _buildStep5Bio(), // Reuse the existing bio generator widget
-          ),
+          Text('About You - Bio', style: GoogleFonts.cinzel(fontSize: 24, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+          _buildStep5Bio(), // Reuse the existing bio generator widget
+
           const SizedBox(height: 16),
           _buildSaveAndContinueButton(),
         ],
