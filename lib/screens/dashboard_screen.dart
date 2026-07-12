@@ -853,10 +853,13 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                         right: 40,
                         child: CircleAvatar(
                           radius: 20,
-                          backgroundColor: Colors.grey[300],
+                          backgroundColor: Colors.grey[400],
                           backgroundImage: matches.length > 0 && matches[0].photos.isNotEmpty
                               ? NetworkImage(matches[0].photos[0]) as ImageProvider
-                              : const AssetImage('assets/default_avatar.png'),
+                              : null,
+                          child: (matches.length > 0 && matches[0].photos.isNotEmpty) 
+                              ? null 
+                              : const Icon(Icons.person, color: Colors.white, size: 20),
                         ),
                       ),
                       Positioned(
@@ -866,7 +869,10 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                           backgroundColor: Colors.grey[400],
                           backgroundImage: matches.length > 1 && matches[1].photos.isNotEmpty
                               ? NetworkImage(matches[1].photos[0]) as ImageProvider
-                              : const AssetImage('assets/default_avatar.png'),
+                              : null,
+                          child: (matches.length > 1 && matches[1].photos.isNotEmpty)
+                              ? null 
+                              : const Icon(Icons.person, color: Colors.white, size: 20),
                         ),
                       ),
                       Positioned(
