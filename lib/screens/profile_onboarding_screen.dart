@@ -140,8 +140,8 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
         _surnameController.text = data['surname'] ?? '';
         _emailController.text = data['email'] ?? '';
         _complexion = data['complexion'];
-        if (data['dob'] != null) {
-          _dob = DateTime.parse(data['dob']);
+        if (data['dob'] != null && data['dob'].toString().trim().isNotEmpty) {
+          _dob = DateTime.tryParse(data['dob'].toString());
         }
         _calculatedAge = data['calculatedAge'];
         _height = data['height'];
@@ -151,12 +151,15 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
         _properAddressController.text = data['properAddress'] ?? '';
         _maritalStatus = data['maritalStatus'];
 
-        final List<dynamic>? degreesList = data['degrees'];
-        if (degreesList != null && degreesList.isNotEmpty) {
+        final dynamic degreesData = data['degrees'];
+        if (degreesData is List && degreesData.isNotEmpty) {
           _degreeControllers.clear();
-          for (var deg in degreesList) {
+          for (var deg in degreesData) {
             _degreeControllers.add(TextEditingController(text: deg.toString()));
           }
+        } else if (degreesData is String && degreesData.isNotEmpty) {
+          _degreeControllers.clear();
+          _degreeControllers.add(TextEditingController(text: degreesData));
         }
 
         _profession = data['profession'];
@@ -2287,19 +2290,19 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
     };
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    
-    // As per user request, flush local storage immediately regardless of DB success
-    _clearOnboardingProgress();
 
     auth.completeOnboarding(finalPayload).then((success) {
-      if (success && mounted) {
+      if (!mounted) return;
+      if (success) {
+        // FIX: Only delete draft if DB actually saved it
+        _clearOnboardingProgress();
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
             builder: (_) => CongratulationsScreen(profileData: finalPayload),
           ),
           (Route<dynamic> route) => false,
         );
-      } else if (!success && mounted) {
+      } else {
         setState(() {
           _isSubmitting = false;
         });
