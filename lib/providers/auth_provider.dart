@@ -40,11 +40,13 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoadingDailyPicks = false;
   String? _dailyPicksError;
   bool _hasMoreDailyPicks = true;
+  int _dailyPicksOffset = 0;
 
   final List<Profile> _searchResults = [];
   bool _isLoadingSearch = false;
   String? _searchError;
   bool _hasMoreSearch = true;
+  int _searchOffset = 0;
   int _searchCount = 0;
 
   final Set<String> _shortlistedIds = {};
@@ -565,12 +567,13 @@ class AuthProvider extends ChangeNotifier {
   }
 
 
-  Future<void> fetchDailyPicks({bool refresh = false, Map<String, String>? filters, int offset = 0}) async {
+  Future<void> fetchDailyPicks({bool refresh = false, Map<String, String>? filters}) async {
     if (_token == null) return;
     if (refresh) {
       _dailyPicks.clear();
       _hasMoreDailyPicks = true;
       _dailyPicksError = null;
+      _dailyPicksOffset = 0;
     }
     if (!_hasMoreDailyPicks && !refresh) return;
     _isLoadingDailyPicks = true;
@@ -579,7 +582,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       int limit = 10;
       // int offset handled by param
-      String url = '$baseUrl/user/profiles?recommendations=true&limit=$limit&offset=$offset';
+      String url = '$baseUrl/user/profiles?recommendations=true&limit=$limit&offset=$_dailyPicksOffset';
       if (filters != null) {
         filters.forEach((key, value) {
           if (value.isNotEmpty) url += '&$key=${Uri.encodeComponent(value)}';
@@ -589,9 +592,11 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final List<dynamic> profilesJson = data['data'] ?? [];
-        if (profilesJson.isEmpty) {
+        if (profilesJson.isEmpty || profilesJson.length < limit) {
           _hasMoreDailyPicks = false;
-        } else {
+        }
+        if (profilesJson.isNotEmpty) {
+          _dailyPicksOffset += profilesJson.length;
           final newProfiles = profilesJson
               .map((e) => Profile.fromJson(e))
               .where((p) => p.name.trim().toLowerCase() != 'new user')
@@ -627,7 +632,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       int limit = 10;
       // int offset handled by param
-      String url = '$baseUrl/user/profiles?limit=$limit&offset=$offset';
+      String url = '$baseUrl/user/profiles?limit=$limit&offset=$_searchOffset';
       if (filters != null) {
         filters.forEach((key, value) {
           if (value.isNotEmpty) url += '&$key=${Uri.encodeComponent(value)}';
@@ -638,9 +643,11 @@ class AuthProvider extends ChangeNotifier {
         final data = jsonDecode(response.body);
         final List<dynamic> profilesJson = data['data'] ?? [];
         _searchCount = data['pagination']?['total'] ?? 0;
-        if (profilesJson.isEmpty) {
+        if (profilesJson.isEmpty || profilesJson.length < limit) {
           _hasMoreSearch = false;
-        } else {
+        }
+        if (profilesJson.isNotEmpty) {
+          _searchOffset += profilesJson.length;
           final newProfiles = profilesJson
               .map((e) => Profile.fromJson(e))
               .where((p) => p.name.trim().toLowerCase() != 'new user')
@@ -1008,7 +1015,11 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
       return false;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<bool> changePassword(String currentPassword, String newPassword) async {
@@ -1020,7 +1031,11 @@ class AuthProvider extends ChangeNotifier {
         body: jsonEncode({'currentPassword': currentPassword, 'newPassword': newPassword}),
       );
       return response.statusCode == 200;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<bool> deleteAccount() async {
@@ -1035,7 +1050,11 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
       return false;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   bool get hasUnreadNotifications {
@@ -1087,7 +1106,11 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
       return false;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<bool> deleteUserNotification(String id) async {
@@ -1103,7 +1126,11 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
       return false;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<List<Map<String, dynamic>>> getAllNotifications() async {
@@ -1130,7 +1157,11 @@ class AuthProvider extends ChangeNotifier {
         body: jsonEncode({'title': title, 'body': body, 'targetPhone': targetPhone, 'type': type}),
       );
       return response.statusCode == 201;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<bool> updateNotification(String id, String title, String body, String? targetPhone, String type) async {
@@ -1142,7 +1173,11 @@ class AuthProvider extends ChangeNotifier {
         body: jsonEncode({'title': title, 'body': body, 'targetPhone': targetPhone, 'type': type}),
       );
       return response.statusCode == 200;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<bool> deleteNotification(String id) async {
@@ -1153,7 +1188,11 @@ class AuthProvider extends ChangeNotifier {
         headers: {'Authorization': 'Bearer $_token'},
       );
       return response.statusCode == 200;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<bool> blockUser(String targetPhone, String reason, String details) async {
@@ -1165,7 +1204,11 @@ class AuthProvider extends ChangeNotifier {
         body: jsonEncode({'targetPhone': targetPhone, 'reason': reason, 'details': details}),
       );
       return response.statusCode == 200;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<bool> unblockUser(String targetPhone) async {
@@ -1177,7 +1220,11 @@ class AuthProvider extends ChangeNotifier {
         body: jsonEncode({'targetPhone': targetPhone}),
       );
       return response.statusCode == 200;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<List<Map<String, dynamic>>> getBlockedUsers() async {
@@ -1204,7 +1251,11 @@ class AuthProvider extends ChangeNotifier {
         body: jsonEncode({'targetPhone': targetPhone, 'reason': reason, 'details': details}),
       );
       return response.statusCode == 200;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<List<Map<String, dynamic>>> getReports() async {
@@ -1271,8 +1322,22 @@ class AuthProvider extends ChangeNotifier {
         headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
         body: jsonEncode(data),
       );
-      return response.statusCode == 200;
-    } catch (e) { return false; }
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        try {
+          _errorMessage = jsonDecode(response.body)['message'] ?? 'Failed';
+        } catch (_) {
+          _errorMessage = 'Failed to update';
+        }
+        notifyListeners();
+        return false;
+      }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<bool> adminBroadcastPush(String text) async {
@@ -1284,7 +1349,11 @@ class AuthProvider extends ChangeNotifier {
         body: jsonEncode({'message': text}),
       );
       return response.statusCode == 200;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<bool> adminChangePassword(String curr, String newP) async {
@@ -1296,7 +1365,11 @@ class AuthProvider extends ChangeNotifier {
         body: jsonEncode({'currentPassword': curr, 'newPassword': newP}),
       );
       return response.statusCode == 200;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   Future<bool> adminUpdateAppConfig(Map<String, dynamic> config) async {
@@ -1308,7 +1381,11 @@ class AuthProvider extends ChangeNotifier {
         body: jsonEncode(config),
       );
       return response.statusCode == 200;
-    } catch (e) { return false; }
+        } catch (e) {
+      _errorMessage = 'Network error: Please check your connection.';
+      notifyListeners();
+      return false; 
+    }
   }
 
   // Admin: Delete a user permanently

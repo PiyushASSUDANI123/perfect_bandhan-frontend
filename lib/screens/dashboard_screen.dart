@@ -342,7 +342,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       final provider = Provider.of<AuthProvider>(context, listen: false);
       if (!provider.isLoadingDailyPicks && provider.hasMoreDailyPicks) {
         provider.fetchDailyPicks(
-          offset: provider.dailyPicks.length,
           filters: _getHomeFilters(),
         );
       }
@@ -356,7 +355,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       if (!provider.isLoadingSearch && provider.hasMoreSearch) {
         provider.searchProfiles(
           filters: _getActiveFilters(),
-          offset: provider.searchResults.length,
         );
       }
     }
