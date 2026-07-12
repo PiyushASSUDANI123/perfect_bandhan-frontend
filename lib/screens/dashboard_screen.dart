@@ -2070,12 +2070,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                           ),
                         ),
                       ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 80.0),
-                        child: _buildEmptyStateCards(),
-                      ),
-                    ),
+
                   ],
                 ),
               ),
