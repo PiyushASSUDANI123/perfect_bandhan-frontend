@@ -596,9 +596,9 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                           children: [
                             Icon(Icons.search_off_rounded, size: 64, color: AppTheme.textMuted),
                             const SizedBox(height: 16),
-                            Text('No Matches Found', style: GoogleFonts.cinzel(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
+                            Text(provider.dailyPicksError ?? 'No Matches Found', style: GoogleFonts.cinzel(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
                             const SizedBox(height: 8),
-                            Text('Try relaxing your partner preferences.', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
+                            Text(provider.dailyPicksError != null ? 'Error fetching data. Check your network or token.' : 'Try relaxing your partner preferences.', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
                           ],
                         ),
                       )
