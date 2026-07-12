@@ -129,7 +129,8 @@ class SocketService {
       
       final pendingMessages = _messageQueue.values.where((msg) => msg['isSent'] == false).toList();
       for (var msg in pendingMessages) {
-        if (msg['text'] == msgData['text']) {
+        // Match by localId to prevent duplicate message race conditions
+        if (msg['id'] == msgData['localId']) {
           msg['isSent'] = true;
           _messageQueue.put(msg['id'], msg);
           break; // Found and updated
