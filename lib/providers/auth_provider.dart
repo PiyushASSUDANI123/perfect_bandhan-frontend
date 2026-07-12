@@ -569,6 +569,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> fetchDailyPicks({bool refresh = false, Map<String, String>? filters}) async {
     if (_token == null) return;
+    if (_isLoadingDailyPicks) return;
     if (refresh) {
       _dailyPicks.clear();
       _hasMoreDailyPicks = true;
@@ -619,6 +620,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> searchProfiles({Map<String, String>? filters, bool refresh = false, int offset = 0}) async {
     if (_token == null) return;
+    if (_isLoadingSearch) return;
     if (refresh) {
       _searchResults.clear();
       _hasMoreSearch = true;
@@ -815,6 +817,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> fetchIncomingInterests() async {
     if (_token == null) return;
+    if (_isLoadingIncoming) return;
     _isLoadingIncoming = true;
     notifyListeners();
     try {
@@ -835,6 +838,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> fetchConversations() async {
     if (_token == null) return;
+    if (_isLoadingConversations) return;
     _isLoadingConversations = true;
     notifyListeners();
     try {
