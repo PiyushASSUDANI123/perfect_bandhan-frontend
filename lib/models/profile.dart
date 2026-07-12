@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class Profile {
   final String id;
+  final String pbId;
   final String name;
   final int age;
   final String height;
@@ -59,6 +60,7 @@ class Profile {
 
   Profile({
     required this.id,
+    this.pbId = '',
     required this.name,
     required this.age,
     required this.height,

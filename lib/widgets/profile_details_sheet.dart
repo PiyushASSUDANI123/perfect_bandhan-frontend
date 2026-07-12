@@ -534,7 +534,8 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
                 const SizedBox(width: 12.0),
                 GestureDetector(
                   onTap: () {
-                    final shareUrl = 'https://app.perfectbandhan.in/profile/${widget.profile.id}';
+                    final shareId = widget.profile.pbId.isNotEmpty ? widget.profile.pbId : widget.profile.id;
+                    final shareUrl = 'https://humsafar.piyushassudani.in/p/$shareId';
                     Share.share('Check out ${widget.profile.name}\'s profile on Perfect Bandhan!\n$shareUrl');
                   },
                   child: Container(
@@ -1403,7 +1404,8 @@ class _ProfileDetailsSheetState extends State<ProfileDetailsSheet> {
               height: 44,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  final shareUrl = 'https://play.google.com/store/apps/details?id=com.piyush.assudani';
+                  final shareId = widget.profile.pbId.isNotEmpty ? widget.profile.pbId : widget.profile.id;
+                  final shareUrl = 'https://humsafar.piyushassudani.in/p/$shareId';
                   final message = '🔱 *Jai Jhulelal!*\n\n📋 *Profile — Perfect Bandhan*\n━━━━━━━━━━━━━━━━\n👤 *Name:* ${widget.profile.name}\n🎂 *Age:* ${widget.profile.age} yrs\n🏢 *Profession:* ${widget.profile.profession}\n🎓 *Education:* ${widget.profile.education}\n📍 *Location:* ${widget.profile.location}\n🧬 *Nukh:* ${widget.profile.nukh.isNotEmpty ? widget.profile.nukh : widget.profile.caste}\n━━━━━━━━━━━━━━━━\n\n📲 *Download app to view full profile & connect:*\n$shareUrl\n\n_Shared via Perfect Bandhan_ 🤝';
                   final whatsappUrl = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
                   launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
