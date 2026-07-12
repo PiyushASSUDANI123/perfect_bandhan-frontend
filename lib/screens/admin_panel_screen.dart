@@ -250,6 +250,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           _buildSidebarItem(6, Icons.flag_rounded, 'User Reports'),
           _buildSidebarItem(7, Icons.block, 'Block Logs'),
           _buildSidebarItem(8, Icons.settings_system_daydream_outlined, 'System Config'),
+          _buildSidebarItem(9, Icons.phone_android_rounded, 'Phone Logs'),
         ],
       ),
     );
@@ -317,6 +318,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           padding: const EdgeInsets.all(16.0),
           child: _buildSystemConfigPanel(auth),
         );
+      case 9:
+        return _buildPhoneLogsPanel(auth);
       default:
         return const SizedBox.shrink();
     }
@@ -2133,6 +2136,45 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         ],
       ),
       ),
+    );
+  }
+
+  Widget _buildPhoneLogsPanel(AuthProvider auth) {
+    return FutureBuilder<List<dynamic>>(
+      future: auth.fetchPhoneLogs(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator(color: AppTheme.accentGold));
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Text("Error loading logs", style: TextStyle(color: Colors.red)));
+        }
+        
+        final logs = snapshot.data ?? [];
+        if (logs.isEmpty) {
+          return const Center(child: Text("No phone logs found.", style: TextStyle(color: AppTheme.textWhite)));
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: logs.length,
+          itemBuilder: (context, index) {
+            final log = logs[index];
+            final date = DateTime.tryParse(log['createdAt'] ?? '');
+            final formattedDate = date != null ? '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}' : 'Unknown time';
+            
+            return Card(
+              color: AppTheme.cardGray,
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                leading: const Icon(Icons.phone, color: AppTheme.accentGold),
+                title: Text('+91 ${log['phone']}', style: GoogleFonts.montserrat(color: AppTheme.textWhite, fontWeight: FontWeight.bold)),
+                subtitle: Text('Attempted at: $formattedDate', style: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 12)),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

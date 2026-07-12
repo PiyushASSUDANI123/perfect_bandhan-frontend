@@ -545,6 +545,25 @@ class AuthProvider extends ChangeNotifier {
     return null;
   }
 
+  Future<List<dynamic>> fetchPhoneLogs() async {
+    if (_token == null || !isAdmin) return [];
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/user/admin/phone-logs'),
+        headers: {'Authorization': 'Bearer $_token'},
+      );
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded['status'] == 'success') {
+          return decoded['data'] ?? [];
+        }
+      }
+    } catch (e) {
+      print('Error fetching phone logs: $e');
+    }
+    return [];
+  }
+
 
   Future<void> fetchDailyPicks({bool refresh = false, Map<String, String>? filters, int offset = 0}) async {
     if (_token == null) return;

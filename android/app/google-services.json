@@ -12,7 +12,36 @@
           "package_name": "com.piyush.assudani"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "901626431984-3go49upvvjqe7fpjs8g4e0bbkbg8gghk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.piyush.assudani",
+            "certificate_hash": "8ca39ace1fa0437db3661ae3c778fb7408cf8abc"
+          }
+        },
+        {
+          "client_id": "901626431984-5lmbi5d28cfb41kineavhq6d9g5l0nkr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.piyush.assudani",
+            "certificate_hash": "6777a4fd61fe683fe1bccdfc56130e8f8f6ef3b6"
+          }
+        },
+        {
+          "client_id": "901626431984-gnehksco7u5glqee2jo67lu9p2t4hmd5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.piyush.assudani",
+            "certificate_hash": "9206e98454a2e5876c7793cd79a95e18c137215e"
+          }
+        },
+        {
+          "client_id": "901626431984-etl37j0go12oc7u034uk2qe9p0aho1lh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBGFKcf5gwJgKjskGyUDAtScMrlHeBzs9g"
@@ -20,7 +49,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "901626431984-etl37j0go12oc7u034uk2qe9p0aho1lh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
