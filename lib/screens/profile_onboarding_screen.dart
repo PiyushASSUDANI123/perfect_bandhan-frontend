@@ -778,7 +778,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
           const SizedBox(height: 16),
           Text('Identity Details', style: GoogleFonts.cinzel(fontSize: 24, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
           const SizedBox(height: 24),
-          Text('I am looking for a', style: GoogleFonts.cinzel(fontSize: 16, color: AppTheme.accentGold)),
+          Text('I am a', style: GoogleFonts.cinzel(fontSize: 16, color: AppTheme.accentGold)),
           const SizedBox(height: 12),
           Row(
             children: [
