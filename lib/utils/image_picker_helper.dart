@@ -44,7 +44,7 @@ Future<Uint8List?> selectImage(BuildContext context) async {
       ),
       WebUiSettings(
         context: context,
-        presentStyle: WebPresentStyle.dialog,
+        presentStyle: WebPresentStyle.page,
         rotatable: true,
         zoomable: true,
       ),

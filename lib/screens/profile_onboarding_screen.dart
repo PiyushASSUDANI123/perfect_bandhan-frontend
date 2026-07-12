@@ -2755,7 +2755,7 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
           ),
           WebUiSettings(
             context: context,
-            presentStyle: WebPresentStyle.dialog,
+            presentStyle: WebPresentStyle.page,
             rotatable: true,
             zoomable: true,
           ),
