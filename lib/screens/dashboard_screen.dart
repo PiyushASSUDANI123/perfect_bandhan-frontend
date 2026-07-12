@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 import 'dart:async';
 import '../widgets/floating_nav_bar.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -592,8 +593,21 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             backgroundColor: AppTheme.cardWhite,
             child: provider.dailyPicks.isEmpty && provider.isLoadingDailyPicks
                 ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
-                : Center(
-                    child: ConstrainedBox(
+                : provider.dailyPicks.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.search_off_rounded, size: 64, color: AppTheme.textMuted),
+                            const SizedBox(height: 16),
+                            Text('No Matches Found', style: GoogleFonts.cinzel(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
+                            const SizedBox(height: 8),
+                            Text('Try relaxing your partner preferences.', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
+                          ],
+                        ),
+                      )
+                    : Center(
+                        child: ConstrainedBox(
                       constraints: BoxConstraints(
                             maxWidth: _getResponsiveLayout()['maxContainerWidth'],
                           ),
@@ -639,7 +653,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                         crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
                                         mainAxisSpacing: 24.0,
                                         crossAxisSpacing: 24.0,
-                                        mainAxisExtent: MediaQuery.of(context).size.width > 900 ? 650.0 : MediaQuery.of(context).size.height - 220,
+                                        mainAxisExtent: MediaQuery.of(context).size.width > 900 ? 650.0 : math.max(400.0, MediaQuery.of(context).size.height - 220),
                                       ),
                                       itemCount: provider.dailyPicks.length,
                                       itemBuilder: (context, index) {
@@ -692,13 +706,17 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
         child: Row(
           children: [
             // Logo as Drawer trigger
-            GestureDetector(
-              onTap: () {
-                Scaffold.of(context).openDrawer(); // assuming drawer exists
-              },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12.0),
-                child: Image.asset('assets/logo.png', height: 44, width: 44, fit: BoxFit.cover),
+            Semantics(
+              label: 'Open Navigation Menu',
+              button: true,
+              child: GestureDetector(
+                onTap: () {
+                  Scaffold.of(context).openDrawer(); // assuming drawer exists
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12.0),
+                  child: Image.asset('assets/logo.png', height: 44, width: 44, fit: BoxFit.cover),
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -961,8 +979,21 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
               backgroundColor: AppTheme.cardWhite,
               child: provider.searchResults.isEmpty && provider.isLoadingSearch
                   ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
-                  : Center(
-                      child: ConstrainedBox(
+                  : provider.searchResults.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.person_search_rounded, size: 64, color: AppTheme.textMuted),
+                              const SizedBox(height: 16),
+                              Text('No Profiles Found', style: GoogleFonts.cinzel(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
+                              const SizedBox(height: 8),
+                              Text('Adjust your search filters to see more results.', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
+                            ],
+                          ),
+                        )
+                      : Center(
+                          child: ConstrainedBox(
                         constraints: BoxConstraints(
                               maxWidth: _getResponsiveLayout()['maxContainerWidth'],
                             ),
@@ -980,7 +1011,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                           crossAxisCount: _getResponsiveLayout()['crossAxisCount'],
                                           mainAxisSpacing: 24.0,
                                           crossAxisSpacing: 24.0,
-                                          mainAxisExtent: MediaQuery.of(context).size.width > 900 ? 650.0 : MediaQuery.of(context).size.height - 220,
+                                          mainAxisExtent: MediaQuery.of(context).size.width > 900 ? 650.0 : math.max(400.0, MediaQuery.of(context).size.height - 220),
                                         ),
                                         itemCount: provider.searchResults.length,
                                         itemBuilder: (context, index) {
