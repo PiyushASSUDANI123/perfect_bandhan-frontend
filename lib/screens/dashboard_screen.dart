@@ -483,7 +483,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     currentIndex: currentIndex,
                     onTap: (int index) {
                       final provider = Provider.of<AuthProvider>(context, listen: false);
-                      if (index == 3 && provider.appConfig?['chatComingSoon'] == true) {
+                      if (index == 3 && false) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Chat is currently under development. Coming soon!'),
@@ -519,7 +519,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
       selectedIndex: _currentIndexNotifier.value,
       onDestinationSelected: (int index) {
         final provider = Provider.of<AuthProvider>(context, listen: false);
-        if (index == 3 && provider.appConfig?['chatComingSoon'] == true) {
+        if (index == 3 && false) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Chat is currently under development. Coming soon!'),
@@ -581,7 +581,6 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     return Column(
       children: [
         _buildPremiumHeader(),
-        _buildPremiumFiltersRow(),
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => provider.fetchDailyPicks(refresh: true, filters: _getHomeFilters()),
@@ -2046,7 +2045,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                                       );
                                       return;
                                     }
-                                    if (provider.appConfig?['chatComingSoon'] == true) {
+                                    if (false) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         const SnackBar(
                                           content: Text('Chat is currently under development. Coming soon!'),
@@ -3351,7 +3350,7 @@ class _AcceptedRequestCardState extends State<AcceptedRequestCard> {
                   flex: 2,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      if (provider.appConfig?['chatComingSoon'] == true) {
+                      if (false) {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Chat is currently under development. Coming soon!'), backgroundColor: Colors.blueAccent));
                         return;
                       }
