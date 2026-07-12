@@ -607,27 +607,30 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         margin: const EdgeInsets.only(bottom: 12.0),
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(16.0),
-                          leading: CircleAvatar(
-                            backgroundColor: AppTheme.glassColor,
-                            backgroundImage: () {
+                          leading: Builder(
+                            builder: (context) {
                               final photos = (user['uploadedPhotos'] as List<dynamic>? ?? []);
-                              if (photos.isNotEmpty && photos[0] != null && photos[0].toString().startsWith('http')) {
-                                return NetworkImage(photos[0].toString()) as ImageProvider;
+                              String? photoUrl;
+                              for (final p in photos) {
+                                if (p != null && p.toString().isNotEmpty && (p.toString().startsWith('http') || p.toString().startsWith('data:'))) {
+                                  photoUrl = p.toString();
+                                  break;
+                                }
                               }
-                              return null;
-                            }(),
-                            child: () {
-                              final photos = (user['uploadedPhotos'] as List<dynamic>? ?? []);
-                              if (photos.isEmpty) {
-                                return Text(
-                                  ((user['firstName'] ?? '') as String).isNotEmpty
-                                      ? (user['firstName'] as String)[0].toUpperCase()
-                                      : '?',
-                                  style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold),
-                                );
-                              }
-                              return null;
-                            }(),
+                              return CircleAvatar(
+                                radius: 28,
+                                backgroundColor: AppTheme.glassColor,
+                                backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+                                child: photoUrl == null
+                                    ? Text(
+                                        ((user['firstName'] ?? '') as String).isNotEmpty
+                                            ? (user['firstName'] as String)[0].toUpperCase()
+                                            : '?',
+                                        style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold),
+                                      )
+                                    : null,
+                              );
+                            },
                           ),
                           title: Row(
                             children: [
