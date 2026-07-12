@@ -482,28 +482,25 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                   return FloatingNavBar(
                     currentIndex: currentIndex,
                     onTap: (int index) {
-                  final provider = Provider.of<AuthProvider>(context, listen: false);
-                  if (index == 3 && provider.appConfig?['chatComingSoon'] == true) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Chat is currently under development. Coming soon!'),
-                        backgroundColor: Colors.blueAccent,
-                      ),
-                    );
-                    return;
-                  }
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                  if (index == 4) {
-                    provider.fetchMyProfile();
-                  } else if (index == 2) {
-                    provider.fetchActivityData();
-                  } else if (index == 3) {
-                    provider.fetchConversations();
-                  }
-                },
-              ),
+                      final provider = Provider.of<AuthProvider>(context, listen: false);
+                      if (index == 3 && provider.appConfig?['chatComingSoon'] == true) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Chat is currently under development. Coming soon!'),
+                            backgroundColor: Colors.blueAccent,
+                          ),
+                        );
+                        return;
+                      }
+                      _currentIndexNotifier.value = index;
+                      if (index == 4) {
+                        provider.fetchMyProfile();
+                      } else if (index == 2) {
+                        provider.fetchActivityData();
+                      } else if (index == 3) {
+                        provider.fetchConversations();
+                      }
+                    },
                   );
                 },
             ],
@@ -518,7 +515,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
     final lang = Provider.of<LanguageProvider>(context);
     return NavigationRail(
       backgroundColor: AppTheme.cardWhite,
-      selectedIndex: _currentIndex,
+      selectedIndex: _currentIndexNotifier.value,
       onDestinationSelected: (int index) {
         final provider = Provider.of<AuthProvider>(context, listen: false);
         if (index == 3 && provider.appConfig?['chatComingSoon'] == true) {
@@ -530,9 +527,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
           );
           return;
         }
-        setState(() {
-          _currentIndex = index;
-        });
+        _currentIndexNotifier.value = index;
         if (index == 4) {
           provider.fetchMyProfile();
         } else if (index == 2) {
@@ -698,7 +693,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
   Widget _buildPremiumHeader() {
     final provider = Provider.of<AuthProvider>(context);
     final profile = provider.myProfile;
-    final matches = provider.matches;
+    final matches = provider.dailyPicks;
     final photoUrl = profile != null && profile['photos'] != null && (profile['photos'] as List).isNotEmpty 
         ? (profile['photos'] as List).first 
         : null;
@@ -741,7 +736,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
                     style: GoogleFonts.montserrat(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: AppTheme.textDim,
+                      color: AppTheme.textMuted,
                     ),
                   ),
                   Text(
@@ -780,7 +775,7 @@ class _DashboardScreenState extends State<DashboardScreen> with WidgetsBindingOb
             IconButton(
               icon: const Icon(Icons.search_rounded, color: AppTheme.textCarbon, size: 28),
               onPressed: () {
-                setState(() => _currentIndex = 1);
+                _currentIndexNotifier.value = 1;
               },
             ),
             const ProfileCompletionAppBarAction(), // Ring directly in AppBar
@@ -2503,7 +2498,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                   Navigator.pop(ctx);
                   final provider = Provider.of<AuthProvider>(context, listen: false);
                   final success = await provider.blockUser(profile.phone, selectedReason, detailsController.text);
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                   if (success && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${profile.name} blocked.')));
                     provider.fetchDailyPicks(refresh: true); // Refresh feed
@@ -2565,7 +2560,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                   Navigator.pop(ctx);
                   final provider = Provider.of<AuthProvider>(context, listen: false);
                   final success = await provider.reportUser(profile.phone, selectedReason, detailsController.text);
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                   if (success && context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${profile.name} reported. Thank you.')));
                   }
@@ -2817,7 +2812,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                                 String reqLabel = 'Request';
                                 VoidCallback reqTap = () async {
                                   final success = await provider.sendInterest(profile.phone, profile.id);
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                   if (success && context.mounted) {
                                     showDialog(
                                       context: context,
@@ -2851,7 +2846,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                                   reqLabel = 'Cancel';
                                   reqTap = () async {
                                     final success = await provider.cancelInterest(profile.phone, profile.id);
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                     if (success && context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request cancelled.')));
                                     }
@@ -2869,7 +2864,7 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                                   reqLabel = 'Accept';
                                   reqTap = () async {
                                     final success = await provider.acceptInterest(profile.phone, profile.id);
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                     if (success && context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request from ${profile.name} accepted!')));
                                     }
@@ -2903,12 +2898,12 @@ class _ProfileBentoCardState extends State<ProfileBentoCard> {
                                 if (profile.interestStatus == 'incoming') {
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request declined.')));
                                   await provider.rejectInterest(profile.phone, profile.id);
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile hidden.')));
                                   provider.removeProfileLocally(profile.id);
                                   await provider.blockUser(profile.phone, 'Ignored', 'Hidden from dashboard');
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                 }
                               },
                             ),
@@ -3137,7 +3132,7 @@ class ReceivedRequestCardState extends State<ReceivedRequestCard> {
                     onPressed: _isDeclining ? null : () async {
                       setState(() => _isDeclining = true);
                       await provider.rejectInterest(profile.phone, profile.id);
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request from ${profile.name} declined.')));
                       }
@@ -3162,7 +3157,7 @@ class ReceivedRequestCardState extends State<ReceivedRequestCard> {
                     onPressed: _isAccepting ? null : () async {
                       setState(() => _isAccepting = true);
                       final success = await provider.acceptInterest(profile.phone, profile.id);
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                       if (mounted) {
                         if (success) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -3240,7 +3235,7 @@ class _AcceptedRequestCardState extends State<AcceptedRequestCard> {
             onPressed: () async {
               Navigator.pop(ctx);
               final success = await provider.blockUser(widget.profile.phone, 'User blocked', '');
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
               if (mounted && success) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User blocked.')));
                 provider.removeProfileLocally(widget.profile.id);
@@ -3326,7 +3321,7 @@ class _AcceptedRequestCardState extends State<AcceptedRequestCard> {
                       setState(() => _isRemoving = true);
                       // Treat remove as reject
                       await provider.rejectInterest(profile.phone, profile.id);
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                       if (mounted) {
                         provider.fetchActivityData(); // Refresh UI
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removed connection.')));
@@ -3455,7 +3450,7 @@ class SentRequestCard extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () async {
                       await provider.cancelInterest(profile.phone, profile.id);
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request cancelled.')));
                     },
                     icon: const Icon(Icons.close_rounded, size: 16),
