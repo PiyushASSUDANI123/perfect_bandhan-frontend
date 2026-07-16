@@ -27,7 +27,7 @@ void consoleLog(String message) {
 class AuthProvider extends ChangeNotifier {
   Timer? _configTimer;
   static const String baseUrl = 'https://humsafar.piyushassudani.in/api/v1'; // Live VPS Server
-  static const String localAppVersion = '2.0.0';
+  static const String localAppVersion = '1.2.5';
 
   AuthStatus _status = AuthStatus.idle;
   String? _phoneNumber;
