@@ -18,15 +18,32 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  
+  late TabController _tabController;
+  bool _isSignUpMode = true; // Default to Sign Up as requested
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    _tabController.addListener(() {
+      setState(() {
+        _isSignUpMode = _tabController.index == 0;
+      });
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      authProvider.clearError();
+    });
+  }
 
   @override
   void dispose() {
     _phoneController.dispose();
     _passwordController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -86,14 +103,35 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // 1. Check if user is already registered
+    // Check if user is already registered
     final isRegistered = await authProvider.checkPhoneRegistration(phone);
     
-    if (!isRegistered) {
+    if (_isSignUpMode) {
+      if (isRegistered) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Mobile number is already registered. Please switch to Login tab.'),
+            backgroundColor: Color(0xFFFF453A),
+          ),
+        );
+        return;
+      }
+      
       // NEW USER: Create a skeleton account with the password
       final setPasswordSuccess = await authProvider.registerNewUserWithPassword(phone, password);
       if (!setPasswordSuccess) {
         return; // setPassword will set the error message
+      }
+    } else {
+      // Login Mode
+      if (!isRegistered) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account not found. Please Sign Up first.'),
+            backgroundColor: Color(0xFFFF453A),
+          ),
+        );
+        return;
       }
     }
 
@@ -185,7 +223,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             _buildBrandingHeader(),
 
-                            const SizedBox(height: 32.0),
+                            const SizedBox(height: 24.0),
+
+                            _buildTabSelector(),
+
+                            const SizedBox(height: 28.0),
 
                             _buildInputs(),
 
@@ -248,7 +290,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                                 child: Text(
-                                  Provider.of<LanguageProvider>(context).translate('sign_in') + " / Register",
+                                  _isSignUpMode ? "REGISTER / SIGN UP" : "LOGIN",
                                   style: GoogleFonts.cinzel(
                                     color: AppTheme.backgroundBlack,
                                     fontSize: 13,
@@ -487,6 +529,42 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Widget _buildTabSelector() {
+    return Container(
+      height: 42,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: AppTheme.glassBorderColor, width: 0.5),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        dividerColor: Colors.transparent,
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicator: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          color: AppTheme.glassColor,
+          border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.25), width: 0.5),
+        ),
+        labelColor: AppTheme.textWhite,
+        unselectedLabelColor: AppTheme.textMuted,
+        labelStyle: GoogleFonts.cinzel(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+        unselectedLabelStyle: GoogleFonts.cinzel(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+        tabs: const [
+          Tab(child: FittedBox(fit: BoxFit.scaleDown, child: Text("Sign Up"))),
+          Tab(child: FittedBox(fit: BoxFit.scaleDown, child: Text("Login"))),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBrandingHeader() {
     final lang = Provider.of<LanguageProvider>(context);
     return Column(
@@ -555,8 +633,8 @@ class _LoginScreenState extends State<LoginScreen> {
           },
         ),
         CustomTextField(
-          labelText: lang.translate('password'),
-          hintText: lang.translate('enter_password'),
+          labelText: _isSignUpMode ? 'CREATE PASSWORD' : lang.translate('password').toUpperCase(),
+          hintText: _isSignUpMode ? 'Min 6 characters' : lang.translate('enter_password'),
           prefixIcon: Icons.lock_outline_rounded,
           controller: _passwordController,
           isPassword: true,
@@ -566,26 +644,28 @@ class _LoginScreenState extends State<LoginScreen> {
             return null;
           },
         ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ForgotPasswordScreen(prefillPhone: _phoneController.text.trim())),
-              );
-            },
-            child: Text(
-              lang.translate('forgot_password'),
-              style: GoogleFonts.montserrat(
-                color: AppTheme.accentGold,
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                decoration: TextDecoration.underline,
+        if (!_isSignUpMode)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ForgotPasswordScreen(prefillPhone: _phoneController.text.trim())),
+                );
+              },
+              child: Text(
+                lang.translate('forgot_password'),
+                style: GoogleFonts.montserrat(
+                  color: AppTheme.accentGold,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  decoration: TextDecoration.underline,
+                ),
               ),
             ),
           ),
-        ),
+        if (_isSignUpMode) const SizedBox(height: 16),
       ],
     );
   }
