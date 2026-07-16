@@ -18,83 +18,22 @@ class AdminCreateProfileSheet extends StatefulWidget {
 }
 
 class _AdminCreateProfileSheetState extends State<AdminCreateProfileSheet> {
-  int _currentStep = 1; // 1 = Phone, 2 = OTP, 3 = Password, 4 = Success
+  int _currentStep = 1; // 1 = Phone & Password, 2 = Success
   
   final _phoneController = TextEditingController();
-  final _otpController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
   String _errorMessage = '';
 
-  Future<void> _sendOtp() async {
+  Future<void> _setPassword() async {
     final phone = _phoneController.text.trim();
+    final password = _passwordController.text.trim();
+    
     if (phone.length != 10) {
       setState(() => _errorMessage = 'Enter a valid 10-digit mobile number.');
       return;
     }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    final authProv = Provider.of<AuthProvider>(context, listen: false);
-    bool success = await authProv.sendOtp(phone, reset: false);
-    
-    setState(() => _isLoading = false);
-
-    if (success) {
-      setState(() => _currentStep = 2);
-    } else {
-      setState(() => _errorMessage = authProv.errorMessage ?? 'Failed to send OTP.');
-    }
-  }
-
-  Future<void> _verifyOtp() async {
-    final phone = _phoneController.text.trim();
-    final otp = _otpController.text.trim();
-    
-    if (otp.isEmpty) {
-      setState(() => _errorMessage = 'Enter the OTP received by the user.');
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    final authProv = Provider.of<AuthProvider>(context, listen: false);
-    
-    // We call the API directly to verifyOTP to avoid overwriting the Admin's JWT token
-    // in the authProvider.
-    try {
-      final response = await http.post(
-        Uri.parse('${AuthProvider.baseUrl}/auth/verify-otp'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'phone': phone, 'otp': otp}),
-      );
-      
-      final data = jsonDecode(response.body);
-      setState(() => _isLoading = false);
-
-      if (response.statusCode == 200 && data['status'] == 'success') {
-        setState(() => _currentStep = 3);
-      } else {
-        setState(() => _errorMessage = data['message'] ?? 'Invalid OTP.');
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Network error verifying OTP.';
-      });
-    }
-  }
-
-  Future<void> _setPassword() async {
-    final phone = _phoneController.text.trim();
-    final password = _passwordController.text.trim();
     
     if (password.length < 6) {
       setState(() => _errorMessage = 'Password must be at least 6 characters.');
@@ -118,7 +57,7 @@ class _AdminCreateProfileSheetState extends State<AdminCreateProfileSheet> {
       setState(() => _isLoading = false);
 
       if (response.statusCode == 200 && data['status'] == 'success') {
-        setState(() => _currentStep = 4);
+        setState(() => _currentStep = 2);
       } else {
         setState(() => _errorMessage = data['message'] ?? 'Failed to set password.');
       }
@@ -201,37 +140,6 @@ class _AdminCreateProfileSheetState extends State<AdminCreateProfileSheet> {
                 inputFormatters: [LengthLimitingTextInputFormatter(10)],
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _sendOtp,
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : Text('SEND OTP TO USER', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-            ],
-
-            // STEP 2
-            if (_currentStep == 2) ...[
-              Text('OTP sent to +91 ${_phoneController.text}', style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontWeight: FontWeight.w500)),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _otpController,
-                labelText: 'Enter OTP Received',
-                hintText: 'Enter 4-digit OTP',
-                prefixIcon: Icons.message,
-                keyboardType: TextInputType.number,
-                inputFormatters: [LengthLimitingTextInputFormatter(4)],
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _verifyOtp,
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : Text('VERIFY OTP', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-            ],
-
-            // STEP 3
-            if (_currentStep == 3) ...[
-              Text('OTP Verified! Set a password for this user.', style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontWeight: FontWeight.w500)),
-              const SizedBox(height: 16),
               CustomTextField(
                 controller: _passwordController,
                 labelText: 'Account Password',
@@ -247,8 +155,8 @@ class _AdminCreateProfileSheetState extends State<AdminCreateProfileSheet> {
               ),
             ],
 
-            // STEP 4
-            if (_currentStep == 4) ...[
+            // STEP 2 (Success)
+            if (_currentStep == 2) ...[
               const Icon(Icons.check_circle, color: Colors.green, size: 64),
               const SizedBox(height: 16),
               Text('Account Created Successfully!', style: GoogleFonts.montserrat(color: AppTheme.textCarbon, fontWeight: FontWeight.bold, fontSize: 18), textAlign: TextAlign.center),

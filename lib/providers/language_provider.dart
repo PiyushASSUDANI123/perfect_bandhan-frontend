@@ -58,7 +58,7 @@ class LanguageProvider extends ChangeNotifier {
       'sign_in': 'SIGN IN',
       'new_to_perfectbandhan': 'New to Perfect Bandhan?',
       'register_free': 'REGISTER FREE',
-      'forgot_password': 'Forgot Password? Reset via OTP',
+      'forgot_password': 'Forgot Password?',
       'admin_portal': 'ADMIN PORTAL',
 
       // ── Dashboard / Navigation ────────────────────────────────────────────
@@ -297,7 +297,7 @@ class LanguageProvider extends ChangeNotifier {
       'sign_in': 'लॉगिन करें',
       'new_to_perfectbandhan': 'परफेक्ट बंधन पर नए हैं?',
       'register_free': 'मुफ़्त पंजीकरण',
-      'forgot_password': 'पासवर्ड भूल गए? ओटीपी से बदलें',
+      'forgot_password': 'पासवर्ड भूल गए?',
       'admin_portal': 'एडमिन पोर्टल',
 
       // ── Dashboard / Navigation ────────────────────────────────────────────
