@@ -110,6 +110,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
+      floatingActionButton: _selectedIndex == 0 ? FloatingActionButton.extended(
+        backgroundColor: AppTheme.accentGold,
+        onPressed: () => _showAddDeveloperDialog(context),
+        icon: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white),
+        label: Text('Add Developer', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w600)),
+      ) : null,
       appBar: AppBar(
         title: Text(
           'ADMIN CONSOLE',
@@ -656,6 +662,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                                     style: GoogleFonts.montserrat(color: Colors.redAccent, fontSize: 8, fontWeight: FontWeight.bold),
                                   ),
                                 ),
+                              if (user['isDeveloper'] == true) ...[
+                                if (!isComplete) const SizedBox(width: 4.0),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blueAccent.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(4.0),
+                                  ),
+                                  child: Text(
+                                    'Developer',
+                                    style: GoogleFonts.montserrat(color: Colors.blueAccent, fontSize: 8, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                           subtitle: Column(
@@ -2224,6 +2244,97 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showAddDeveloperDialog(BuildContext context) {
+    final phoneCtrl = TextEditingController();
+    final passCtrl = TextEditingController();
+    final fNameCtrl = TextEditingController();
+    final lNameCtrl = TextEditingController();
+    String gender = 'Male';
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: AppTheme.cardWhite,
+              title: Text('Add Developer Profile', style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: phoneCtrl,
+                      decoration: const InputDecoration(labelText: 'Phone Number'),
+                      keyboardType: TextInputType.phone,
+                    ),
+                    TextField(
+                      controller: passCtrl,
+                      decoration: const InputDecoration(labelText: 'Password'),
+                      obscureText: true,
+                    ),
+                    TextField(
+                      controller: fNameCtrl,
+                      decoration: const InputDecoration(labelText: 'First Name'),
+                    ),
+                    TextField(
+                      controller: lNameCtrl,
+                      decoration: const InputDecoration(labelText: 'Last Name'),
+                    ),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      value: gender,
+                      decoration: const InputDecoration(labelText: 'Gender'),
+                      items: const [
+                        DropdownMenuItem(value: 'Male', child: Text('Male')),
+                        DropdownMenuItem(value: 'Female', child: Text('Female')),
+                      ],
+                      onChanged: (val) {
+                        setState(() => gender = val!);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.redAccent)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold),
+                  onPressed: () async {
+                    if (phoneCtrl.text.isEmpty || passCtrl.text.isEmpty || fNameCtrl.text.isEmpty || lNameCtrl.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('All fields are required.')));
+                      return;
+                    }
+                    final authProv = Provider.of<AuthProvider>(context, listen: false);
+                    bool success = await authProv.createDeveloperProfile({
+                      'phone': phoneCtrl.text.trim(),
+                      'password': passCtrl.text,
+                      'firstName': fNameCtrl.text.trim(),
+                      'lastName': lNameCtrl.text.trim(),
+                      'gender': gender,
+                    });
+                    
+                    if (success) {
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Developer profile created!')));
+                      authProv.fetchAdminUsers();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to create developer. Phone might be registered.')));
+                    }
+                  },
+                  child: Text('Create', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          }
         );
       },
     );
