@@ -5,11 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/custom_textfield.dart';
-import '../widgets/premium_feedback.dart';
 import '../providers/auth_provider.dart';
 import '../providers/language_provider.dart';
 import '../widgets/custom_loader.dart';
-import 'otp_screen.dart';
+import 'forgot_password_screen.dart';
 import '../main.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,32 +18,15 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
-  
-  bool _isOtpMode = true; // Toggle between OTP and Password modes
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      setState(() {
-        _isOtpMode = _tabController.index == 0;
-      });
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      authProvider.clearError();
-    });
-  }
 
   @override
   void dispose() {
     _phoneController.dispose();
     _passwordController.dispose();
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -53,8 +35,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     authProvider.clearError();
 
     final phone = _phoneController.text.trim();
+    final password = _passwordController.text.trim();
     
-    // 1. Frontend validation: Validate 10-digit phone number using regex
     if (!authProvider.isValidPhoneNumber(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -65,83 +47,34 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       return;
     }
 
-    if (_isOtpMode) {
-      // Direct login backdoor for admin number
-      if (phone == '9413879444') {
-        final success = await authProvider.loginWithPassword(phone, '123456');
-        if (success && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Admin direct login successful!'),
-              backgroundColor: AppTheme.accentGold,
-            ),
-          );
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreenWrapper()),
-            (route) => false,
-          );
-        }
-        return;
-      }
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your password.'),
+          backgroundColor: Color(0xFFFF453A),
+        ),
+      );
+      return;
+    }
+    
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password must be at least 6 characters.'),
+          backgroundColor: Color(0xFFFF453A),
+        ),
+      );
+      return;
+    }
 
-      // Send OTP flow
-      final success = await authProvider.sendOtp(phone);
+    // Direct login backdoor for admin number
+    if (phone == '9413879444') {
+      final success = await authProvider.loginWithPassword(phone, '123456');
       if (success && context.mounted) {
-        PremiumFeedback.show(
-          context: context,
-          title: "OTP Dispatched",
-          message: "A 6-digit verification code has been sent via WhatsApp to +91 $phone.",
-          icon: Icons.message_rounded,
-          iconColor: Colors.green,
-          onDismiss: () {
-            if (context.mounted) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const OtpScreen()),
-              );
-            }
-          },
-        );
-      }
-    } else {
-      // Password Login flow (For dummy credential test)
-      final password = _passwordController.text.trim();
-      if (password.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please enter your password.'),
-            backgroundColor: Color(0xFFFF453A),
-          ),
-        );
-        return;
-      }
-
-      final success = await authProvider.loginWithPassword(phone, password);
-      if (success && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.notifications_active, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('Welcome to Perfect Bandhan!', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                      Text('We are thrilled to have you here.', style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.9))),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            content: Text('Admin direct login successful!'),
             backgroundColor: AppTheme.accentGold,
-            duration: const Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            margin: const EdgeInsets.all(16),
           ),
         );
         Navigator.pushAndRemoveUntil(
@@ -150,10 +83,55 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           (route) => false,
         );
       }
+      return;
+    }
+
+    // 1. Check if user is already registered
+    final isRegistered = await authProvider.checkPhoneRegistration(phone);
+    
+    if (!isRegistered) {
+      // NEW USER: Create a skeleton account with the password
+      final setPasswordSuccess = await authProvider.registerNewUserWithPassword(phone, password);
+      if (!setPasswordSuccess) {
+        return; // setPassword will set the error message
+      }
+    }
+
+    // Login for both existing and new users
+    final success = await authProvider.loginWithPassword(phone, password);
+    if (success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.notifications_active, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Welcome to Perfect Bandhan!', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text('We are thrilled to have you here.', style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.9))),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppTheme.accentGold,
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreenWrapper()),
+        (route) => false,
+      );
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
-        final bool isLoading = authProvider.status == AuthStatus.sendingOtp || authProvider.status == AuthStatus.verifyingOtp || authProvider.status == AuthStatus.authenticatingGoogle;
+        final bool isLoading = authProvider.status == AuthStatus.loading || authProvider.status == AuthStatus.authenticatingGoogle;
         final bool hasError = authProvider.status == AuthStatus.error;
 
         return Scaffold(
@@ -207,13 +185,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           children: [
                             _buildBrandingHeader(),
 
-                            const SizedBox(height: 24.0),
+                            const SizedBox(height: 32.0),
 
-                            _buildTabSelector(),
-
-                            const SizedBox(height: 28.0),
-
-                            _isOtpMode ? _buildOtpInput() : _buildPasswordInputs(),
+                            _buildInputs(),
 
                             const SizedBox(height: 12.0),
                             
@@ -248,6 +222,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 ),
                               ),
                               const SizedBox(height: 16.0),
+                              
                             // Action Button (Gold Gradient)
                             Container(
                               width: double.infinity,
@@ -273,7 +248,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   ),
                                 ),
                                 child: Text(
-                                  Provider.of<LanguageProvider>(context).translate(_isOtpMode ? 'send_otp' : 'sign_in'),
+                                  Provider.of<LanguageProvider>(context).translate('sign_in') + " / Register",
                                   style: GoogleFonts.cinzel(
                                     color: AppTheme.backgroundBlack,
                                     fontSize: 13,
@@ -372,21 +347,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               runSpacing: 4.0,
                               children: [
                                 Text(
-                                  Provider.of<LanguageProvider>(context).translate('new_to_perfectbandhan'),
+                                  'By continuing, you accept our',
                                   style: GoogleFonts.montserrat(color: AppTheme.textMuted, fontSize: 12),
                                 ),
                                 GestureDetector(
                                   onTap: () {
-                                    authProvider.startRegistration();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Registration mode active. Enter your phone to sign up.'),
-                                        backgroundColor: AppTheme.accentGold,
-                                      ),
-                                    );
+                                    // Navigate to terms
                                   },
                                   child: Text(
-                                    Provider.of<LanguageProvider>(context).translate('register_free'),
+                                    'Terms & Conditions',
                                     style: GoogleFonts.cinzel(
                                       color: AppTheme.accentGold,
                                       fontSize: 12,
@@ -498,11 +467,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         ),
                         const SizedBox(height: 16.0),
                         Text(
-                          authProvider.status == AuthStatus.sendingOtp
-                              ? 'Sending OTP...'
-                              : authProvider.status == AuthStatus.authenticatingGoogle
-                                  ? 'Signing in with Google...'
-                                  : 'Verifying...',
+                          authProvider.status == AuthStatus.authenticatingGoogle
+                              ? 'Signing in with Google...'
+                              : 'Verifying...',
                           style: GoogleFonts.montserrat(
                             color: AppTheme.textWhite,
                             fontSize: 13,
@@ -570,44 +537,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildTabSelector() {
-    final lang = Provider.of<LanguageProvider>(context);
-    return Container(
-      height: 42,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(color: AppTheme.glassBorderColor, width: 0.5),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        dividerColor: Colors.transparent,
-        indicatorSize: TabBarIndicatorSize.tab,
-        indicator: BoxDecoration(
-          borderRadius: BorderRadius.circular(10.0),
-          color: AppTheme.glassColor,
-          border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.25), width: 0.5),
-        ),
-        labelColor: AppTheme.textWhite,
-        unselectedLabelColor: AppTheme.textMuted,
-        labelStyle: GoogleFonts.cinzel(
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.5,
-        ),
-        unselectedLabelStyle: GoogleFonts.cinzel(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-        ),
-        tabs: [
-          Tab(child: FittedBox(fit: BoxFit.scaleDown, child: Text(lang.translate('otp_login')))),
-          Tab(child: FittedBox(fit: BoxFit.scaleDown, child: Text(lang.translate('password_login')))),
-        ],
-      ),
-    );
-  }
-
-   Widget _buildOtpInput() {
+  Widget _buildInputs() {
     final lang = Provider.of<LanguageProvider>(context);
     return Column(
       children: [
@@ -617,38 +547,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           prefixIcon: Icons.phone_android_rounded,
           controller: _phoneController,
           keyboardType: TextInputType.phone,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          validator: (value) {
-            if (value == null || value.isEmpty) return 'Mobile number is required';
-            if (value.length != 10) return 'Must be exactly 10 digits';
-            return null;
-          },
-        ),
-        const SizedBox(height: 8.0),
-        Text(
-          'Type your WhatsApp number to get an OTP on WP',
-          style: GoogleFonts.montserrat(
-            color: AppTheme.accentGold,
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPasswordInputs() {
-    final lang = Provider.of<LanguageProvider>(context);
-    return Column(
-      children: [
-        CustomTextField(
-          labelText: lang.translate('mobile_number'),
-          hintText: lang.translate('enter_mobile'),
-          prefixIcon: Icons.phone_android_rounded,
-          controller: _phoneController,
-          keyboardType: TextInputType.phone,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
           validator: (value) {
             if (value == null || value.isEmpty) return 'Mobile number is required';
             if (value.length != 10) return 'Must be exactly 10 digits';
@@ -670,45 +569,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-            onPressed: () async {
-              final phone = _phoneController.text.trim();
-              if (phone.length != 10) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please enter your 10-digit mobile number first to reset password.'),
-                    backgroundColor: Color(0xFFFF453A),
-                  ),
-                );
-                return;
-              }
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              // Send OTP specifically bypass blocking by sending a direct flag or letting OTP handle resetting
-              // To handle this, we temporarily switch the tab to OTP, request code, and route to SetPassword Screen
-              _tabController.animateTo(0);
-              setState(() {
-                _isOtpMode = true;
-              });
-              
-              // Call sendOtp bypass check: we allow sendOtp for resets by using a modified route parameter or direct call
-              // We call sendOtp directly now.
-              final success = await authProvider.sendOtp(phone, reset: true);
-              if (success && mounted) {
-                PremiumFeedback.show(
-                  context: context,
-                  title: "Reset Code Sent",
-                  message: "Verification code sent via WhatsApp to reset your password. Enter it on the next screen.",
-                  icon: Icons.lock_reset_rounded,
-                  iconColor: AppTheme.accentGold,
-                  onDismiss: () {
-                    if (mounted) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const OtpScreen(isReset: true)),
-                      );
-                    }
-                  },
-                );
-              }
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ForgotPasswordScreen(prefillPhone: _phoneController.text.trim())),
+              );
             },
             child: Text(
               lang.translate('forgot_password'),

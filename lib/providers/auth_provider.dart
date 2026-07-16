@@ -9,9 +9,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 enum AuthStatus {
   idle,
-  sendingOtp,
-  waitingForOtp,
-  verifyingOtp,
+  loading,           // generic loading (replaces sendingOtp/verifyingOtp)
+  sendingOtp,        // kept for legacy compat
+  waitingForOtp,     // kept for legacy compat
+  verifyingOtp,      // kept for legacy compat
   authenticatingGoogle,
   authenticated,
   error
@@ -368,6 +369,112 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _setErrorMessage("Network error.");
+      _status = AuthStatus.error;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // ─── Forgot Password — Email-based ───────────────────────────────────────
+
+  /// Step 1: Get masked email hint for a phone number
+  /// Returns masked email string on success, null on failure
+  Future<String?> getEmailHint(String phone) async {
+    _status = AuthStatus.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/get-email-hint'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone': phone}),
+      );
+
+      final data = jsonDecode(response.body);
+      _status = AuthStatus.idle;
+      notifyListeners();
+
+      if (response.statusCode == 200) {
+        return data['maskedEmail'] as String?;
+      } else {
+        _setErrorMessage(data['message'] ?? 'No account found with this number.');
+        return null;
+      }
+    } catch (e) {
+      consoleLog('getEmailHint error: $e');
+      _setErrorMessage('Network error. Please check your connection.');
+      _status = AuthStatus.error;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// Step 2: Verify real email and set new password
+  Future<bool> resetPasswordWithEmail(String phone, String email, String newPassword) async {
+    _status = AuthStatus.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/reset-password-with-email'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'phone': phone,
+          'email': email.trim(),
+          'newPassword': newPassword,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        _status = AuthStatus.idle;
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage(data['message'] ?? 'Could not reset password. Try again.');
+        return false;
+      }
+    } catch (e) {
+      consoleLog('resetPasswordWithEmail error: $e');
+      _setErrorMessage('Network error. Please check your connection.');
+      _status = AuthStatus.error;
+      notifyListeners();
+      return false;
+    }
+  }
+  
+  /// Create a skeleton account with a password for new users
+  Future<bool> registerNewUserWithPassword(String phone, String password) async {
+    _status = AuthStatus.loading;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/set-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'phone': phone,
+          'password': password,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        _status = AuthStatus.idle;
+        notifyListeners();
+        return true;
+      } else {
+        _setErrorMessage(data['message'] ?? 'Could not set password. Try again.');
+        return false;
+      }
+    } catch (e) {
+      consoleLog('setPassword error: $e');
+      _setErrorMessage('Network error. Please check your connection.');
       _status = AuthStatus.error;
       notifyListeners();
       return false;
@@ -1313,6 +1420,23 @@ class AuthProvider extends ChangeNotifier {
       _adminUsersError = 'Network error.';
       _isLoadingAdminUsers = false;
       notifyListeners();
+    }
+  }
+
+  // Admin Portal Operations
+  Future<bool> createDeveloperProfile(Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/admin/create-developer'),
+        headers: {'Authorization': 'Bearer $_token', 'Content-Type': 'application/json'},
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
     }
   }
 
