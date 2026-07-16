@@ -343,7 +343,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
             return AlertDialog(
               backgroundColor: AppTheme.backgroundBlack,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Text('Fill your detail now', style: GoogleFonts.cinzel(color: AppTheme.accentGold)),
+              title: Text(Provider.of<LanguageProvider>(context).translate('fill_details_now'), style: GoogleFonts.cinzel(color: AppTheme.accentGold)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -381,7 +381,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx), 
-                  child: Text('Cancel', style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
+                  child: Text(Provider.of<LanguageProvider>(context).translate('cancel_btn'), style: GoogleFonts.montserrat(color: AppTheme.textMuted)),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold),
@@ -393,7 +393,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     Navigator.pop(ctx);
                     _fetchAndShowAstrologyInsight(context, provider, provider.myProfile?['dob'], selectedTime!.format(context), placeController.text);
                   },
-                  child: Text('Submit', style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold)),
+                  child: Text(Provider.of<LanguageProvider>(context).translate('submit_btn'), style: GoogleFonts.montserrat(color: Colors.black, fontWeight: FontWeight.bold)),
                 ),
               ],
             );
@@ -474,7 +474,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('✨ Know About Yourself', style: GoogleFonts.cinzel(fontSize: 22, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+                        Text(Provider.of<LanguageProvider>(context).translate('know_about_yourself'), style: GoogleFonts.cinzel(fontSize: 22, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
                         IconButton(
                           icon: const Icon(Icons.share, color: AppTheme.accentGold),
                           onPressed: () {
@@ -602,7 +602,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text('Retry',
+              child: Text(Provider.of<LanguageProvider>(context).translate('retry_btn'),
                   style: GoogleFonts.montserrat(
                       color: AppTheme.accentGold,
                       fontWeight: FontWeight.bold)),
@@ -1267,7 +1267,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('✨ My Gallery', style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold, fontSize: 18)),
+                              Text(Provider.of<LanguageProvider>(context).translate('my_gallery'), style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold, fontSize: 18)),
                               IconButton(
                                 icon: const Icon(Icons.camera_alt, color: AppTheme.textMuted, size: 20),
                                 onPressed: _managePhotos,
@@ -1332,7 +1332,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                                             borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
                                           ),
                                           padding: const EdgeInsets.symmetric(vertical: 6),
-                                          child: Text('House', textAlign: TextAlign.center, style: GoogleFonts.montserrat(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                                          child: Text(Provider.of<LanguageProvider>(context).translate('house'), textAlign: TextAlign.center, style: GoogleFonts.montserrat(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                                         ),
                                       ),
                                     ),
@@ -1362,9 +1362,9 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Know About Yourself', style: GoogleFonts.cinzel(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 16)),
+                                  Text(Provider.of<LanguageProvider>(context).translate('know_about_yourself_blue'), style: GoogleFonts.cinzel(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 16)),
                                   const SizedBox(height: 4),
-                                  Text('Add your birth time & place to get a personalized AI insight.', style: GoogleFonts.montserrat(color: Colors.white70, fontSize: 12)),
+                                  Text(Provider.of<LanguageProvider>(context).translate('add_birth_details_ai'), style: GoogleFonts.montserrat(color: Colors.white70, fontSize: 12)),
                                 ],
                               ),
                             ),
@@ -1382,7 +1382,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('✨ AI Personality Insight', style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold, fontSize: 18)),
+                              Text(Provider.of<LanguageProvider>(context).translate('ai_personality_insight'), style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold, fontSize: 18)),
                               IconButton(
                                 icon: const Icon(Icons.edit, color: AppTheme.textMuted, size: 20),
                                 onPressed: () => _showFillAstrologyDetailsPopup(context, provider),
@@ -1416,7 +1416,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                                   const SizedBox(height: 12),
                                   Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text('Know more →', style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontSize: 13, fontWeight: FontWeight.bold)),
+                                    child: Text(Provider.of<LanguageProvider>(context).translate('know_more'), style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontSize: 13, fontWeight: FontWeight.bold)),
                                   )
                                 ],
                               ),
@@ -1532,12 +1532,12 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                                 builder: (ctx) => AlertDialog(
                                   backgroundColor: AppTheme.cardWhite,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                  title: Text('Confirm Status Change', style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
+                                  title: Text(Provider.of<LanguageProvider>(context).translate('confirm_status_change'), style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
                                   content: Text(v 
                                     ? 'Marking yourself as Married/Settled will hide your profile from search feeds.\n\nAre you sure you want to proceed?'
                                     : 'This will unhide your profile and reset your status. Are you sure?', style: GoogleFonts.montserrat()),
                                   actions: [
-                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
+                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(Provider.of<LanguageProvider>(context).translate('cancel_btn'), style: const TextStyle(color: Colors.grey))),
                                     TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(v ? 'Yes, Mark Married' : 'Yes, Unmark', style: const TextStyle(color: AppTheme.accentGold, fontWeight: FontWeight.bold))),
                                   ],
                                 ),
@@ -1696,7 +1696,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                           gradient: AppTheme.premiumGoldGradient,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text('UPGRADE',
+                        child: Text(Provider.of<LanguageProvider>(context).translate('upgrade_btn'),
                             style: GoogleFonts.cinzel(
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
@@ -2044,7 +2044,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Blocked Users', style: GoogleFonts.cinzel(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
+                  Text(Provider.of<LanguageProvider>(context).translate('blocked_users'), style: GoogleFonts.cinzel(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.textCarbon)),
                   const SizedBox(height: 16),
                   Expanded(
                     child: FutureBuilder<List<Map<String, dynamic>>>(
@@ -2054,7 +2054,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                           return const Center(child: CircularProgressIndicator(color: AppTheme.accentGold));
                         }
                         if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-                          return const Center(child: Text('No blocked users.'));
+                          return Center(child: Text(Provider.of<LanguageProvider>(context).translate('no_blocked_users')));
                         }
                         final users = snapshot.data!;
                         return ListView.builder(
@@ -2076,7 +2076,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                                     setState(() {}); // Refresh list
                                   }
                                 },
-                                child: const Text('Unblock', style: TextStyle(color: Colors.red)),
+                                child: Text(Provider.of<LanguageProvider>(context).translate('unblock_btn'), style: const TextStyle(color: Colors.red)),
                               ),
                             );
                           },
