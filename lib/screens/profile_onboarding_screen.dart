@@ -19,6 +19,7 @@ import '../utils/india_locations.dart';
 import '../widgets/premium_feedback.dart';
 import 'congratulations_screen.dart';
 import 'login_screen.dart';
+import 'dashboard_screen.dart';
 import '../utils/storage_helper.dart';
 import '../widgets/animated_field_reveal.dart';
 
@@ -738,7 +739,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
     );
   }
 
-  Widget _buildSaveAndContinueButton() {
+  Widget _buildSaveAndContinueButton({VoidCallback? onPressedOverride}) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0, bottom: 40.0),
       child: Column(
@@ -753,7 +754,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
                 elevation: 8,
                 shadowColor: AppTheme.accentGold.withValues(alpha: 0.4),
               ),
-              onPressed: _nextStep,
+              onPressed: onPressedOverride ?? _nextStep,
               child: Text(
                 'Save & Continue',
                 style: GoogleFonts.montserrat(
@@ -844,7 +845,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
-          _buildSaveAndContinueButton()
+          _buildSaveAndContinueButton(onPressedOverride: _submitPartialProfile)
         ],
       ),
     );
@@ -2184,6 +2185,98 @@ By clicking "I Understand", you acknowledge that you have read, understood, and 
     }
     return heights;
   }
+  Future<void> _submitPartialProfile() async {
+    if (_gender == null || _firstNameController.text.trim().isEmpty || _surnameController.text.trim().isEmpty) {
+      _showErrorSnackBar('Please provide Gender, First Name and Surname.');
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    final Map<String, dynamic> finalPayload = {
+      'profileFor': 'Self',
+      'gender': _gender,
+      'phone': _mobileNumberController.text.trim(),
+      'whatsappNumber': _whatsappNumberController.text.trim(),
+      'whatsappPrivacy': _isWhatsappPrivate ? 'private' : 'public',
+      'firstName': _firstNameController.text.trim(),
+      'lastName': _surnameController.text.trim(),
+      'surname': _surnameController.text.trim(),
+      'sindhiType': _sindhiType ?? 'Sindhi Hindu',
+      'dob': _dob != null ? _dob!.toIso8601String() : '',
+      'birthTime': _birthTime != null ? _birthTime!.format(context) : '',
+      'birthPlace': _birthPlaceController.text.trim(),
+      'email': _emailController.text.trim(),
+      'height': _height ?? '',
+      'city': _cityController.text.trim(),
+      'state': _selectedState ?? '',
+      'maritalStatus': _maritalStatus,
+      'education': _degreeControllers.map((c) => c.text.trim()).where((t) => t.isNotEmpty).join(', '),
+      'profession': _profession,
+      'company': _profession == 'Not Working' ? '' : _companyController.text.trim(),
+      'fathersOccupation': _fathersOccupationController.text.trim(),
+      'nukh': _nukhController.text.trim(),
+      'bio': _bioController.text.trim(),
+      'uploadedPhotos': _uploadedPhotos,
+      'hobbies': _selectedHobbies,
+      'monthlyIncome': _profession == 'Not Working' ? '0' : _monthlyIncomeController.text.trim(),
+      'yearlyIncome': _profession == 'Not Working' ? '0' : _yearlyIncomeController.text.trim(),
+      'district': _selectedDistrict ?? '',
+      'properAddress': _properAddressController.text.trim(),
+      'jobPost': _profession == 'Not Working' ? '' : _jobPostController.text.trim(),
+      'ownHouse': _ownHouse,
+      'housePhoto': _housePhoto,
+      'requirements': _requirementsController.text.trim(),
+      'whatWeProvide': _whatWeProvideController.text.trim(),
+      'physicalDisability': _hasDisability == 'No' ? 'None' : (_disabilityType == 'Other' ? _otherDisabilityController.text.trim() : _disabilityType),
+      'complexion': _complexion,
+      'weight': _weightController.text.trim(),
+      'fatherStatus': _fatherStatus,
+      'fatherName': _fatherNameController.text.trim(),
+      'motherStatus': _motherStatus,
+      'motherName': _motherNameController.text.trim(),
+      'mothersOccupation': _mothersOccupationController.text.trim(),
+      'siblingsCount': _siblingsCountController.text.trim(),
+      'siblingsDetails': _siblingsDetailsController.text.trim(),
+      'manglikStatus': _manglikStatus,
+      'otherGrah': _manglikStatus == 'Other' ? _otherGrahController.text.trim() : '',
+      'medicalFit': _medicalFit,
+      'medicalIssue': _medicalFit == 'No' ? _medicalIssueController.text.trim() : '',
+      'liveWithFamily': _liveWithFamily,
+      'liveWithWhom': _liveWithWhomController.text.trim(),
+      'aboutFamily': _aboutFamilyController.text.trim(),
+    };
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+
+    auth.completeOnboarding(finalPayload).then((success) {
+      if (!mounted) return;
+      if (success) {
+        _clearOnboardingProgress();
+        // Skip remaining steps and go directly to Dashboard
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => const DashboardScreen(),
+          ),
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        setState(() {
+          _isSubmitting = false;
+        });
+        _showErrorSnackBar('Failed to save profile. Please try again.');
+      }
+    }).catchError((error) {
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+      });
+      _showErrorSnackBar('An error occurred. Please try again.');
+    });
+  }
+
   Future<void> _submitProfile() async {
     setState(() {
       _isSubmitting = true;
