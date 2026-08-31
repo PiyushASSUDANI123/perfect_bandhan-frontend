@@ -25,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   
   late TabController _tabController;
   bool _isSignUpMode = true; // Default to Sign Up as requested
+  bool _isSignUpPasswordStep = false;
 
   @override
   void initState() {
@@ -33,9 +34,20 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _tabController.addListener(() {
       setState(() {
         _isSignUpMode = _tabController.index == 0;
+        if (!_isSignUpMode) {
+          _isSignUpPasswordStep = false;
+        }
       });
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       authProvider.clearError();
+    });
+    
+    _phoneController.addListener(() {
+      if (_isSignUpMode && _isSignUpPasswordStep) {
+        setState(() {
+          _isSignUpPasswordStep = false;
+        });
+      }
     });
   }
 
@@ -64,6 +76,35 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       return;
     }
 
+    if (_isSignUpMode && !_isSignUpPasswordStep) {
+      final isRegistered = await authProvider.checkPhoneRegistration(phone);
+      if (isRegistered) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppTheme.cardGray,
+            title: Text('Already Registered', style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+            content: Text('This mobile number is already registered. Please go to Login.', style: GoogleFonts.montserrat(color: AppTheme.textWhite)),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _tabController.animateTo(1);
+                },
+                child: Text('Go to Login', style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+        return;
+      } else {
+        setState(() {
+          _isSignUpPasswordStep = true;
+        });
+        return;
+      }
+    }
+
     if (password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -84,29 +125,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       return;
     }
 
-
-
-    // Check if user is already registered
-    final isRegistered = await authProvider.checkPhoneRegistration(phone);
-    
-    if (_isSignUpMode) {
-      if (isRegistered) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Mobile number is already registered. Please switch to Login tab.'),
-            backgroundColor: Color(0xFFFF453A),
-          ),
-        );
-        return;
-      }
-      
+    if (_isSignUpMode && _isSignUpPasswordStep) {
       // NEW USER: Create a skeleton account with the password
       final setPasswordSuccess = await authProvider.registerNewUserWithPassword(phone, password);
       if (!setPasswordSuccess) {
         return; // setPassword will set the error message
       }
-    } else {
+    } else if (!_isSignUpMode) {
       // Login Mode
+      final isRegistered = await authProvider.checkPhoneRegistration(phone);
       if (!isRegistered) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -273,7 +300,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   ),
                                 ),
                                 child: Text(
-                                  _isSignUpMode ? "REGISTER / SIGN UP" : "LOGIN",
+                                  _isSignUpMode 
+                                      ? (_isSignUpPasswordStep ? "REGISTER / SIGN UP" : "NEXT") 
+                                      : "LOGIN",
                                   style: GoogleFonts.cinzel(
                                     color: AppTheme.backgroundBlack,
                                     fontSize: 13,
@@ -615,18 +644,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             return null;
           },
         ),
-        CustomTextField(
-          labelText: _isSignUpMode ? 'CREATE PASSWORD' : lang.translate('password').toUpperCase(),
-          hintText: _isSignUpMode ? 'Min 6 characters' : lang.translate('enter_password'),
-          prefixIcon: Icons.lock_outline_rounded,
-          controller: _passwordController,
-          isPassword: true,
-          validator: (value) {
-            if (value == null || value.isEmpty) return 'Password is required';
-            if (value.length < 6) return 'Must be at least 6 characters';
-            return null;
-          },
-        ),
+        if (!_isSignUpMode || (_isSignUpMode && _isSignUpPasswordStep))
+          CustomTextField(
+            labelText: _isSignUpMode ? 'CREATE PASSWORD' : lang.translate('password').toUpperCase(),
+            hintText: _isSignUpMode ? 'Min 6 characters' : lang.translate('enter_password'),
+            prefixIcon: Icons.lock_outline_rounded,
+            controller: _passwordController,
+            isPassword: true,
+            validator: (value) {
+              if (value == null || value.isEmpty) return 'Password is required';
+              if (value.length < 6) return 'Must be at least 6 characters';
+              return null;
+            },
+          ),
         if (!_isSignUpMode)
           Align(
             alignment: Alignment.centerRight,
