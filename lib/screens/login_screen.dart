@@ -77,7 +77,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     }
 
     if (_isSignUpMode && !_isSignUpPasswordStep) {
+      // Start loading indicator
+      authProvider.setLoading(true);
       final isRegistered = await authProvider.checkPhoneRegistration(phone);
+      authProvider.setLoading(false);
+      
       if (isRegistered) {
         showDialog(
           context: context,
@@ -130,18 +134,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       final setPasswordSuccess = await authProvider.registerNewUserWithPassword(phone, password);
       if (!setPasswordSuccess) {
         return; // setPassword will set the error message
-      }
-    } else if (!_isSignUpMode) {
-      // Login Mode
-      final isRegistered = await authProvider.checkPhoneRegistration(phone);
-      if (!isRegistered) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account not found. Please Sign Up first.'),
-            backgroundColor: Color(0xFFFF453A),
-          ),
-        );
-        return;
       }
     }
 

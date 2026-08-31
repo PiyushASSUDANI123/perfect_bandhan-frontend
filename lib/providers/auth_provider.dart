@@ -1663,5 +1663,9 @@ class AuthProvider extends ChangeNotifier {
     }
     return [];
   }
-}
 
+  void setLoading(bool isLoading) {
+    _status = isLoading ? AuthStatus.loading : AuthStatus.idle;
+    notifyListeners();
+  }
+}
