@@ -84,24 +84,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       return;
     }
 
-    // Direct login backdoor for admin number
-    if (phone == '9413879444') {
-      final success = await authProvider.loginWithPassword(phone, '123456');
-      if (success && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Admin direct login successful!'),
-            backgroundColor: AppTheme.accentGold,
-          ),
-        );
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreenWrapper()),
-          (route) => false,
-        );
-      }
-      return;
-    }
+
 
     // Check if user is already registered
     final isRegistered = await authProvider.checkPhoneRegistration(phone);
