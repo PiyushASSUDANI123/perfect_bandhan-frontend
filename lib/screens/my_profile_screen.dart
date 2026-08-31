@@ -786,7 +786,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
-                                  Icons.camera_alt_rounded,
+                                  Icons.photo_library_rounded,
                                   color: Colors.black,
                                   size: 16,
                                 ),
@@ -1269,7 +1269,7 @@ class _MyProfileScreenState extends State<MyProfileScreen>
                             children: [
                               Text(Provider.of<LanguageProvider>(context).translate('my_gallery'), style: GoogleFonts.cinzel(color: AppTheme.accentGold, fontWeight: FontWeight.bold, fontSize: 18)),
                               IconButton(
-                                icon: const Icon(Icons.camera_alt, color: AppTheme.textMuted, size: 20),
+                                icon: const Icon(Icons.photo_library, color: AppTheme.textMuted, size: 20),
                                 onPressed: _managePhotos,
                                 tooltip: 'Manage Photos',
                               )
