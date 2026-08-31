@@ -1578,14 +1578,7 @@ class _ProfileOnboardingScreenState extends State<ProfileOnboardingScreen> {
                           return SafeArea(
                             child: Wrap(
                               children: [
-                                ListTile(
-                                  leading: const Icon(Icons.camera_alt_outlined, color: AppTheme.accentGold),
-                                  title: Text('Take Photo (Camera)', style: GoogleFonts.montserrat(color: AppTheme.textCarbon)),
-                                  onTap: () {
-                                    Navigator.pop(context);
-                                    _pickHousePhoto(ImageSource.camera);
-                                  },
-                                ),
+
                                 ListTile(
                                   leading: const Icon(Icons.photo_library_outlined, color: AppTheme.accentGold),
                                   title: Text('Choose from Gallery', style: GoogleFonts.montserrat(color: AppTheme.textCarbon)),

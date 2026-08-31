@@ -268,7 +268,6 @@ class _HomeScreenWrapperState extends State<HomeScreenWrapper> {
   Future<void> _requestAppPermissions() async {
     try {
       await [
-        Permission.camera,
         Permission.photos,
         Permission.notification,
       ].request();
