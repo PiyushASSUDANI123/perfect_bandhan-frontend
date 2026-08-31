@@ -626,6 +626,9 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
         _myProfile = decoded['data'] ?? decoded;
+      } else if (response.statusCode == 401) {
+        _myProfileError = "Session expired";
+        logout();
       } else {
         _myProfileError = "Failed to load profile";
       }
@@ -714,6 +717,9 @@ class AuthProvider extends ChangeNotifier {
             }
           }
         }
+      } else if (response.statusCode == 401) {
+        _dailyPicksError = "Session expired. Please login again.";
+        logout();
       } else {
         _dailyPicksError = "Failed to load feed";
       }
@@ -765,6 +771,9 @@ class AuthProvider extends ChangeNotifier {
             }
           }
         }
+      } else if (response.statusCode == 401) {
+        _searchError = "Session expired";
+        logout();
       } else {
         _searchError = "Failed to load search results";
       }
